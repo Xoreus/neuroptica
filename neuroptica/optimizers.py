@@ -5,6 +5,7 @@ starting with "InSitu" use the on-chip interferometric gradient calculation rout
 from typing import Tuple, Type
 
 import numpy as np
+from numpy import pi
 
 from neuroptica.components import MZI, PhaseShifter
 from neuroptica.layers import OpticalMeshNetworkLayer
@@ -74,6 +75,7 @@ class InSituGradientDescent(Optimizer):
         '''
 
         losses = []
+        accuracy = []
 
         n_features, n_samples = data.shape
 
@@ -106,11 +108,16 @@ class InSituGradientDescent(Optimizer):
 
             total_epoch_loss /= n_samples
             losses.append(total_epoch_loss)
+            # Append accuracy per epoch
+            Y_hat = self.model.forward_pass(data)
+            pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+            gt = np.array([np.argmax(tru) for tru in labels.T])
+            accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
 
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=False)
 
-        return losses
+        return losses, accuracy
 
 
 class InSituAdam(Optimizer):
@@ -118,12 +125,14 @@ class InSituAdam(Optimizer):
     On-chip training with in-situ backpropagation using adjoint field method and adam optimizer
     '''
 
-    def __init__(self, model: Sequential, loss: Type[Loss], step_size=0.01, beta1=0.9, beta2=0.99, epsilon=1e-8):
+    def __init__(self, model: Sequential, loss: Type[Loss], step_size=0.01, beta1=0.9, beta2=0.99, epsilon=1e-8, pKeep=0.8):
         super().__init__(model, loss)
         self.step_size = step_size
         self.beta1 = beta1
         self.beta2 = beta2
         self.epsilon = epsilon
+        self.pKeep = pKeep
+
         self.t = 0
         self.m = {}
         self.v = {}
@@ -146,10 +155,11 @@ class InSituAdam(Optimizer):
         :param show_progress:
         :param cache_fields: if set to True, will cache fields at the phase shifters on the forward and backward pass
         :param use_partial_vectors: if set to True, the MZI partial matrices will be stored as Nx2 vectors
-        :return:
+        :return: losses, accuracy
         '''
 
         losses = []
+        accuracy = []
 
         n_features, n_samples = data.shape
 
@@ -197,16 +207,47 @@ class InSituAdam(Optimizer):
 
                             elif isinstance(cmpt, MZI):
                                 dtheta, dphi = grad
-                                cmpt.theta += dtheta
                                 cmpt.phi += dphi
+                                cmpt.theta += dtheta
+
 
                     # Set the backprop signal for the subsequent (spatially previous) layer
                     delta_prev = deltas[layer.__name__]
 
+            # Append loss per epoch
             total_epoch_loss /= n_samples
             losses.append(total_epoch_loss)
 
-            if show_progress:
-                iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=False)
+            # Append accuracy per epoch
+            Y_hat = self.model.forward_pass(data)
+            pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+            gt = np.array([np.argmax(tru) for tru in labels.T])
+            accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
 
-        return losses
+            if show_progress:
+                iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
+
+
+
+        return losses, accuracy
+
+class Dropout():
+    ''' Implements dropout for ONN '''
+    def __init__(self, p: float = 0.8, inplace: bool = False, evaluation: bool = False):
+        super(Dropout, self).__init__()
+        if p < 0 or p > 1:
+            raise ValueError(
+                "dropout probability has to be between 0 and 1, " "but got {}".format(p)
+            )
+        self.p: float = p
+        self.inplace: bool = inplace
+        self.evaluation: bool = evaluation
+
+    def evaluation_mode(self):
+            self.evaluation = True
+
+    def forward(self, weights):
+        if not self.evaluation:
+            binomial = np.random.binomial(1, self.p)
+            return weights * binomial.sample(weights.size())
+        return weights * self.p

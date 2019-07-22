@@ -58,8 +58,16 @@ class Sequential(BaseModel):
         for layer in self.layers:
             if isinstance(layer, OpticalMeshNetworkLayer):
                 X_out = layer.forward_pass(X_out,
-                                           cache_fields=cache_fields,
-                                           use_partial_vectors=use_partial_vectors)
+
+                                           ####################################
+                                           # Simon Commented these out since
+                                           # they don't appear to work with
+                                           # the Reck model
+                                           ####################################
+
+#                                           cache_fields=cache_fields,
+#                                           use_partial_vectors=use_partial_vectors
+                                           )
             else:
                 X_out = layer.forward_pass(X_out)
         return X_out
@@ -77,8 +85,9 @@ class Sequential(BaseModel):
         for layer in reversed(self.layers):
             if isinstance(layer, OpticalMeshNetworkLayer):
                 backprop_signal = layer.backward_pass(backprop_signal,
-                                                      cache_fields=cache_fields,
-                                                      use_partial_vectors=use_partial_vectors)
+#                                                      cache_fields=cache_fields,
+#                                                      use_partial_vectors=use_partial_vectors
+                                                      )
             else:
                 backprop_signal = layer.backward_pass(backprop_signal)
 

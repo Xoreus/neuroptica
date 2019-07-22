@@ -227,8 +227,6 @@ class ReckLayer(OpticalMeshNetworkLayer):
         super().__init__(N, N, initializer=initializer)
 
         layers = []
-        if include_phase_shifter_layer:
-            layers.append(PhaseShifterLayer(N))
 
         mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         mzi_limits_lower = [(i + 1) % 2 for i in mzi_limits_upper]
@@ -238,9 +236,24 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
         self.mesh = OpticalMesh(N, layers)
 
-    def forward_pass(self, X: np.ndarray) -> np.ndarray:
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(N))
+
+    def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
         self.input_prev = X
+
+        ### SIMON ADDED THIS #####################
+#        binomial = np.random.binomial(1, pKeep, self.mesh.get_transfer_matrix().shape)
+#        self.output_prev = np.dot(self.mesh.get_transfer_matrix()*binomial, X)
+        ################################################
+
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+
+        ### SIMON ADDED THIS #####################
+        # DROPOUT --- Set n < N channels to 0
+#        binomial = np.random.binomial(1, pKeep, X.shape[1])
+#        self.output_prev *= binomial
+
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:

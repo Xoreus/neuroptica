@@ -251,10 +251,10 @@ class AbsSquared(ComplexNonlinearity):
     def __init__(self, N):
         super().__init__(N, holomorphic=False, mode="polar")
 
-    def forward_pass(self, X: np.ndarray):
+    def forward_pass(self, X: np.ndarray, pKeep=0.9):
         return np.abs(X) ** 2
 
-    def df_dr(self, r: np.ndarray, phi: np.ndarray):
+    def df_dr(self, r: np.ndarray, phi: np.ndarray, pKeep=0.9):
         return 2 * r
 
     def df_dphi(self, r: np.ndarray, phi: np.ndarray):
