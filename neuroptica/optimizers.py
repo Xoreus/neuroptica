@@ -125,7 +125,8 @@ class InSituAdam(Optimizer):
     On-chip training with in-situ backpropagation using adjoint field method and adam optimizer
     '''
 
-    def __init__(self, model: Sequential, loss: Type[Loss], step_size=0.01, beta1=0.9, beta2=0.99, epsilon=1e-8, pKeep=0.8):
+    def __init__(self, model: Sequential, loss: Type[Loss], step_size=0.01,
+                 beta1=0.9, beta2=0.99, epsilon=1e-8, pKeep=0.8):
         super().__init__(model, loss)
         self.step_size = step_size
         self.beta1 = beta1
@@ -144,8 +145,9 @@ class InSituAdam(Optimizer):
                     self.v[component] = np.zeros(component.dof)
                     self.g[component] = np.zeros(component.dof)
 
-    def fit(self, data: np.ndarray, labels: np.ndarray, epochs=1000, batch_size=32, show_progress=True,
-            cache_fields=False, use_partial_vectors=False):
+    def fit(self, data: np.ndarray, labels: np.ndarray, val_data: np.ndarray,
+            val_labels: np.ndarray, epochs=1000, batch_size=32,
+            show_progress=True, cache_fields=False, use_partial_vectors=False):
         '''
         Fit the model to the labeled data
         :param data: features vector, shape: (n_features, n_samples)
@@ -159,7 +161,10 @@ class InSituAdam(Optimizer):
         '''
 
         losses = []
-        accuracy = []
+        trn_accuracy = []
+        val_accuracy = []
+
+        best_accuracy = 0
 
         n_features, n_samples = data.shape
 
@@ -207,6 +212,16 @@ class InSituAdam(Optimizer):
 
                             elif isinstance(cmpt, MZI):
                                 dtheta, dphi = grad
+
+                                ######################
+                                ## SIMON ADDED THIS ##
+                                #######################
+                                if cmpt.phi + dphi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.theta + dtheta < 0:
+                                    cmpt.theta += 2*pi
+                       #############################################
+
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
 
@@ -218,18 +233,28 @@ class InSituAdam(Optimizer):
             total_epoch_loss /= n_samples
             losses.append(total_epoch_loss)
 
-            # Append accuracy per epoch
+            # Append training accuracy per epoch
             Y_hat = self.model.forward_pass(data)
             pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
             gt = np.array([np.argmax(tru) for tru in labels.T])
-            accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
+            trn_accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
+            if trn_accuracy[-1] > best_accuracy:
+                D = self.model.layers[0].mesh.get_transfer_matrix()
+                phases = [x for x in self.model.layers[0].mesh.all_tunable_params()]
+                best_accuracy = trn_accuracy[-1]
+
+            # Append validation accuracy per epoch
+            Y_hat = self.model.forward_pass(val_data)
+            pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+            gt = np.array([np.argmax(tru) for tru in val_labels.T])
+            val_accuracy.append(np.sum(pred == gt)/val_data.shape[1]*100)
 
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
 
 
 
-        return losses, accuracy
+        return losses, trn_accuracy, val_accuracy, phases, D
 
 class Dropout():
     ''' Implements dropout for ONN '''

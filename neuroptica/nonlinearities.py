@@ -174,7 +174,7 @@ class ElectroOpticActivation(ComplexNonlinearity):
         impedance: Characteristic impedance for computing optical power [Ohms]
     '''
 
-    def __init__(self, N, alpha=0.1, responsivity=0.8, area=1.0,
+    def __init__(self, N, alpha=0.2, responsivity=0.8, area=1.0,
                  V_pi=10.0, V_bias=10.0, R=1e3, impedance=120 * np.pi,
                  g=None, phi_b=None):
 
@@ -251,10 +251,15 @@ class AbsSquared(ComplexNonlinearity):
     def __init__(self, N):
         super().__init__(N, holomorphic=False, mode="polar")
 
-    def forward_pass(self, X: np.ndarray, pKeep=0.9):
-        return np.abs(X) ** 2
+    def forward_pass(self, X: np.ndarray):
+        ######################
+        # SIMON ADDED THIS ###
+        ######################
+        pKeep = 1
+        binary = np.random.binomial(1, pKeep, size=X.shape)
+        return np.abs(X) ** 2 * binary
 
-    def df_dr(self, r: np.ndarray, phi: np.ndarray, pKeep=0.9):
+    def df_dr(self, r: np.ndarray, phi: np.ndarray):
         return 2 * r
 
     def df_dphi(self, r: np.ndarray, phi: np.ndarray):

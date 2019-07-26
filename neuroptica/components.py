@@ -96,7 +96,11 @@ class MZI(OpticalComponent):
         self.m = m  # input waveguide A index (0-indexed)
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
-        if theta is None: theta = 2 * pi * np.random.rand()
+
+        ########################################################
+        ### SIMON MODIFIED THIS ################################
+        ########################################################
+        if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
         self.theta = theta
         self.phi = phi

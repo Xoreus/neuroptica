@@ -68,6 +68,7 @@ class Sequential(BaseModel):
 #                                           cache_fields=cache_fields,
 #                                           use_partial_vectors=use_partial_vectors
                                            )
+#                print(X_out)
             else:
                 X_out = layer.forward_pass(X_out)
         return X_out
