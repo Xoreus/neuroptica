@@ -258,3 +258,49 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
+class complex_conj_ReckLayer(OpticalMeshNetworkLayer):
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
+        '''
+        Initialize the ReckLayer
+        :param N: number of input and output waveguides
+        :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
+        the mesh (required to implement arbitrary unitary)
+        :param initializer: optional initializer method (WIP)
+        '''
+        super().__init__(N, N, initializer=initializer)
+
+        layers = []
+
+        mzi_limits_lower = [i for i in range(N - 2, 0, -1)] + [i for i in range(0, N - 1)]
+        mzi_limits_upper = [(N - 1) - i % 2 for i in mzi_limits_lower]
+
+        for start, end in zip(mzi_limits_lower, mzi_limits_upper):
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
+
+        self.mesh = OpticalMesh(N, layers)
+
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(N))
+
+    def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
+        self.input_prev = X
+
+        ### SIMON ADDED THIS #####################
+#        binomial = np.random.binomial(1, pKeep, self.mesh.get_transfer_matrix().shape)
+#        self.output_prev = np.dot(self.mesh.get_transfer_matrix()*binomial, X)
+        ################################################
+
+        self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+
+        ### SIMON ADDED THIS #####################
+        # DROPOUT --- Set n < N channels to 0
+#        binomial = np.random.binomial(1, pKeep, X.shape[1])
+#        self.output_prev *= binomial
+
+        return self.output_prev
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        return np.dot(self.mesh.get_transfer_matrix().T, delta)

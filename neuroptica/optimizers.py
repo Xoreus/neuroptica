@@ -221,7 +221,6 @@ class InSituAdam(Optimizer):
                                 if cmpt.theta + dtheta < 0:
                                     cmpt.theta += 2*pi
                        #############################################
-
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
 
@@ -251,8 +250,6 @@ class InSituAdam(Optimizer):
 
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
-
-
 
         return losses, trn_accuracy, val_accuracy, phases, D
 

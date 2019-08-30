@@ -83,7 +83,7 @@ class PhaseShifter(OpticalComponent):
 class MZI(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
 
-    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0):
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss=10**(0)):
         '''
         :param m: first waveguide index
         :param n: second waveguide index
@@ -96,6 +96,7 @@ class MZI(OpticalComponent):
         self.m = m  # input waveguide A index (0-indexed)
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
+        self.loss = loss
 
         ########################################################
         ### SIMON MODIFIED THIS ################################
@@ -158,9 +159,9 @@ class MZI(OpticalComponent):
                 T = np.dot(transfer_matrix, T)
                 partial_transfer_matrices.append(T)
 
-            return np.array(partial_transfer_matrices)
+            return np.array(partial_transfer_matrices)*self.loss
         else:
-            return np.array(component_transfer_matrices)
+            return np.array(component_transfer_matrices)*self.loss
 
 
 @jit(nopython=True, nogil=True, parallel=True)
