@@ -251,7 +251,7 @@ class InSituAdam(Optimizer):
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
 
-        return losses, trn_accuracy, val_accuracy, phases, D
+        return losses, trn_accuracy, val_accuracy
 
 class Dropout():
     ''' Implements dropout for ONN '''
