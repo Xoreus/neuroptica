@@ -278,7 +278,8 @@ class Sigmoid(Nonlinearity):
 
 
 class SoftMax(Nonlinearity):
-    '''Applies softmax to the inputs. Do not use in with categorical cross entropy, which implicitly includes this.'''
+    '''Applies softmax to the inputs. Do not use in with categorical cross entropy,
+    which implicitly includes this.'''
 
     def forward_pass(self, X: np.ndarray):
         return np.exp(X) / np.sum(np.exp(X), axis=0)
