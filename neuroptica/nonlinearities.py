@@ -277,6 +277,21 @@ class Sigmoid(Nonlinearity):
         return sigma * (1 - sigma) * gamma
 
 
+class Shifted_Softplus(Nonlinearity): # Shifted softplus
+
+    def __init__(self, N: int, T=0.1, b=2):
+        super().__init__(N)
+        self.T = T
+        self.u0 = 0.5*np.log(T**-1 - 1)
+        self.b = b
+    
+    def forward_pass(self, X: np.ndarray):
+        return self.b**-1*np.log((1+np.exp(self.b*(4*X - self.u0)))/(1+np.exp(-self.b*self.u0)))
+
+    def backward_pass(self, gamma: np.ndarray, Z: np.ndarray):
+        #softplus = self.b**-1*np.log((1+np.exp(self.b*(4*Z - self.u0)))/(1+np.exp(-self.b*self.u0)))
+        return (1 + np.exp(self.b*(Z - self.u0)))**-1 
+    
 class SoftMax(Nonlinearity):
     '''Applies softmax to the inputs. Do not use in with categorical cross entropy,
     which implicitly includes this.'''
@@ -298,6 +313,30 @@ class SoftMax(Nonlinearity):
         return total_derivs
 
 
+class Squeezed_SoftMax(Nonlinearity):
+    '''Applies softmax to the inputs. Do not use in with categorical cross entropy,
+    which implicitly includes this.'''
+
+    def __init__(self, N: int, squeeze=2):
+        super().__init__(N)
+        self.squeeze = squeeze
+
+    def forward_pass(self, X: np.ndarray):
+        return np.exp(self.squeeze*X) / np.sum(np.exp(self.squeeze*X), axis=0)
+
+    def backward_pass(self, gamma: np.ndarray, Z: np.ndarray):
+        softmax = np.exp(Z) / np.sum(np.exp(Z), axis=0)
+
+        n_features, n_samples = Z.shape
+        total_derivs = np.zeros(Z.shape, dtype=NP_COMPLEX)
+
+        for i in range(n_samples):
+            s = softmax[:, i].reshape(-1, 1)
+            jac = np.diagflat(s) - np.dot(s, s.T)
+            total_derivs[:, i] = jac.T @ gamma[:, i]
+
+        return total_derivs
+
 class LinearMask(ComplexNonlinearity):
     '''Technically not a nonlinearity: apply a linear gain/loss to each element'''
 
@@ -314,8 +353,6 @@ class LinearMask(ComplexNonlinearity):
     def df_dZ(self, Z: np.ndarray):
         z_broadcaster = np.ones(Z.shape)
         return (z_broadcaster.T * self.mask).T
-        # return ((Z.T * self.mask) / Z.T).T
-
 
 class bpReLU(ComplexNonlinearity):
     '''

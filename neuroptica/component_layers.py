@@ -71,6 +71,9 @@ class MZILayer(ComponentLayer):
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
             mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1]))
+        print(mzis)
+        #print(waveguide_indices)
+
         return cls(N, mzis)
 
     @staticmethod
@@ -244,6 +247,32 @@ class PhaseShifterLayer(ComponentLayer):
             T[m][m] = phase_shifter.get_transfer_matrix()[0, 0]
         return T
 
+class PhaseShifterLayer_MZI(ComponentLayer):
+    ''' Represents the Theta phase shifter in the DMM section'''
+
+    def __init__(self, N: int, phase_shifters: List[PhaseShifter] = None):
+        '''
+        :param N: number of waveguides the column is embedded in
+        :param phase_shifters: list of phase shifters in the column (can be less than N)
+        '''
+        super().__init__(N, phase_shifters)
+        if phase_shifters is None:
+            phase_shifters = [PhaseShifter(m) for m in range(N)]
+        self.phase_shifters = phase_shifters
+
+    def __iter__(self) -> Iterable[PhaseShifter]:
+        yield from self.phase_shifters
+
+    def all_tunable_params(self):
+        for phase_shifter in self.phase_shifters:
+            yield phase_shifter.phi
+
+    def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
+        T = np.eye(self.N, dtype=NP_COMPLEX)
+        for phase_shifter in self.phase_shifters:
+            m = phase_shifter.m
+            T[m][m] = phase_shifter.get_transfer_matrix()[0, 0]
+        return T
 
 class OpticalMesh:
     '''Represents an optical "mesh" consisting of several layers of optical components, e.g. a rectangular MZI mesh'''

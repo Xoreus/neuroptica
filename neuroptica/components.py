@@ -107,7 +107,7 @@ class MZI(OpticalComponent):
         self.phi = phi
 
     def __repr__(self):
-        return '<MZI theta={}, phi={}>'.format(self.theta, self.phi)
+        return '<MZI index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
 
     def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
         '''

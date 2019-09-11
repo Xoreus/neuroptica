@@ -41,6 +41,21 @@ class NetworkLayer:
         '''
         raise NotImplementedError('backward_pass() must be overridden in child class!')
 
+class AddMask(NetworkLayer):
+    '''interleaves 0s beween existing ports (essentially adding extra waveguides for the DMM section)'''
+
+    def forward_pass(self, X: np.ndarray):
+        result = np.zeros(1, dtype=NP_COMPLEX) * (len(X) * 2 - 1)
+        result[0::2] = X
+        print(results)
+        return result 
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        n_features, n_samples = delta.shape
+        delta_back = np.zeros((self.input_size, n_samples), dtype=NP_COMPLEX)
+        for i in range(n_features):
+            delta_back[self.ports[i]] = delta[i]
+        return delta_back
 
 class DropMask(NetworkLayer):
     '''Drop specified ports entirely, reducing the size of the network for the next layer.'''
@@ -227,6 +242,8 @@ class ReckLayer(OpticalMeshNetworkLayer):
         super().__init__(N, N, initializer=initializer)
 
         layers = []
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(N))
 
         mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         mzi_limits_lower = [(i + 1) % 2 for i in mzi_limits_upper]
@@ -236,30 +253,16 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
         self.mesh = OpticalMesh(N, layers)
 
-        if include_phase_shifter_layer:
-            layers.append(PhaseShifterLayer(N))
-
-    def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
+    def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
-
-        ### SIMON ADDED THIS #####################
-#        binomial = np.random.binomial(1, pKeep, self.mesh.get_transfer_matrix().shape)
-#        self.output_prev = np.dot(self.mesh.get_transfer_matrix()*binomial, X)
-        ################################################
-
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
-
-        ### SIMON ADDED THIS #####################
-        # DROPOUT --- Set n < N channels to 0
-#        binomial = np.random.binomial(1, pKeep, X.shape[1])
-#        self.output_prev *= binomial
-
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
-class complex_conj_ReckLayer(OpticalMeshNetworkLayer):
+
+class ReckLayer_comp_conj(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
     def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
@@ -273,17 +276,48 @@ class complex_conj_ReckLayer(OpticalMeshNetworkLayer):
         super().__init__(N, N, initializer=initializer)
 
         layers = []
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(N))
 
         mzi_limits_lower = [i for i in range(N - 2, 0, -1)] + [i for i in range(0, N - 1)]
         mzi_limits_upper = [(N - 1) - i % 2 for i in mzi_limits_lower]
+
+        #print(mzi_limits_lower)
+        #print(mzi_limits_upper)
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
             layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
 
         self.mesh = OpticalMesh(N, layers)
 
-        if include_phase_shifter_layer:
-            layers.append(PhaseShifterLayer(N))
+    def forward_pass(self, X: np.ndarray) -> np.ndarray:
+        self.input_prev = X
+        self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+        #print(X.shape)
+        return self.output_prev
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        #print(np.dot(self.mesh.get_transfer_matrix().T, delta))
+        return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
+class DMM_layer(OpticalMeshNetworkLayer):
+    def __init__(self, N: int, initializer=None):
+
+        '''
+        Initialize DMM (diagonal MZI layer)
+        :param N: Number of MZIs in the Mesh
+        '''
+        super().__init__(N, N, initializer=initializer)
+
+        layers = []
+
+        mzi_limits_upper = [2*N-1]
+        mzi_limits_lower = [0]
+        
+        for start, end in zip(mzi_limits_lower, mzi_limits_upper):
+            layers.append(MZILayer.from_waveguide_indices(2*N, list(range(start, end + 1))))
+
+        self.mesh = OpticalMesh(N, layers)
 
     def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
         self.input_prev = X
@@ -304,3 +338,4 @@ class complex_conj_ReckLayer(OpticalMeshNetworkLayer):
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
