@@ -43,12 +43,16 @@ class NetworkLayer:
 
 class AddMask(NetworkLayer):
     '''interleaves 0s beween existing ports (essentially adding extra waveguides for the DMM section)'''
+    def __init__(self, N: int):
+        self.ports = list(range(2*N))
+        super().__init__(N, len(self.ports))
 
     def forward_pass(self, X: np.ndarray):
-        result = np.zeros(1, dtype=NP_COMPLEX) * (len(X) * 2 - 1)
-        result[0::2] = X
-        print(results)
-        return result 
+        B = np.zeros_like(X, dtype=NP_COMPLEX)
+        C = np.empty((X.shape[0]+B.shape[0],X.shape[1]), dtype=NP_COMPLEX)
+        C[::2,:] = X
+        C[1::2,:] = B 
+        return C 
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         n_features, n_samples = delta.shape
@@ -85,8 +89,11 @@ class DropMask(NetworkLayer):
         return X[self.ports]
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+
+        #print(delta.shape)
         n_features, n_samples = delta.shape
         delta_back = np.zeros((self.input_size, n_samples), dtype=NP_COMPLEX)
+        ##print(self.ports)
         for i in range(n_features):
             delta_back[self.ports[i]] = delta[i]
         return delta_back
@@ -298,6 +305,7 @@ class ReckLayer_comp_conj(OpticalMeshNetworkLayer):
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         #print(np.dot(self.mesh.get_transfer_matrix().T, delta))
+
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DMM_layer(OpticalMeshNetworkLayer):
@@ -311,13 +319,16 @@ class DMM_layer(OpticalMeshNetworkLayer):
 
         layers = []
 
-        mzi_limits_upper = [2*N-1]
+        mzi_limits_upper = [N-1]
         mzi_limits_lower = [0]
         
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
-            layers.append(MZILayer.from_waveguide_indices(2*N, list(range(start, end + 1))))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
+
+        #print(layers)
 
         self.mesh = OpticalMesh(N, layers)
+        print(layers[0].get_transfer_matrix())
 
     def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
         self.input_prev = X
@@ -326,7 +337,6 @@ class DMM_layer(OpticalMeshNetworkLayer):
 #        binomial = np.random.binomial(1, pKeep, self.mesh.get_transfer_matrix().shape)
 #        self.output_prev = np.dot(self.mesh.get_transfer_matrix()*binomial, X)
         ################################################
-
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
 
         ### SIMON ADDED THIS #####################
