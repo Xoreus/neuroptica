@@ -65,6 +65,9 @@ class MZILayer(ComponentLayer):
         :param waveguide_indices: list of waveguides the layer attaches to
         :return: MZILayer class instance with size N and MZIs attached to waveguide_indices
         '''
+        #print(N)
+        #print(waveguide_indices)
+        #print(np.unique(waveguide_indices))
         assert len(waveguide_indices) % 2 == 0 and len(waveguide_indices) <= N and \
                len(np.unique(waveguide_indices)) == len(waveguide_indices), \
             "Waveguide must have an even number <= N of indices which are all unique"

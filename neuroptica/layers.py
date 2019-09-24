@@ -254,6 +254,9 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
         mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         mzi_limits_lower = [(i + 1) % 2 for i in mzi_limits_upper]
+        
+        print(mzi_limits_upper)
+        print(mzi_limits_lower)
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
             layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
@@ -319,16 +322,19 @@ class DMM_layer(OpticalMeshNetworkLayer):
 
         layers = []
 
-        mzi_limits_upper = [N-1]
+        mzi_limits_upper = [2*N - 1]
         mzi_limits_lower = [0]
         
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
+            #print(len(list(range(start, end))))
+            #print(list(range(start, end + 1)))
+            #print(np.unique(list(range(start, end + 1))))
+            layers.append(MZILayer.from_waveguide_indices(2*N, list(range(start, end+1))))
 
         #print(layers)
 
         self.mesh = OpticalMesh(N, layers)
-        print(layers[0].get_transfer_matrix())
+        #print(layers[0].get_transfer_matrix())
 
     def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
         self.input_prev = X
@@ -347,5 +353,88 @@ class DMM_layer(OpticalMeshNetworkLayer):
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
+
+
+
+class ReckLayer_dmm(OpticalMeshNetworkLayer):
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
+        '''
+        Initialize the ReckLayer
+        :param N: number of input and output waveguides
+        :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
+        the mesh (required to implement arbitrary unitary)
+        :param initializer: optional initializer method (WIP)
+        '''
+        super().__init__(N, N, initializer=initializer)
+
+        layers = []
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(2*N))
+
+        mzi_limits_upper = [i for i in range(2, 2*N, 2)] + [i for i in range(2*N - 4, 1 - 1, -2)]
+        mzi_limits_lower = [2*((i) % 2) for i in range(len(mzi_limits_upper))]
+
+        #print(mzi_limits_upper)
+        #print(mzi_limits_lower)
+        
+
+        for start, end in zip(mzi_limits_lower, mzi_limits_upper):
+            #print(list(range(start, end + 1, 2)))
+            layers.append(MZILayer.from_waveguide_indices(2*N, list(range(start, end + 1, 2))))
+
+        self.mesh = OpticalMesh(N, layers)
+
+    def forward_pass(self, X: np.ndarray) -> np.ndarray:
+        self.input_prev = X
+        self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+        return self.output_prev
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
+
+class ReckLayer_dmm_comp_conj(OpticalMeshNetworkLayer):
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
+        '''
+        Initialize the ReckLayer
+        :param N: number of input and output waveguides
+        :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
+        the mesh (required to implement arbitrary unitary)
+        :param initializer: optional initializer method (WIP)
+        '''
+        super().__init__(N, N, initializer=initializer)
+
+        layers = []
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(N))
+
+        mzi_limits_lower = [i for i in range(2*N - 4, 0, -2)] + [i for i in range(0, 2*N - 2, 2)]
+        mzi_limits_upper = [(2*N - 2) - 2*(i % 2) for i in range(len(mzi_limits_lower))]
+
+        #print(mzi_limits_lower)
+        #print(mzi_limits_upper)
+
+        for start, end in zip(mzi_limits_lower, mzi_limits_upper):
+            #print(list(range(start, end + 1)))
+            #print(np.unique(list(range(start, end + 1))))
+            layers.append(MZILayer.from_waveguide_indices(2*N, list(range(start, end + 1, 2))))
+
+        self.mesh = OpticalMesh(N, layers)
+
+    def forward_pass(self, X: np.ndarray) -> np.ndarray:
+        self.input_prev = X
+        self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+        #print(X.shape)
+        return self.output_prev
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        #print(np.dot(self.mesh.get_transfer_matrix().T, delta))
+
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
