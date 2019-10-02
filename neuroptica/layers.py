@@ -359,7 +359,9 @@ class DMM_layer(OpticalMeshNetworkLayer):
 
 
 class ReckLayer_dmm(OpticalMeshNetworkLayer):
-    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition
+    the dmm section contains 2*N waveguides, so we add an extra N waveguides to the Reck layer as well, acting as an empty node for now.'''
 
     def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
         '''
@@ -398,7 +400,8 @@ class ReckLayer_dmm(OpticalMeshNetworkLayer):
 
 
 class ReckLayer_dmm_comp_conj(OpticalMeshNetworkLayer):
-    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition
+    the dmm section contains 2*N waveguides, so we add an extra N waveguides to the Reck layer as well, acting as an empty node for now.'''
 
     def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
         '''

@@ -57,7 +57,7 @@ class MZILayer(ComponentLayer):
             yield mzi.phi
 
     @classmethod
-    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int]):
+    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0):
         '''
         Create an MZI layer from a list of an even number of input/output indices. Each pair of waveguides in the
         iteration order will be assigned to an MZI
@@ -73,7 +73,8 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1]))
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(loss/10)))
+
         #print(mzis)
         #print(waveguide_indices)
 

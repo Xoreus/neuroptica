@@ -1,4 +1,5 @@
 '''The components submodule contains functionality for simulating individual optical components, such as a single
+
 phase shifter, a beamsplitter, or an MZI. Components are combined in a :class:`~neuroptica.components.ComponentLayer`,
 which describes the arrangement of the components on-chip.
 '''
@@ -101,8 +102,8 @@ class MZI(OpticalComponent):
         ########################################################
         ### SIMON MODIFIED THIS ################################
         ########################################################
-        if theta is None: theta = pi * np.random.rand() * 0 + np.pi 
-        if phi is None: phi = 2 * pi * np.random.rand() * 0 + np.pi
+        if theta is None: theta = pi * np.random.rand()# * 0 + np.pi 
+        if phi is None: phi = 2 * pi * np.random.rand()# * 0 + np.pi
         self.theta = theta
         self.phi = phi
 
@@ -135,6 +136,7 @@ class MZI(OpticalComponent):
         in the device
         :param add_uncertainties: whether to include uncertainties in the partial transfer matrix computation
         :return: numpy array of partial transfer matrices
+        
         '''
         if add_uncertainties:
             phi = self.phi + np.random.normal(0, self.phase_uncert)
