@@ -102,7 +102,7 @@ class MZI(OpticalComponent):
         ########################################################
         ### SIMON MODIFIED THIS ################################
         ########################################################
-        if theta is None: theta = pi * np.random.rand()# * 0 + np.pi 
+        if theta is None: theta = pi * np.random.rand()# * 0 + np.pi
         if phi is None: phi = 2 * pi * np.random.rand()# * 0 + np.pi
         self.theta = theta
         self.phi = phi
@@ -136,13 +136,13 @@ class MZI(OpticalComponent):
         in the device
         :param add_uncertainties: whether to include uncertainties in the partial transfer matrix computation
         :return: numpy array of partial transfer matrices
-        
+
         '''
         if add_uncertainties:
             phi = self.phi + np.random.normal(0, self.phase_uncert)
             theta = self.theta + np.random.normal(0, self.phase_uncert)
         else:
-            theta, phi = self.theta, self.iphi
+            theta, phi = self.theta, self.phi
 
         # return _get_mzi_partial_transfer_matrices(theta, phi, backward=backward, cumulative=cumulative)
 

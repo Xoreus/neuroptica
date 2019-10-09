@@ -51,8 +51,8 @@ class AddMask(NetworkLayer):
         B = np.zeros_like(X, dtype=NP_COMPLEX)
         C = np.empty((X.shape[0]+B.shape[0],X.shape[1]), dtype=NP_COMPLEX)
         C[::2,:] = X
-        C[1::2,:] = B 
-        return C 
+        C[1::2,:] = B
+        return C
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         n_features, n_samples = delta.shape
@@ -254,9 +254,9 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
         mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         mzi_limits_lower = [(i + 1) % 2 for i in mzi_limits_upper]
-        
-        print(mzi_limits_upper)
-        print(mzi_limits_lower)
+
+       # print(mzi_limits_upper)
+       # print(mzi_limits_lower)
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
             layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
@@ -324,7 +324,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
 
         mzi_limits_upper = [2*N - 1]
         mzi_limits_lower = [0]
-        
+
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
             #print(len(list(range(start, end))))
             #print(list(range(start, end + 1)))
@@ -382,7 +382,7 @@ class ReckLayer_dmm(OpticalMeshNetworkLayer):
 
         #print(mzi_limits_upper)
         #print(mzi_limits_lower)
-        
+
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
             #print(list(range(start, end + 1, 2)))
