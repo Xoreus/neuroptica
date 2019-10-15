@@ -4,7 +4,7 @@ acts on an input in parallel. ComponentLayers can be assembled into an OpticalMe
 
 from functools import reduce
 from typing import Callable, Dict, Iterable, List, Type
-
+import random
 import numpy as np
 from numba import jit, prange
 
@@ -53,8 +53,8 @@ class MZILayer(ComponentLayer):
 
     def all_tunable_params(self):
         for mzi in self.mzis:
-            yield mzi.theta
-            yield mzi.phi
+            yield (mzi.theta, mzi.phi)
+            # yield mzi.phi # SIMON REMOVED THIS
 
     @classmethod
     def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0):
@@ -73,7 +73,7 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(loss/10)))
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10)))
 
         #print(mzis)
         #print(waveguide_indices)

@@ -237,9 +237,17 @@ class InSituAdam(Optimizer):
             pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
             gt = np.array([np.argmax(tru) for tru in labels.T])
             trn_accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
+
             if trn_accuracy[-1] > best_accuracy:
-                D = self.model.layers[0].mesh.get_transfer_matrix()
-                phases = [x for x in self.model.layers[0].mesh.all_tunable_params()]
+                D = []  
+                phases = []
+
+                for layer in self.model.layers:
+                    if hasattr(layer, 'mesh'): 
+                        D.append(layer.mesh.get_transfer_matrix())
+                        phases.append([x for x in layer.mesh.all_tunable_params()])
+                        # print(layer.mesh.all_tunable_params())
+                        # print(layer.mesh.get_transfer_matrix())
                 best_accuracy = trn_accuracy[-1]
 
             # Append validation accuracy per epoch

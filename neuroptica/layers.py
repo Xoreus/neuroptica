@@ -56,9 +56,11 @@ class AddMask(NetworkLayer):
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         n_features, n_samples = delta.shape
-        delta_back = np.zeros((self.input_size, n_samples), dtype=NP_COMPLEX)
-        for i in range(n_features):
-            delta_back[self.ports[i]] = delta[i]
+        delta_back = np.zeros((int(self.input_size/2), n_samples), dtype=NP_COMPLEX)
+        for i in range(int(n_features/2)):
+            delta_back[self.ports[i]] = delta[i*2]
+        # print(delta_back.shape)
+        # print(d)
         return delta_back
 
 class DropMask(NetworkLayer):
@@ -238,7 +240,7 @@ class ClementsLayer(OpticalMeshNetworkLayer):
 class ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -259,7 +261,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
        # print(mzi_limits_lower)
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss))
 
         self.mesh = OpticalMesh(N, layers)
 
@@ -275,7 +277,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
 class ReckLayer_comp_conj(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -296,7 +298,8 @@ class ReckLayer_comp_conj(OpticalMeshNetworkLayer):
         #print(mzi_limits_upper)
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1))))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss))
+            
 
         self.mesh = OpticalMesh(N, layers)
 
@@ -312,7 +315,7 @@ class ReckLayer_comp_conj(OpticalMeshNetworkLayer):
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DMM_layer(OpticalMeshNetworkLayer):
-    def __init__(self, N: int, initializer=None):
+    def __init__(self, N: int, initializer=None, loss=0):
 
         '''
         Initialize DMM (diagonal MZI layer)
@@ -322,14 +325,11 @@ class DMM_layer(OpticalMeshNetworkLayer):
 
         layers = []
 
-        mzi_limits_upper = [2*N - 1]
+        mzi_limits_upper = [N - 1]
         mzi_limits_lower = [0]
 
         for start, end in zip(mzi_limits_lower, mzi_limits_upper):
-            #print(len(list(range(start, end))))
-            #print(list(range(start, end + 1)))
-            #print(np.unique(list(range(start, end + 1))))
-            layers.append(MZILayer.from_waveguide_indices(2*N, list(range(start, end+1))))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss))
 
         #print(layers)
 

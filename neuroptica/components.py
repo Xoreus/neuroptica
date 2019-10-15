@@ -9,6 +9,7 @@ from typing import List
 import numpy as np
 from numba import jit
 from numpy import pi
+import random 
 
 from neuroptica.settings import NP_COMPLEX
 
@@ -98,12 +99,12 @@ class MZI(OpticalComponent):
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
         self.loss = loss
-
+        # print(loss)
         ########################################################
         ### SIMON MODIFIED THIS ################################
         ########################################################
-        if theta is None: theta = pi * np.random.rand()# * 0 + np.pi
-        if phi is None: phi = 2 * pi * np.random.rand()# * 0 + np.pi
+        if theta is None: theta = pi * np.random.rand() * 0 + np.pi
+        if phi is None: phi = 2 * pi * np.random.rand() * 0 + np.pi
         self.theta = theta
         self.phi = phi
 
@@ -122,7 +123,7 @@ class MZI(OpticalComponent):
         else:
             phi, theta = self.phi, self.theta
 
-        return 0.5 * np.array([
+        return self.loss * 0.5 * np.array([
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
@@ -150,7 +151,6 @@ class MZI(OpticalComponent):
         phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
 
         component_transfer_matrices = [_B, theta_shifter_matrix, _B, phi_shifter_matrix]
-
         if backward:
             component_transfer_matrices = [U.T for U in component_transfer_matrices[::-1]]
 
