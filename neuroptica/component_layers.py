@@ -8,7 +8,7 @@ import random
 import numpy as np
 from numba import jit, prange
 
-from neuroptica.components import MZI, OpticalComponent, PhaseShifter, _get_mzi_partial_transfer_matrices
+from neuroptica.components import MZI, MZI_H, OpticalComponent, PhaseShifter, _get_mzi_partial_transfer_matrices
 from neuroptica.settings import NP_COMPLEX
 
 
@@ -57,7 +57,7 @@ class MZILayer(ComponentLayer):
             # yield mzi.phi # SIMON REMOVED THIS
 
     @classmethod
-    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0):
+    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0, thetas=None, phis=None):
         '''
         Create an MZI layer from a list of an even number of input/output indices. Each pair of waveguides in the
         iteration order will be assigned to an MZI
@@ -66,14 +66,19 @@ class MZILayer(ComponentLayer):
         :return: MZILayer class instance with size N and MZIs attached to waveguide_indices
         '''
         #print(N)
-        #print(waveguide_indices)
-        #print(np.unique(waveguide_indices))
+        # print(waveguide_indices)
+        # print(np.unique(waveguide_indices))
+        if thetas is None:
+            thetas = [thetas]*int(len(waveguide_indices)/2)
+        if phis is None:
+            phis = [phis]*int(len(waveguide_indices)/2)
+
         assert len(waveguide_indices) % 2 == 0 and len(waveguide_indices) <= N and \
                len(np.unique(waveguide_indices)) == len(waveguide_indices), \
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10)))
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
 
         #print(mzis)
         #print(waveguide_indices)
@@ -322,7 +327,7 @@ class OpticalMesh:
 
         for layer in self.layers:
 
-            if isinstance(layer, MZILayer):
+            if isinstance(layer, MZILayer) or isinstance(layer, MZILayer_H):
                 if use_partial_vectors:
                     if include_bs: raise NotImplementedError
                     (partial_transfer_vectors, inds_mn) = layer.get_partial_transfer_vectors(backward=False,
@@ -545,3 +550,197 @@ class OpticalMesh:
                 raise ValueError("Tunable component layer must be phase-shifting!")
 
         return gradients
+
+###############################################################################
+###################### SIMON ADDED THIS #######################################
+###############################################################################
+class MZILayer_H(ComponentLayer):
+    '''Represents a physical column of MZI's attached to an ensemble of waveguides'''
+
+    def __init__(self, N: int, mzis: List[MZI]):
+        '''
+        :param N: number of waveguides in the system the MZI layer is embedded
+        :param mzis: list of MZIs in the column (can be less than N)
+        '''
+        super().__init__(N, mzis)
+        self.mzis = mzis
+
+    def __iter__(self) -> Iterable[MZI]:
+        yield from self.mzis
+
+    def all_tunable_params(self):
+        for mzi in self.mzis:
+            yield (mzi.theta, mzi.phi)
+            # yield mzi.phi # SIMON REMOVED THIS
+
+    @classmethod
+    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0, thetas=None, phis=None):
+        '''
+        Create an MZI layer from a list of an even number of input/output indices. Each pair of waveguides in the
+        iteration order will be assigned to an MZI
+        :param N: size of MZILayer
+        :param waveguide_indices: list of waveguides the layer attaches to
+        :return: MZILayer class instance with size N and MZIs attached to waveguide_indices
+        '''
+        #print(N)
+        # print(waveguide_indices)
+        # print(np.unique(waveguide_indices))
+        if thetas is None:
+            thetas = [thetas]*int(len(waveguide_indices)/2)
+        if phis is None:
+            phis = [phis]*int(len(waveguide_indices)/2)
+
+        assert len(waveguide_indices) % 2 == 0 and len(waveguide_indices) <= N and \
+               len(np.unique(waveguide_indices)) == len(waveguide_indices), \
+            "Waveguide must have an even number <= N of indices which are all unique"
+        mzis = []
+        for i in range(0, len(waveguide_indices), 2):
+            mzis.append(MZI_H(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
+
+        #print(mzis)
+        #print(waveguide_indices)
+
+        return cls(N, mzis)
+
+    @staticmethod
+    def verify_inputs(N: int, mzis: List[MZI_H]):
+        '''
+        Checks that the input MZIs are valid
+        :param N: size of MZILayer
+        :param mzis: list of MZIs
+        '''
+        assert len(mzis) <= N // 2, "Too many MZIs for layer with {} waveguides".format(N)
+        input_ports = np.array([[mzi.m, mzi.n] for mzi in mzis]).flatten()
+        assert len(np.unique(input_ports)) == len(input_ports), "MZIs share duplicate input ports!"
+
+    def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
+        T = np.eye(self.N, dtype=NP_COMPLEX)
+        for mzi in self.mzis:
+            U = mzi.get_transfer_matrix(add_uncertainties)
+            m, n = mzi.m, mzi.n
+            T[m][m] = U[0, 0]
+            T[m][n] = U[0, 1]
+            T[n][m] = U[1, 0]
+            T[n][n] = U[1, 1]
+        return T
+
+    def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
+        '''
+        Return a list of 4 partial transfer matrices for the entire MZI layer corresponding to (1) after first BS in
+        each MZI, (2) after theta shifter, (3) after second BS, and (4) after phi shifter. Order is reversed in the
+        backwards case
+        :param backward: whether to compute the backward partial transfer matrices
+        :param cumulative: if true, each partial transfer matrix represents the total transfer matrix up to that point
+        in the device
+        :param add_uncertainties: whether to include uncertainties in transfer matrix computation
+        :return: numpy array of partial transfer matrices
+        '''
+
+        Ttotal = np.eye(self.N, dtype=NP_COMPLEX)
+
+        partial_transfer_matrices = []
+
+        # Compute the (non-cumulative) partial transfer matrices for each MZI
+        all_mzi_partials = [mzi.get_partial_transfer_matrices
+                            (backward=backward, cumulative=False, add_uncertainties=add_uncertainties)
+                            for mzi in self.mzis]
+
+        for depth in range(len(all_mzi_partials[0])):
+            # Iterate over each sub-component at a given depth
+            T = np.eye(self.N, dtype=NP_COMPLEX)
+
+            for i, mzi in enumerate(self.mzis):
+                U = all_mzi_partials[i][depth]
+                m, n = mzi.m, mzi.n
+                T[m][m] = U[0, 0]
+                T[m][n] = U[0, 1]
+                T[n][m] = U[1, 0]
+                T[n][n] = U[1, 1]
+
+            if cumulative:
+                Ttotal = np.dot(T, Ttotal)
+                partial_transfer_matrices.append(Ttotal)
+            else:
+                partial_transfer_matrices.append(T)
+
+        return np.array(partial_transfer_matrices)
+
+    def get_partial_transfer_vectors(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
+        '''
+
+        :param backward:
+        :param cumulative:
+        :param add_uncertainties:
+        :return:
+        '''
+        Ttot = np.array([np.ones((self.N,), dtype=NP_COMPLEX), np.zeros((self.N,), dtype=NP_COMPLEX)])
+        partial_transfer_vectors = []
+        inds_mn = np.arange(self.N)
+
+        # Compute the (non-cumulative) partial transfer matrices for each MZI
+        all_mzi_partials = [mzi.get_partial_transfer_matrices
+                            (backward=backward, cumulative=False, add_uncertainties=add_uncertainties)
+                            for mzi in self.mzis]
+
+        for depth in range(len(all_mzi_partials[0])):
+            # Iterate over each sub-component at a given depth
+            Tvec = np.array([np.ones((self.N,), dtype=NP_COMPLEX), np.zeros((self.N,), dtype=NP_COMPLEX)])
+
+            for i, mzi in enumerate(self.mzis):
+                U = all_mzi_partials[i][depth]
+                m, n = mzi.m, mzi.n
+                inds_mn[m] = n
+                inds_mn[n] = m
+
+                Tvec[0][m] = U[0, 0]
+                Tvec[1][n] = U[0, 1]
+                Tvec[1][m] = U[1, 0]
+                Tvec[0][n] = U[1, 1]
+
+            if cumulative:
+                t1 = Tvec[0, :] * Ttot[0, :] + Tvec[1, :] * Ttot[1, inds_mn]
+                t2 = Tvec[0, :] * Ttot[1, :] + Tvec[1, :] * Ttot[0, inds_mn]
+                Ttot = np.vstack((t1, t2))
+                partial_transfer_vectors.append(Ttot)
+            else:
+                partial_transfer_vectors.append(Tvec)
+
+        return (partial_transfer_vectors, inds_mn)
+
+    @staticmethod
+    @jit(nopython=True, nogil=True, parallel=True)
+    def _get_all_mzi_partials(thetaphis: List, backward=False, cumulative=True) -> np.ndarray:
+        '''Deprecated method for accelerating partial transfer matrix computation with numba'''
+        all_partials = np.empty((len(thetaphis), 4, 2, 2), NP_COMPLEX)
+        for i in prange(len(thetaphis)):
+            theta, phi = thetaphis[i]
+            all_partials[i] = _get_mzi_partial_transfer_matrices(theta, phi, backward=backward, cumulative=cumulative)
+        return all_partials
+
+    @staticmethod
+    @jit(nopython=True, nogil=True, parallel=True)
+    def _get_partial_transfer_matrices(N, all_mzi_partials, mzi_mn, T_base, cumulative=True) -> np.ndarray:
+        '''Deprecated method for accelerating partial transfer matrix computation with numba'''
+        Ttotale = T_base.copy()
+
+        partial_transfer_matrices = np.empty((len(all_mzi_partials[0]), N, N), NP_COMPLEX)
+
+        for depth in range(len(all_mzi_partials[0])):
+            # Iterate over each sub-component at a given depth
+            T = T_base.copy()
+
+            for i in range(len(mzi_mn)):
+                U = all_mzi_partials[i][depth]
+                m, n = mzi_mn[i]
+                T[m][m] = U[0, 0]
+                T[m][n] = U[0, 1]
+                T[n][m] = U[1, 0]
+                T[n][n] = U[1, 1]
+
+            if cumulative:
+                Ttotal = np.dot(T, Ttotal)
+                partial_transfer_matrices[depth, :, :] = Ttotal
+            else:
+                partial_transfer_matrices[depth, :, :] = T
+
+        return partial_transfer_matrices

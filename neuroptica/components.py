@@ -103,10 +103,11 @@ class MZI(OpticalComponent):
         ########################################################
         ### SIMON MODIFIED THIS ################################
         ########################################################
-        if theta is None: theta = pi * np.random.rand() * 0 + np.pi
-        if phi is None: phi = 2 * pi * np.random.rand() * 0 + np.pi
+        if theta is None: theta = pi * np.random.rand() 
+        if phi is None: phi = 2 * pi * np.random.rand()
         self.theta = theta
         self.phi = phi
+        # print(phi)
 
     def __repr__(self):
         return '<MZI index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
@@ -123,10 +124,12 @@ class MZI(OpticalComponent):
         else:
             phi, theta = self.phi, self.theta
 
-        return self.loss * 0.5 * np.array([
+        mzi_r = self.loss * 0.5 * np.array([
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
+        # print(mzi_r)
+        return(mzi_r)
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
         '''
@@ -140,6 +143,8 @@ class MZI(OpticalComponent):
 
         '''
         if add_uncertainties:
+
+
             phi = self.phi + np.random.normal(0, self.phase_uncert)
             theta = self.theta + np.random.normal(0, self.phase_uncert)
         else:
@@ -203,3 +208,94 @@ def _get_mzi_partial_transfer_matrices(theta, phi, backward=False, cumulative=Tr
 
     else:
         return component_transfer_matrices
+
+##########################################################################
+################## SIMON ADDED THIS ######################################
+##########################################################################
+class MZI_H(OpticalComponent):
+    '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
+
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss=10**(0)):
+        '''
+        :param m: first waveguide index
+        :param n: second waveguide index
+        :param theta: phase shift value for inner phase shifter; assigned randomly between [0, 2pi) if unspecified
+        :param phi: phase shift value for outer phase shifter; assigned randomly between [0, 2pi) if unspecified
+        :param phase_uncertainty: optional uncertainty to add to the phase shifters; effective phase is computed as
+        self.(theta, phi) + np.random.normal(0, self.phase_uncert) if add_uncertainties is set to True during simulation
+        '''
+        super().__init__([m, n], dof=2)
+        self.m = m  # input waveguide A index (0-indexed)
+        self.n = n  # input waveguide B index
+        self.phase_uncert = phase_uncert
+        self.loss = loss
+        # print(loss)
+        ########################################################
+        ### SIMON MODIFIED THIS ################################
+        ########################################################
+        if theta is None: theta = pi * np.random.rand() 
+        if phi is None: phi = 2 * pi * np.random.rand()
+        self.theta = theta
+        self.phi = phi
+        # print(phi)
+
+    def __repr__(self):
+        return '<MZI_inverse index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
+
+    def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
+        '''
+        Compute the transfer matrix for the tunable MZI given the current values of theta, phi
+        :param add_uncertainties: whether to include uncertainties in the transfer matrix computation
+        :return: the transfer matrix
+        '''
+        if add_uncertainties:
+            phi = self.phi + np.random.normal(0, self.phase_uncert)
+            theta = self.theta + np.random.normal(0, self.phase_uncert)
+        else:
+            phi, theta = self.phi, self.theta
+
+        mzi_inv = self.loss * 0.5 * np.array([
+            [np.exp(-1j * phi) * (np.exp(-1j * theta) - 1), -1j * (np.exp(-1j * theta) + 1)],
+            [-1j * np.exp(-1j * phi) * (1 + np.exp(-1j * theta)), 1 - np.exp(-1j * theta)]
+        ], dtype=NP_COMPLEX)
+        # print(mzi_inv)
+        return mzi_inv
+
+
+    def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
+        '''
+        Compute the partial transfer matrices of each "column" of the MZI -- after first beamsplitter, after first
+        phase shifter, after second beamsplitter, and after second phase shifter
+        :param backward: if true, compute the reverse transfer matrices in backward order
+        :param cumulative: if true, each partial transfer matrix represents the total transfer matrix up to that point
+        in the device
+        :param add_uncertainties: whether to include uncertainties in the partial transfer matrix computation
+        :return: numpy array of partial transfer matrices
+
+        '''
+        if add_uncertainties:
+            phi = self.phi + np.random.normal(0, self.phase_uncert)
+            theta = self.theta + np.random.normal(0, self.phase_uncert)
+        else:
+            theta, phi = self.theta, self.phi
+
+        # return _get_mzi_partial_transfer_matrices(theta, phi, backward=backward, cumulative=cumulative)
+
+        theta_shifter_matrix = np.matrix.H(np.array([[np.exp(1j * theta), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX))
+        phi_shifter_matrix = np.matrix.H(np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX))
+
+        component_transfer_matrices = [_B, theta_shifter_matrix, _B, phi_shifter_matrix]
+        if backward:
+            component_transfer_matrices = [U.T for U in component_transfer_matrices[::-1]]
+
+        if cumulative:
+            T = component_transfer_matrices[0]
+            partial_transfer_matrices = [T]
+            for transfer_matrix in component_transfer_matrices[1:]:
+                T = np.dot(transfer_matrix, T)
+                partial_transfer_matrices.append(T)
+
+            return np.array(partial_transfer_matrices)*self.loss
+        else:
+            return np.array(component_transfer_matrices)*self.loss
+
