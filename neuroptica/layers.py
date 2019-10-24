@@ -96,7 +96,6 @@ class DropMask(NetworkLayer):
             delta_back[self.ports[i]] = delta[i]
         return delta_back
 
-
 class StaticMatrix(NetworkLayer):
     '''Multiplies inputs by a static matrix (this is an aphysical layer)'''
 
@@ -115,7 +114,6 @@ class StaticMatrix(NetworkLayer):
 
     def backward_pass(self, delta: np.ndarray):
         return self.matrix.T @ delta
-
 
 class Activation(NetworkLayer):
     '''Represents a (nonlinear) activation layer. Note that in this layer, the usage of X and Z are reversed!
@@ -138,7 +136,6 @@ class Activation(NetworkLayer):
     def backward_pass(self, gamma: np.ndarray) -> np.ndarray:
         return self.nonlinearity.backward_pass(gamma, self.input_prev)
 
-
 class OpticalMeshNetworkLayer(NetworkLayer):
     '''Base class for any network layer consisting of an optical mesh of phase shifters and MZIs'''
 
@@ -157,7 +154,6 @@ class OpticalMeshNetworkLayer(NetworkLayer):
 
     def backward_pass(self, delta: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
         raise NotImplementedError('backward_pass() must be overridden in child class!')
-
 
 class ClementsLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxM operator with MZIs arranged in a Clements decomposition. If M=N then the layer can
@@ -233,7 +229,6 @@ class ClementsLayer(OpticalMeshNetworkLayer):
         else:
             return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
-
 class ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
@@ -295,7 +290,6 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
-
 
 class flipped_ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition, but flipped. This means that the triangle is facing
@@ -417,10 +411,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
-
-
 class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Layer
-
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition,
     but in the inverse setup (Reck^-1), to create the V^\dagger
     portion of the SVD Decomposition'''

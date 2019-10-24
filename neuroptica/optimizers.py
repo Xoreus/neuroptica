@@ -214,19 +214,29 @@ class InSituAdam(Optimizer):
                             elif isinstance(cmpt, MZI): 
                                 dtheta, dphi = grad
 
-                                if cmpt.phi + dphi < 0: # phi cannot be negative
-                                    cmpt.phi += 2*pi # if it turns out to be negative, add 2pi to the value, since it wont affect the output
-                                if cmpt.theta + dtheta < 0: # same thing for theta
-                                    cmpt.theta += 2*pi
-                                cmpt.phi += dphi
-                                cmpt.theta += dtheta
-
-                            elif isinstance(cmpt, MZI_H):
                                 dtheta, dphi = grad
                                 if cmpt.phi + dphi < 0:
                                     cmpt.phi += 2*pi
+                                if cmpt.phi + dphi > 2*pi:
+                                    cmpt.phi -= 2*pi
                                 if cmpt.theta + dtheta < 0:
                                     cmpt.theta += 2*pi
+                                if cmpt.theta + dtheta > 2*pi:
+                                    cmpt.theta -= 2*pi
+
+                                cmpt.phi += dphi
+                                cmpt.theta += dtheta
+
+                            elif isinstance(cmpt, MZI_H): # If we are looking at Hermitian Transpose of the Reck Layer, subtract the change in phase rather than add it. This is because the Hermitian transpose makes the phase negative, so the dphase needs to be negative as well
+                                dtheta, dphi = grad
+                                if cmpt.phi - dphi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.phi - dphi > 2*pi:
+                                    cmpt.phi -= 2*pi
+                                if cmpt.theta - dtheta < 0:
+                                    cmpt.theta += 2*pi
+                                if cmpt.theta - dtheta > 2*pi:
+                                    cmpt.theta -= 2*pi
                                 cmpt.phi -= dphi
                                 cmpt.theta -= dtheta
 
