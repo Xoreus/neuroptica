@@ -54,7 +54,6 @@ class MZILayer(ComponentLayer):
     def all_tunable_params(self):
         for mzi in self.mzis:
             yield (mzi.theta, mzi.phi)
-            # yield mzi.phi # SIMON REMOVED THIS
 
     @classmethod
     def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0, thetas=None, phis=None):
@@ -65,9 +64,6 @@ class MZILayer(ComponentLayer):
         :param waveguide_indices: list of waveguides the layer attaches to
         :return: MZILayer class instance with size N and MZIs attached to waveguide_indices
         '''
-        #print(N)
-        # print(waveguide_indices)
-        # print(np.unique(waveguide_indices))
         if thetas is None:
             thetas = [thetas]*int(len(waveguide_indices)/2)
         if phis is None:
@@ -79,9 +75,6 @@ class MZILayer(ComponentLayer):
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
             mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
-
-        #print(mzis)
-        #print(waveguide_indices)
 
         return cls(N, mzis)
 
@@ -551,11 +544,9 @@ class OpticalMesh:
 
         return gradients
 
-###############################################################################
-###################### SIMON ADDED THIS #######################################
-###############################################################################
 class MZILayer_H(ComponentLayer):
-    '''Represents a physical column of MZI's attached to an ensemble of waveguides'''
+    '''Represents a physical column of MZIs attached to an ensemble of waveguides, but as a hermitian
+    transpose in order to create the V^\dagger section of the SVD decomposition'''
 
     def __init__(self, N: int, mzis: List[MZI]):
         '''
@@ -571,7 +562,6 @@ class MZILayer_H(ComponentLayer):
     def all_tunable_params(self):
         for mzi in self.mzis:
             yield (mzi.theta, mzi.phi)
-            # yield mzi.phi # SIMON REMOVED THIS
 
     @classmethod
     def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0, thetas=None, phis=None):
@@ -582,9 +572,6 @@ class MZILayer_H(ComponentLayer):
         :param waveguide_indices: list of waveguides the layer attaches to
         :return: MZILayer class instance with size N and MZIs attached to waveguide_indices
         '''
-        #print(N)
-        # print(waveguide_indices)
-        # print(np.unique(waveguide_indices))
         if thetas is None:
             thetas = [thetas]*int(len(waveguide_indices)/2)
         if phis is None:
@@ -596,9 +583,6 @@ class MZILayer_H(ComponentLayer):
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
             mzis.append(MZI_H(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
-
-        #print(mzis)
-        #print(waveguide_indices)
 
         return cls(N, mzis)
 

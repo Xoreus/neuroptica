@@ -255,30 +255,25 @@ class ReckLayer(OpticalMeshNetworkLayer):
         if include_phase_shifter_layer:
             layers.append(PhaseShifterLayer(N))
 
+        # Get MZI waveguide limits, upper and lower, for the Reck configuration
         mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         mzi_limits_lower = [(i + 1) % 2 for i in mzi_limits_upper]
 
-
-        # print(list(zip(mzi_limits_lower, mzi_limits_upper)))
-        # mzi_lims = [list(range(start, end + 1)) for start, end in zip(mzi_limits_lower, mzi_limits_upper)]
-        # mzi_nums = [int(len(mzi_num)/2) for mzi_num in mzi_lims]
-        # print(mzi_nums)
-
         # Assign Thetas and phis
-        if None in thetas:
+        if None in thetas: # If thetas is [None], make thetas = [None]*(Number of MZIs)
             self.thetas = [None]*int(N*(N-1)/2)
         else:
-            assert len(thetas) == int(N*(N-1)/2)
+            assert len(thetas) == int(N*(N-1)/2) # Else, make sure that len(thetas) == (number of MZIs in Reck layer)
             self.thetas = thetas
 
-        if None in phis:
+        if None in phis: # If phis is [None], make phis = [None]*(Number of MZIs)
             self.phis = [None]*int(N*(N-1)/2)
         else:
-            assert len(phis) == int(N*(N-1)/2)
+            assert len(phis) == int(N*(N-1)/2) # Else, make sure that len(phis) == (number of MZIs in Reck layer)
             self.phis = phis
 
-        phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)]
-        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)]
+        phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)] # Combine theta and phi together into a phase tuple
+        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)] # get the number of MZIs in this component layer
 
         phases_mzi_layer = []
         idx = 0
@@ -289,8 +284,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
                 idx += 1
             phases_mzi_layer.append(phases_layer)
 
-        # print(phases_mzi_layer)
-
+        # create every layer of MZIs within the Reck Mesh
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
@@ -308,7 +302,8 @@ class ReckLayer(OpticalMeshNetworkLayer):
 
 
 class flipped_ReckLayer(OpticalMeshNetworkLayer):
-    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition, but flipped. This means that the triangle is facing
+    up rather than down, like in the originali Reck mesh'''
 
     def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0, thetas=[None], phis=[None]):
         '''
@@ -324,28 +319,27 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         if include_phase_shifter_layer:
             layers.append(PhaseShifterLayer(N))
 
+        # Get MZI waveguide limits, upper and lower, for the inverse Reck configuration
         mzi_limits_lower = [i for i in range(N - 2, 0, -1)] + [i for i in range(0, N - 1)]
         mzi_limits_upper = [(N - 1) - i % 2 for i in range(len(mzi_limits_lower))]
 
-        # print(mzi_limits_lower)
-        # print(mzi_limits_upper)
-
         # Assign Thetas and phis
-        if None in thetas:
+        if None in thetas: # If thetas is [None], make thetas = [None]*(Number of MZIs)
             self.thetas = [None]*int(N*(N-1)/2)
         else:
-            assert len(thetas) == int(N*(N-1)/2)
+            assert len(thetas) == int(N*(N-1)/2) # Else, make sure that len(thetas) == (number of MZIs in Reck layer)
             self.thetas = thetas
 
-        if None in phis:
+        if None in phis:# If phis  is [None], make phis = [None]*(Number of MZIs)
             self.phis = [None]*int(N*(N-1)/2)
         else:
-            assert len(phis) == int(N*(N-1)/2)
+            assert len(phis) == int(N*(N-1)/2) # Else, make sure that len(phis) == (number of MZIs in Reck layer)
             self.phis = phis
 
-        phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)]
-        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)]
+        phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)] # Combine theta and phi together into a phase tuple
+        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)] # get the number of MZIs in this component layer
 
+        # now separate the phases using the number of MZIs in their respective component layer
         phases_mzi_layer = []
         idx = 0
         for ii in mzi_nums:
@@ -354,8 +348,6 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
                 phases_layer.append(phases[idx])
                 idx += 1
             phases_mzi_layer.append(phases_layer)
-
-        # print(phases_mzi_layer)
 
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
@@ -367,42 +359,42 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
-        #print(X.shape)
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
-        #print(np.dot(self.mesh.get_transfer_matrix().T, delta))
-
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DMM_layer(OpticalMeshNetworkLayer):
     def __init__(self, N: int, initializer=None, loss=0, thetas=[None], phis=[None]):
 
         '''
-        Initialize DMM (diagonal MZI layer)
-        :param N: Number of MZIs in the Mesh
+        Initialize DMM (diagonal MZI layer to create the Sigma portion of the SVD Decomposition)
+        :param N: Number of MZIs in the Mesh, will be twice as many as the Reck and Reck' layer.
+        thetas anbd phis will be equal to N/2 in this layer, where N = twice the number of waveguides coming
+        from the Reck layer
         '''
         super().__init__(N, N, initializer=initializer)
 
         layers = []
 
+        # Get MZI waveguide limits, upper and lower, for the DMM configuration
         mzi_limits_upper = [N - 1]
         mzi_limits_lower = [0]
         # Assign Thetas and phis
-        if None in thetas:
+        if None in thetas:# If thetas is [None], make thetas = [None]*(Number of MZIs)
             self.thetas = [None]*int(N/2)
         else:
-            assert len(thetas) == int(N/2)
+            assert len(thetas) == int(N/2) # Else, make sure that len(thetas) == (number of MZIs in DMM layer)
             self.thetas = thetas
 
-        if None in phis:
+        if None in phis:# If phis is [None], make phis = [None]*(Number of MZIs)
             self.phis = [None]*int(N/2)
         else:
-            assert len(phis) == int(N/2)
+            assert len(phis) == int(N/2)# Else, make sure that len(phis) == (number of MZIs in Reck layer)
             self.phis = phis
 
-        phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)]
-        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)]
+        phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)] # Combine theta and phi together into a phase tuple
+        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)] # get the number of MZIs in this component layer
 
         phases_mzi_layer = []
         idx = 0
@@ -413,31 +405,17 @@ class DMM_layer(OpticalMeshNetworkLayer):
                 idx += 1
             phases_mzi_layer.append(phases_layer)
 
-        # print(phases_mzi_layer)
-
+        # now separate the phases using the number of MZIs in their respective component layer
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
             layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis))
-        #print(layers)
 
         self.mesh = OpticalMesh(N, layers)
-        #print(layers[0].get_transfer_matrix())
 
     def forward_pass(self, X: np.ndarray, pKeep=0.8) -> np.ndarray:
         self.input_prev = X
-
-        ### SIMON ADDED THIS #####################
-#        binomial = np.random.binomial(1, pKeep, self.mesh.get_transfer_matrix().shape)
-#        self.output_prev = np.dot(self.mesh.get_transfer_matrix()*binomial, X)
-        ################################################
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
-
-        ### SIMON ADDED THIS #####################
-        # DROPOUT --- Set n < N channels to 0
-#        binomial = np.random.binomial(1, pKeep, X.shape[1])
-#        self.output_prev *= binomial
-
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
@@ -445,9 +423,11 @@ class DMM_layer(OpticalMeshNetworkLayer):
 
 
 
-class ReckLayer_H(OpticalMeshNetworkLayer):
+class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Layer
 
-    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
+    '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition,
+    but in the inverse setup (Reck^-1), to create the V^\dagger
+    portion of the SVD Decomposition'''
 
     def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0, thetas=[None], phis=[None]):
         '''
@@ -463,17 +443,16 @@ class ReckLayer_H(OpticalMeshNetworkLayer):
         if include_phase_shifter_layer:
             layers.append(PhaseShifterLayer(N))
 
+        # get the wabeguide limits of the hermitian transpose of the Reck layer (will be the flipped Reck layer)
         mzi_limits_lower = [i for i in range(N - 2, 0, -1)] + [i for i in range(0, N - 1)]
         mzi_limits_upper = [(N - 1) - i % 2 for i in range(len(mzi_limits_lower))]
 
-        # print(mzi_limits_lower)
-        # print(mzi_limits_upper)
-
         # Assign Thetas and phis
+        # if theta/phis is [None], make it as long as the number of MZIs in Reck layer
         if None in thetas:
             self.thetas = [None]*int(N*(N-1)/2)
         else:
-            assert len(thetas) == int(N*(N-1)/2)
+            assert len(thetas) == int(N*(N-1)/2) # Otherwise, check if Number of phases is equal to number of MZIs
             self.thetas = thetas
 
         if None in phis:
@@ -482,9 +461,12 @@ class ReckLayer_H(OpticalMeshNetworkLayer):
             assert len(phis) == int(N*(N-1)/2)
             self.phis = phis
 
+        # Combine the phases into (theta, phi) tuples
         phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)]
+        # Get number of mzi in each separate component layer
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)]
 
+        # now separate the (theta, phi) tuples into their respective component layer
         phases_mzi_layer = []
         idx = 0
         for ii in mzi_nums:
@@ -494,8 +476,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer):
                 idx += 1
             phases_mzi_layer.append(phases_layer)
 
-        # print(phases_mzi_layer)
-
+        # Finally, create each MZI Layer (the hermitian transpose of the Reck layer's MZILayer)
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
@@ -506,10 +487,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer):
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
-        #print(X.shape)
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
-        #print(np.dot(self.mesh.get_transfer_matrix().T, delta))
-
         return np.dot(self.mesh.get_transfer_matrix().T, delta)

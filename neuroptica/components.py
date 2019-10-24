@@ -9,7 +9,7 @@ from typing import List
 import numpy as np
 from numba import jit
 from numpy import pi
-import random 
+import random
 
 from neuroptica.settings import NP_COMPLEX
 
@@ -99,15 +99,12 @@ class MZI(OpticalComponent):
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
         self.loss = loss
-        # print(loss)
-        ########################################################
-        ### SIMON MODIFIED THIS ################################
-        ########################################################
-        if theta is None: theta = pi * np.random.rand() 
+
+        if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
+
         self.theta = theta
         self.phi = phi
-        # print(phi)
 
     def __repr__(self):
         return '<MZI index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
@@ -128,7 +125,7 @@ class MZI(OpticalComponent):
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
-        # print(mzi_r)
+
         return(mzi_r)
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
@@ -149,8 +146,6 @@ class MZI(OpticalComponent):
             theta = self.theta + np.random.normal(0, self.phase_uncert)
         else:
             theta, phi = self.theta, self.phi
-
-        # return _get_mzi_partial_transfer_matrices(theta, phi, backward=backward, cumulative=cumulative)
 
         theta_shifter_matrix = np.array([[np.exp(1j * theta), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
         phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
@@ -209,11 +204,9 @@ def _get_mzi_partial_transfer_matrices(theta, phi, backward=False, cumulative=Tr
     else:
         return component_transfer_matrices
 
-##########################################################################
-################## SIMON ADDED THIS ######################################
-##########################################################################
 class MZI_H(OpticalComponent):
-    '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
+    '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer, but as a hermitian transpose
+    of the original MZI transfer function. Used to create the V^\dagger section of the SVD decomposition.'''
 
     def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss=10**(0)):
         '''
@@ -229,15 +222,12 @@ class MZI_H(OpticalComponent):
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
         self.loss = loss
-        # print(loss)
-        ########################################################
-        ### SIMON MODIFIED THIS ################################
-        ########################################################
-        if theta is None: theta = pi * np.random.rand() 
+
+        if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
+
         self.theta = theta
         self.phi = phi
-        # print(phi)
 
     def __repr__(self):
         return '<MZI_inverse index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
@@ -278,8 +268,6 @@ class MZI_H(OpticalComponent):
             theta = self.theta + np.random.normal(0, self.phase_uncert)
         else:
             theta, phi = self.theta, self.phi
-
-        # return _get_mzi_partial_transfer_matrices(theta, phi, backward=backward, cumulative=cumulative)
 
         theta_shifter_matrix = np.matrix.H(np.array([[np.exp(1j * theta), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX))
         phi_shifter_matrix = np.matrix.H(np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX))

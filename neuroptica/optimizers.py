@@ -213,14 +213,10 @@ class InSituAdam(Optimizer):
                             elif isinstance(cmpt, MZI):
                                 dtheta, dphi = grad
 
-                                ######################
-                                ## SIMON ADDED THIS ##
-                                #######################
-                                if cmpt.phi + dphi < 0:
-                                    cmpt.phi += 2*pi
-                                if cmpt.theta + dtheta < 0:
+                                if cmpt.phi + dphi < 0: # phi cannot be negative
+                                    cmpt.phi += 2*pi # if it turns out to be negative, add 2pi to the value, since it wont affect the output
+                                if cmpt.theta + dtheta < 0: # same thing for theta
                                     cmpt.theta += 2*pi
-                       #############################################
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
 
@@ -239,11 +235,11 @@ class InSituAdam(Optimizer):
             trn_accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
 
             if trn_accuracy[-1] > best_accuracy:
-                D = []  
+                D = []
                 phases = []
 
                 for layer in self.model.layers:
-                    if hasattr(layer, 'mesh'): 
+                    if hasattr(layer, 'mesh'):
                         D.append(layer.mesh.get_transfer_matrix())
                         phases.append([x for x in layer.mesh.all_tunable_params()])
                         # print(layer.mesh.all_tunable_params())
