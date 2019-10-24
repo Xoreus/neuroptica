@@ -59,8 +59,6 @@ class AddMask(NetworkLayer):
         delta_back = np.zeros((int(self.input_size/2), n_samples), dtype=NP_COMPLEX)
         for i in range(int(n_features/2)):
             delta_back[self.ports[i]] = delta[i*2]
-        # print(delta_back.shape)
-        # print(d)
         return delta_back
 
 class DropMask(NetworkLayer):
@@ -92,10 +90,8 @@ class DropMask(NetworkLayer):
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
 
-        #print(delta.shape)
         n_features, n_samples = delta.shape
         delta_back = np.zeros((self.input_size, n_samples), dtype=NP_COMPLEX)
-        ##print(self.ports)
         for i in range(n_features):
             delta_back[self.ports[i]] = delta[i]
         return delta_back

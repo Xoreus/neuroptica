@@ -388,7 +388,7 @@ class OpticalMesh:
 
         for layer in reversed(self.layers):
 
-            if isinstance(layer, MZILayer):
+            if isinstance(layer, MZILayer) or isinstance(layer, MZILayer_H):
                 if use_partial_vectors:
                     (partial_transfer_vectors_inv, inds_mn) = layer.get_partial_transfer_vectors(backward=True,
                                                                                                  cumulative=True)
@@ -531,7 +531,7 @@ class OpticalMesh:
                 for phase_shifter in layer.phase_shifters:
                     gradients[phase_shifter] = np.array([dL_dphi[phase_shifter.m]])
 
-            elif isinstance(layer, MZILayer):
+            elif isinstance(layer, MZILayer) or isinstance(layer, MZILayer_H):
                 A_theta, A_phi = layer_fields
                 A_theta_adj, A_phi_adj = reversed(layer_fields_adj)
                 dL_dtheta = -1 * np.imag(A_theta * A_theta_adj)

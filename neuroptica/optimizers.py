@@ -7,7 +7,7 @@ from typing import Tuple, Type
 import numpy as np
 from numpy import pi
 
-from neuroptica.components import MZI, PhaseShifter
+from neuroptica.components import MZI, MZI_H, PhaseShifter
 from neuroptica.layers import OpticalMeshNetworkLayer
 from neuroptica.losses import Loss
 from neuroptica.models import Sequential
@@ -189,6 +189,7 @@ class InSituAdam(Optimizer):
                 # Compute the backpropagated signals for the model
                 deltas = self.model.backward_pass(d_loss, cache_fields=cache_fields,
                                                   use_partial_vectors=use_partial_vectors)
+                # print(deltas)
                 delta_prev = d_loss  # backprop signal to send in the final layer
 
                 # Compute the foward and adjoint fields at each phase shifter in all tunable layers
@@ -210,7 +211,7 @@ class InSituAdam(Optimizer):
                             if isinstance(cmpt, PhaseShifter):
                                 cmpt.phi += grad[0]
 
-                            elif isinstance(cmpt, MZI):
+                            elif isinstance(cmpt, MZI): 
                                 dtheta, dphi = grad
 
                                 if cmpt.phi + dphi < 0: # phi cannot be negative
@@ -220,6 +221,14 @@ class InSituAdam(Optimizer):
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
 
+                            elif isinstance(cmpt, MZI_H):
+                                dtheta, dphi = grad
+                                if cmpt.phi + dphi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.theta + dtheta < 0:
+                                    cmpt.theta += 2*pi
+                                cmpt.phi -= dphi
+                                cmpt.theta -= dtheta
 
                     # Set the backprop signal for the subsequent (spatially previous) layer
                     delta_prev = deltas[layer.__name__]

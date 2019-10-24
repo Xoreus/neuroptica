@@ -99,7 +99,6 @@ class MZI(OpticalComponent):
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
         self.loss = loss
-
         if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
 
@@ -125,7 +124,6 @@ class MZI(OpticalComponent):
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
-
         return(mzi_r)
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
@@ -244,12 +242,11 @@ class MZI_H(OpticalComponent):
         else:
             phi, theta = self.phi, self.theta
 
-        mzi_inv = self.loss * 0.5 * np.array([
-            [np.exp(-1j * phi) * (np.exp(-1j * theta) - 1), -1j * (np.exp(-1j * theta) + 1)],
-            [-1j * np.exp(-1j * phi) * (1 + np.exp(-1j * theta)), 1 - np.exp(-1j * theta)]
-        ], dtype=NP_COMPLEX)
-        # print(mzi_inv)
-        return mzi_inv
+        mzi_r = self.loss * 0.5 * np.array([
+            [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
+            [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
+        ], dtype=NP_COMPLEX).conj().T
+        return(mzi_r)
 
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
