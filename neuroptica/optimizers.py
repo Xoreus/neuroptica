@@ -210,6 +210,10 @@ class InSituAdam(Optimizer):
                             # Adjust settings by gradient amount
                             if isinstance(cmpt, PhaseShifter):
                                 cmpt.phi += grad[0]
+                                if cmpt.phi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.phi > 2*pi:
+                                    cmpt.phi -= 2*pi
 
                             elif isinstance(cmpt, MZI): 
                                 dtheta, dphi = grad
@@ -227,7 +231,7 @@ class InSituAdam(Optimizer):
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
 
-                            elif isinstance(cmpt, MZI_H): # If we are looking at Hermitian Transpose of the Reck Layer, subtract the change in phase rather than add it. This is because the Hermitian transpose makes the phase negative, so the dphase needs to be negative as well
+                            elif isinstance(cmpt, MZI_H): 
                                 dtheta, dphi = grad
                                 if cmpt.phi - dphi < 0:
                                     cmpt.phi += 2*pi

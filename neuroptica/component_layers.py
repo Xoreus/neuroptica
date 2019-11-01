@@ -239,7 +239,7 @@ class PhaseShifterLayer(ComponentLayer):
 
     def all_tunable_params(self):
         for phase_shifter in self.phase_shifters:
-            yield phase_shifter.phi
+            yield (0, phase_shifter.phi)
 
     def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
         T = np.eye(self.N, dtype=NP_COMPLEX)
