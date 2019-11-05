@@ -74,7 +74,7 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-loss/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
 
         return cls(N, mzis)
 
@@ -582,7 +582,7 @@ class MZILayer_H(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI_H(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-random.uniform(0, loss)/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
+            mzis.append(MZI_H(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-loss/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
 
         return cls(N, mzis)
 
@@ -691,4 +691,3 @@ class MZILayer_H(ComponentLayer):
                 partial_transfer_vectors.append(Tvec)
 
         return (partial_transfer_vectors, inds_mn)
-

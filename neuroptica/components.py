@@ -147,7 +147,7 @@ class MZI(OpticalComponent):
         phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
 
         component_transfer_matrices = [_B, theta_shifter_matrix, _B, phi_shifter_matrix]
-        print(component_transfer_matrices)
+        # print(component_transfer_matrices)
         if backward:
             component_transfer_matrices = [U.T for U in component_transfer_matrices[::-1]]
 
@@ -270,8 +270,8 @@ class MZI_H(OpticalComponent):
         phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
 
         component_transfer_matrices = [_B.conj().T, theta_shifter_matrix.conj().T, _B.conj().T, phi_shifter_matrix.conj().T]
-        print(component_transfer_matrices)
-        print('')
+        # print(component_transfer_matrices)
+        # print('')
         if backward:
             component_transfer_matrices = [U.T for U in component_transfer_matrices[::-1]]
 
