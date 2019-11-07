@@ -124,4 +124,6 @@ venv.bak/
 dmypy.json
 
 # Figures
-**.png
+*.png
+*.pdf
+

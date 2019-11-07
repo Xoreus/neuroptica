@@ -44,7 +44,7 @@ class NetworkLayer:
 class AddMask(NetworkLayer):
     '''interleaves 0s beween existing ports (essentially adding extra waveguides for the DMM section)'''
     def __init__(self, N: int):
-        self.ports = list(range(2*N))
+        self.ports = list(range(N))
         super().__init__(N, len(self.ports))
 
     def forward_pass(self, X: np.ndarray):
@@ -232,7 +232,7 @@ class ClementsLayer(OpticalMeshNetworkLayer):
 class ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, thetas=[None], phis=[None], loss=0):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, thetas=[None], phis=[None], loss=0, phase_uncert=0.0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -241,7 +241,8 @@ class ReckLayer(OpticalMeshNetworkLayer):
         :param initializer: optional initializer method (WIP)
         '''
         super().__init__(N, N, initializer=initializer)
-
+        self.phase_uncert = phase_uncert
+        
         layers = []
         if include_phase_shifter_layer:
             layers.append(PhaseShifterLayer(N))
@@ -279,7 +280,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
         self.mesh = OpticalMesh(N, layers)
 
@@ -295,7 +296,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition, but flipped. This means that the triangle is facing
     up rather than down, like in the originali Reck mesh'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0, thetas=[None], phis=[None]):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0, thetas=[None], phis=[None],  phase_uncert=0.0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -304,6 +305,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         :param initializer: optional initializer method (WIP)
         '''
         super().__init__(N, N, initializer=initializer)
+        self.phase_uncert = phase_uncert
 
         layers = []
         if include_phase_shifter_layer:
@@ -320,7 +322,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
             assert len(thetas) == int(N*(N-1)/2) # Else, make sure that len(thetas) == (number of MZIs in Reck layer)
             self.thetas = thetas
 
-        if None in phis:# If phis  is [None], make phis = [None]*(Number of MZIs)
+        if None in phis: # If phis is [None], make phis = [None]*(Number of MZIs)
             self.phis = [None]*int(N*(N-1)/2)
         else:
             assert len(phis) == int(N*(N-1)/2) # Else, make sure that len(phis) == (number of MZIs in Reck layer)
@@ -329,7 +331,6 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         phases = [(theta, phi) for (theta, phi) in zip(self.thetas, self.phis)] # Combine theta and phi together into a phase tuple
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(mzi_limits_lower, mzi_limits_upper)] # get the number of MZIs in this component layer
 
-        # now separate the phases using the number of MZIs in their respective component layer
         phases_mzi_layer = []
         idx = 0
         for ii in mzi_nums:
@@ -339,12 +340,14 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
                 idx += 1
             phases_mzi_layer.append(phases_layer)
 
+        # create every layer of MZIs within the Reck Mesh
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
         self.mesh = OpticalMesh(N, layers)
+
 
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
@@ -355,7 +358,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DMM_layer(OpticalMeshNetworkLayer):
-    def __init__(self, N: int, initializer=None, loss=0, thetas=[None], phis=[None]):
+    def __init__(self, N: int, initializer=None, loss=0, thetas=[None], phis=[None], phase_uncert=0.0):
 
         '''
         Initialize DMM (diagonal MZI layer to create the Sigma portion of the SVD Decomposition)
@@ -364,6 +367,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
         from the Reck layer
         '''
         super().__init__(N, N, initializer=initializer)
+        self.phase_uncert = phase_uncert
 
         layers = []
 
@@ -399,7 +403,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
         self.mesh = OpticalMesh(N, layers)
 
@@ -463,6 +467,8 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
                 idx += 1
             phases_mzi_layer.append(phases_layer)
 
+        # print(mzi_limits_lower)
+        # print(mzi_limits_upper)
         # Finally, create each MZI Layer (the hermitian transpose of the Reck layer's MZILayer)
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]

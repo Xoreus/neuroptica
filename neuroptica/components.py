@@ -108,7 +108,7 @@ class MZI(OpticalComponent):
     def __repr__(self):
         return '<MZI index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
 
-    def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
+    def get_transfer_matrix(self, add_uncertainties=True) -> np.ndarray:
         '''
         Compute the transfer matrix for the tunable MZI given the current values of theta, phi
         :param add_uncertainties: whether to include uncertainties in the transfer matrix computation
@@ -117,6 +117,7 @@ class MZI(OpticalComponent):
         if add_uncertainties:
             phi = self.phi + np.random.normal(0, self.phase_uncert)
             theta = self.theta + np.random.normal(0, self.phase_uncert)
+            # print(phi, theta)
         else:
             phi, theta = self.phi, self.theta
 
@@ -126,7 +127,7 @@ class MZI(OpticalComponent):
         ], dtype=NP_COMPLEX)
         return(mzi_r)
 
-    def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
+    def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=True) -> np.ndarray:
         '''
         Compute the partial transfer matrices of each "column" of the MZI -- after first beamsplitter, after first
         phase shifter, after second beamsplitter, and after second phase shifter
@@ -143,11 +144,12 @@ class MZI(OpticalComponent):
         else:
             theta, phi = self.theta, self.phi
 
+        # print(theta)
         theta_shifter_matrix = np.array([[np.exp(1j * theta), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
         phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
 
         component_transfer_matrices = [_B, theta_shifter_matrix, _B, phi_shifter_matrix]
-        # print(component_transfer_matrices)
+        # print(np.array(component_transfer_matrices).round(2))
         if backward:
             component_transfer_matrices = [U.T for U in component_transfer_matrices[::-1]]
 
@@ -222,12 +224,12 @@ class MZI_H(OpticalComponent):
 
         if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
-
+        # print(theta, phi)
         self.theta = theta
         self.phi = phi
 
     def __repr__(self):
-        return '<MZI_inverse index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
+        return '<MZI_H index: {}{}, theta={:.3f}, phi={:.3f}>'.format(self.m, self.n, self.theta, self.phi)
 
     def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
         '''
@@ -266,12 +268,11 @@ class MZI_H(OpticalComponent):
         else:
             theta, phi = self.theta, self.phi
 
-        theta_shifter_matrix = np.array([[np.exp(1j * theta), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
-        phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX)
+        theta_shifter_matrix = np.array([[np.exp(1j * theta), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX).conj().T
+        phi_shifter_matrix = np.array([[np.exp(1j * phi), 0 + 0j], [0 + 0j, 1 + 0j]], dtype=NP_COMPLEX).conj().T
 
-        component_transfer_matrices = [_B.conj().T, theta_shifter_matrix.conj().T, _B.conj().T, phi_shifter_matrix.conj().T]
-        # print(component_transfer_matrices)
-        # print('')
+        component_transfer_matrices = [phi_shifter_matrix, _B.conj().T, theta_shifter_matrix, _B.conj().T]
+        # print(np.array(component_transfer_matrices).round(2))
         if backward:
             component_transfer_matrices = [U.T for U in component_transfer_matrices[::-1]]
 

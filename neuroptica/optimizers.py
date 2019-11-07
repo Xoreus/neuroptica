@@ -215,7 +215,7 @@ class InSituAdam(Optimizer):
                                 if cmpt.phi > 2*pi:
                                     cmpt.phi -= 2*pi
 
-                            elif isinstance(cmpt, MZI): 
+                            elif isinstance(cmpt, MZI):
                                 dtheta, dphi = grad
 
                                 dtheta, dphi = grad
@@ -231,7 +231,7 @@ class InSituAdam(Optimizer):
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
 
-                            elif isinstance(cmpt, MZI_H): 
+                            elif isinstance(cmpt, MZI_H):
                                 dtheta, dphi = grad
                                 if cmpt.phi - dphi < 0:
                                     cmpt.phi += 2*pi
@@ -241,8 +241,8 @@ class InSituAdam(Optimizer):
                                     cmpt.theta += 2*pi
                                 if cmpt.theta - dtheta > 2*pi:
                                     cmpt.theta -= 2*pi
-                                cmpt.phi -= dphi
-                                cmpt.theta -= dtheta
+                                cmpt.phi += dphi
+                                cmpt.theta += dtheta
 
                     # Set the backprop signal for the subsequent (spatially previous) layer
                     delta_prev = deltas[layer.__name__]
@@ -257,18 +257,6 @@ class InSituAdam(Optimizer):
             gt = np.array([np.argmax(tru) for tru in labels.T])
             trn_accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
 
-            if trn_accuracy[-1] > best_accuracy:
-                D = []
-                phases = []
-
-                for layer in self.model.layers:
-                    if hasattr(layer, 'mesh'):
-                        D.append(layer.mesh.get_transfer_matrix())
-                        phases.append([x for x in layer.mesh.all_tunable_params()])
-                        # print(layer.mesh.all_tunable_params())
-                        # print(layer.mesh.get_transfer_matrix())
-                best_accuracy = trn_accuracy[-1]
-
             # Append validation accuracy per epoch
             Y_hat = self.model.forward_pass(val_data)
             pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
@@ -278,7 +266,7 @@ class InSituAdam(Optimizer):
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
 
-        return losses, trn_accuracy, val_accuracy, D, phases
+        return losses, trn_accuracy, val_accuracy
 
 class Dropout():
     ''' Implements dropout for ONN '''
