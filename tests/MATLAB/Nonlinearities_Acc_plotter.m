@@ -4,6 +4,7 @@ clear; clc; close all;
 FOLDER = '../nonlinearity_analysis/';
 FOLDER = '../nonlinearity_MNIST_analysis/';
 FOLDER = '../nonlinearity_MNIST_analysis_additional_tests2/';
+cd(FOLDER)
 if ~exist([FOLDER, 'Figures'], 'dir')
        mkdir([FOLDER, 'Figures'])
 end
@@ -13,7 +14,7 @@ N = 4;
 
 % Get nonlin, Models, Phase Uncert, loss, iterations
 Models = textread([FOLDER, 'ONN_Setups.txt'], '%s', 'delimiter', '\n');
-% Models = Models([3,6,11,7]);
+Models = Models([2,5,7,10]);
 
 Nonlin = textread([FOLDER, 'Nonlinearities.txt'], '%s', 'delimiter', '\n');
 phase_uncert = load([FOLDER, sprintf('PhaseUncert%dFeatures.txt',N)]);
@@ -26,7 +27,7 @@ nonLin_Models = {Models{contains(Models, 'N')}};
 % Get only interesting Models
 % Models = Models([3, 1]);
 % Nonlin = Nonlin(4);
-loss_dB = loss_dB(1);
+loss_dB = loss_dB(2);
 
 for l_idx = 1:length(loss_dB)
     % create legend elements

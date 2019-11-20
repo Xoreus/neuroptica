@@ -45,12 +45,12 @@ def printf(format, *args):
 # Number of input features?
 N = 4
 BATCH_SIZE = 2**6
-EPOCHS = 200
+EPOCHS = 400
 STEP_SIZE = 0.001
-FOLDER = r'nonlinearity_MNIST_analysis_additional_tests2/'
-SAMPLES = 2000
+FOLDER = r'nonlinearity_MNIST_analysis_additional_tests3/'
+SAMPLES = 4000
 DATASET_NUM = 1
-ITERATIONS = 300# number of times to retry same loss/PhaseUncert
+ITERATIONS = 200# number of times to retry same loss/PhaseUncert
 losses_dB = np.linspace(0,1,4)# in dB
 phase_uncerts = np.linspace(0, 1, 21) 
 

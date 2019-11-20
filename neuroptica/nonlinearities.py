@@ -8,7 +8,6 @@ from neuroptica.settings import NP_COMPLEX
 
 
 class Nonlinearity:
-
     def __init__(self, N):
         '''
         Initialize the nonlinearity
@@ -35,7 +34,6 @@ class Nonlinearity:
 
     def __repr__(self):
         return type(self).__name__ + '(N={})'.format(self.N)
-
 
 class ComplexNonlinearity(Nonlinearity):
     '''
@@ -125,7 +123,6 @@ class ComplexNonlinearity(Nonlinearity):
         '''Gives the derivative of the nonlinearity with respect to the angle phi of the input'''
         raise NotImplementedError
 
-
 class SPMActivation(ComplexNonlinearity):
     '''
     Lossless SPM activation function
@@ -152,7 +149,6 @@ class SPMActivation(ComplexNonlinearity):
         gain = self.gain
         Z = a + 1j * b
         return np.exp(-1j * gain * np.square(np.abs(Z))) * (-2j * a * b * gain + 2 * np.square(b) * gain + 1j)
-
 
 class ElectroOpticActivation(ComplexNonlinearity):
     '''
@@ -208,7 +204,6 @@ class ElectroOpticActivation(ComplexNonlinearity):
                 b * g * (b - 1j * a) * np.sin(0.5 * a ** 2 * g + 0.5 * b ** 2 * g + 0.5 * phi_b) + (
                 a * b * g + 1j * b ** 2 * g - 1) * np.cos(0.5 * a ** 2 * g + 0.5 * b ** 2 * g + 0.5 * phi_b))
 
-
 class Abs(ComplexNonlinearity):
     '''
     Represents a transformation z -> |z|. This can be called in any of "full", "condensed", and "polar" modes
@@ -244,7 +239,6 @@ class Abs(ComplexNonlinearity):
     def df_dphi(self, r: np.ndarray, phi: np.ndarray):
         return 0 * phi
 
-
 class AbsSquared(ComplexNonlinearity):
     '''Maps z -> |z|^2, corresponding to power measurement by a photodetector.'''
 
@@ -265,7 +259,6 @@ class AbsSquared(ComplexNonlinearity):
     def df_dphi(self, r: np.ndarray, phi: np.ndarray):
         return 0 * phi
 
-
 class Sigmoid(Nonlinearity):
     '''Sigmoid activation; maps z -> 1 / (1 + np.exp(-z))'''
 
@@ -276,9 +269,20 @@ class Sigmoid(Nonlinearity):
         sigma = 1 / (1 + np.exp(-Z))
         return sigma * (1 - sigma) * gamma
 
+class Shifter_Sigmoid(Nonlinearity):
+    def __init__(self, N: int, S=0):
+        super().__init__(N)
+        self.S = S
+
+    '''Sigmoid activation; maps z -> 1 / (1 + np.exp(-z))'''
+    def forward_pass(self, X: np.ndarray):
+        return 1 / (1 + np.exp(-(X - self.S)))
+
+    def backward_pass(self, gamma: np.ndarray, Z: np.ndarray):
+        sigma = 1 / (1 + np.exp(-(Z - self.S)))
+        return sigma * (1 - sigma) * gamma
 
 class Shifted_Softplus(Nonlinearity): # Shifted softplus
-
     def __init__(self, N: int, T=0.1, b=2):
         super().__init__(N)
         self.T = T
@@ -311,7 +315,6 @@ class SoftMax(Nonlinearity):
             total_derivs[:, i] = jac.T @ gamma[:, i]
 
         return total_derivs
-
 
 class Squeezed_SoftMax(Nonlinearity):
     '''Applies softmax to the inputs. Do not use in with categorical cross entropy,
@@ -377,7 +380,6 @@ class bpReLU(ComplexNonlinearity):
     def df_dZ(self, Z: np.ndarray):
         return (np.abs(Z) >= self.cutoff) * 1 + (np.abs(Z) < self.cutoff) * self.alpha * 1
 
-
 class modReLU(ComplexNonlinearity):
     '''
     Contintous, but non-holomorphic and non-simply backpropabable ReLU of the form
@@ -402,7 +404,6 @@ class modReLU(ComplexNonlinearity):
     def df_dphi(self, r: np.ndarray, phi: np.ndarray):
         return (r >= self.cutoff) * 1j * (r - self.cutoff) * np.exp(1j * phi)
 
-
 class cReLU(ComplexNonlinearity):
     '''
     Contintous, but non-holomorphic and non-simply backpropabable ReLU of the form
@@ -423,7 +424,6 @@ class cReLU(ComplexNonlinearity):
 
     def df_dIm(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return 1j * (b > 0)
-
 
 class zReLU(ComplexNonlinearity):
     '''
