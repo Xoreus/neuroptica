@@ -265,7 +265,8 @@ class InSituAdam(Optimizer):
 
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
-
+        
+        print(f'Accuracy: {val_accuracy[-1]:.2f}')
         return losses, trn_accuracy, val_accuracy
 
 class Dropout():

@@ -1,0 +1,4 @@
+bpReLU
+eo
+AbsSquared
+Sigmoid

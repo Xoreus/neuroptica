@@ -1,0 +1,4 @@
+bpReLU1
+AbsSquared
+Sigmoid
+Squeezed_SoftMax

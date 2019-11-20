@@ -1,0 +1,3 @@
+bpReLU1
+AbsSquared
+Sigmoid
