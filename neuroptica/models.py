@@ -94,3 +94,18 @@ class Sequential(BaseModel):
 
             gradients[layer.__name__] = backprop_signal
         return gradients
+    
+    def get_all_phases(self):
+        phases = []
+        for layer in self.layers:
+            if hasattr(layer, 'mesh'):
+                phases.append([x for x in layer.mesh.all_tunable_params()])
+        return phases
+
+    def set_all_phases_uncerts_losses(self, Phases, phase_uncert, loss):
+        phase_idx = 0
+        for layer in self.layers:
+            if hasattr(layer, 'mesh'):
+                layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert, loss)
+                phase_idx += 1
+

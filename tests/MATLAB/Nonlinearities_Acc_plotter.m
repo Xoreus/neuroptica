@@ -3,24 +3,30 @@ clear; clc; close all;
 % Matlab plotter for Acc vs Phase inacc and loss, based on Nonlinearities
 FOLDER = '../nonlinearity_analysis/';
 FOLDER = '../nonlinearity_MNIST_analysis/';
-FOLDER = '../nonlinearity_MNIST_analysis_additional_tests/';
+FOLDER = '../nonlinearity_MNIST_analysis_additional_tests2/';
+if ~exist([FOLDER, 'Figures'], 'dir')
+       mkdir([FOLDER, 'Figures'])
+end
+    
 DATASET_NUM = 0;
 N = 4;
 
 % Get nonlin, Models, Phase Uncert, loss, iterations
 Models = textread([FOLDER, 'ONN_Setups.txt'], '%s', 'delimiter', '\n');
+% Models = Models([3,6,11,7]);
+
 Nonlin = textread([FOLDER, 'Nonlinearities.txt'], '%s', 'delimiter', '\n');
 phase_uncert = load([FOLDER, sprintf('PhaseUncert%dFeatures.txt',N)]);
 loss_dB = load([FOLDER, sprintf('LossdB_%dFeatures.txt',N)]);
 iterations = load([FOLDER, 'ITERATIONS.txt']); % How many times we test the same structure
 
-noNonLin_Models = {Models{[2,8]}};
-nonLin_Models = {Models{[5,6,11]}};
+noNonLin_Models = {Models{~contains(Models, 'N')}};
+nonLin_Models = {Models{contains(Models, 'N')}};
 
 % Get only interesting Models
 % Models = Models([3, 1]);
 % Nonlin = Nonlin(4);
-loss_dB = loss_dB(2);
+loss_dB = loss_dB(1);
 
 for l_idx = 1:length(loss_dB)
     % create legend elements

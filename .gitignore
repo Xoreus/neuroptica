@@ -126,9 +126,14 @@ dmypy.json
 # Figures
 *.png
 *.pdf
+*.fig
 
 # MNIST Dataset
 *.gz
 
 # Vim Swap files
 *.swo
+
+# Matlab savefiles
+*~*
+
