@@ -45,12 +45,12 @@ def printf(format, *args):
 # Number of input features?
 N = 4
 BATCH_SIZE = 2**6
-EPOCHS = 400
-STEP_SIZE = 0.001
-FOLDER = r'nonlinearity_MNIST_analysis_additional_tests3/'
-SAMPLES = 4000
+EPOCHS = 200
+STEP_SIZE = 0.0005
+FOLDER = r'nonlinearity_MNIST_analysis_additional_tests5_1000valSamples/'
+SAMPLES = 10000
 DATASET_NUM = 1
-ITERATIONS = 200# number of times to retry same loss/PhaseUncert
+ITERATIONS = 300# number of times to retry same loss/PhaseUncert
 losses_dB = np.linspace(0,1,4)# in dB
 phase_uncerts = np.linspace(0, 1, 21) 
 
@@ -58,7 +58,7 @@ phase_uncerts = np.linspace(0, 1, 21)
 if not os.path.isdir(FOLDER):
     os.mkdir(FOLDER)
 
-setup = np.array(['RP', 'RIP', 'RDIP', 'RDP', 'RDI_RDI', 'RI_RI', 'RNI','RINRI', 'RDI_N_RDI_P', 'R_N_I_R_N_I','RI_N_RI_N_RI', 'RDI_N_RDI_N_RDI'])
+setup = np.array(['RIP', 'RDIP','RI_RI','RNIP','RPNIP','RINRI', 'RDI_N_RDI_P', 'R_N_I_R_N_I','RI_N_RI_N_RI', 'RDI_N_RDI_N_RDI'])
 got_accuracy = [0 for _ in range(len(setup))]
 
 # save loss_dB and phase_uncert too
@@ -69,33 +69,31 @@ np.savetxt(FOLDER+'ONN_Setups.txt', [x for x in setup], delimiter=" ", fmt="%s")
 
 eo_settings = { 'alpha': 0.2, 'g':0.4 * np.pi, 'phi_b': -1 * np.pi }
 
-Nonlinearities = {'bpReLU1':neu.bpReLU(N, alpha=1, cutoff=0.1), 'bpReLU2':neu.bpReLU(N, alpha=1, cutoff=0.15), 'bpReLU3':neu.bpReLU(N, alpha=1, cutoff=0.05),'AbsSquared':neu.AbsSquared(N), 'Sigmoid':neu.Sigmoid(N)}
+Nonlinearities = {  'a2c0.15_bpReLU2':neu.bpReLU(N, alpha=2, cutoff=0.15), 
+                    'a3c0.10_bpReLU1':neu.bpReLU(N, alpha=3, cutoff=0.10), 
+                    'a4c0.05_bpReLU3':neu.bpReLU(N, alpha=4, cutoff=0.05),
+                    's0.4s10_sigmoid':neu.SS_Sigmoid(N, Shift=0.4, Squeeze=10), 
+                    's0.2s30_sigmoid':neu.SS_Sigmoid(N, Shift=0.2, Squeeze=30), 
+                    's0.1s40_sigmoid':neu.SS_Sigmoid(N, Shift=0.1, Squeeze=40),
+                    's0s0_sigmoid':neu.SS_Sigmoid(N, Shift=0, Squeeze=0),
+                    'c0.1_modReLU':neu.modReLU(N, cutoff=0.1),
+                    'c0.2_modReLU':neu.modReLU(N, cutoff=0.2),
+                    'c0.5_modReLU':neu.modReLU(N, cutoff=0.05)
+                    }
 keys = list(Nonlinearities.keys())
 np.savetxt(FOLDER+'Nonlinearities.txt', keys, delimiter=" ", fmt="%s")
 
 if 0:
-    eo_activation = neu.ElectroOpticActivation(1, **eo_settings)
-    eo_activation = neu.Squeezed_SoftMax(1)
-    eo_activation = neu.bpReLU(1, alpha=1, cutoff=0.25)
-    # eo_activation = neu.modReLU(1, cutoff=0.05)
-    # eo_activation = neu.Sigmoid(1)
-    # eo_activation = neu.AbsSquared(1)
-    # eo_activation = neu.cReLU(1)
-    # eo_activation = neu.Squeezed_SoftMax(1, squeeze=5)
-
-
-    x = np.linspace(0.01, 1, 100)
-    plt.plot(x, np.real(eo_activation.forward_pass(x)),label="Re")
-    plt.plot(x, np.imag(eo_activation.forward_pass(x)),label="Im")
-    plt.plot(x, np.abs(eo_activation.forward_pass(x)), label="Abs")
-    plt.xlabel("Input field (a.u.)")
-    plt.ylabel("Output field (a.u.)")
+    for key, activ in Nonlinearities.items():
+        x = np.linspace(0.01, 1, 1000)
+        plt.plot(x, np.abs(activ.forward_pass(x)), label=key)
+        plt.xlabel("Input field (a.u.)")
+        plt.ylabel("Output field (a.u.)")
     plt.legend()
-    plt.show()
-    # plt.savefig('eo_activation.png')
+    # plt.show()
+    plt.savefig(FOLDER + 'nonlin_activation.png')
     
 for ii in range(DATASET_NUM):
-
     X, y, Xt, yt, *_ = mnist.get_data([1,3,6,7], N=N)
     rand_ind = random.sample(list(range(len(X))), SAMPLES)
     X = X[rand_ind]

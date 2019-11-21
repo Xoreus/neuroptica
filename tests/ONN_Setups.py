@@ -7,7 +7,7 @@ def ONN_creation(layers='R_D_I_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu
 
     layers = layers.replace('_', '') 
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
-    if layers[-1] != 'P': 
+    if layers[-1] != 'P': # Add a PD nonlin as the last output if its not there
         layers = layers + 'P'
 
     layer_dict = {
@@ -26,4 +26,4 @@ if __name__ == '__main__':
     Phases = Model.get_all_phases()
 
     Model = ONN_creation()
-    Model.set_all_phases(Phases)
+    Model.set_all_phases_uncerts_losses(Phases)

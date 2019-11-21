@@ -269,7 +269,21 @@ class Sigmoid(Nonlinearity):
         sigma = 1 / (1 + np.exp(-Z))
         return sigma * (1 - sigma) * gamma
 
-class Shifter_Sigmoid(Nonlinearity):
+class SS_Sigmoid(Nonlinearity):
+    def __init__(self, N: int, Shift=0, Squeeze=5):
+        super().__init__(N)
+        self.Shift = Shift
+        self.Squeeze = Squeeze
+
+    '''Sigmoid activation; maps z -> 1 / (1 + np.exp(-z))'''
+    def forward_pass(self, X: np.ndarray):
+        return 1 / (1 + np.exp(-self.Squeeze*(X - self.Shift)))
+
+    def backward_pass(self, gamma: np.ndarray, Z: np.ndarray):
+        sigma = 1 / (1 + np.exp(-self.Squeeze*(Z - self.Shift)))
+        return self.Squeeze * sigma * (1 - sigma) * gamma
+
+class Shifted_Sigmoid(Nonlinearity):
     def __init__(self, N: int, S=0):
         super().__init__(N)
         self.S = S
