@@ -18,7 +18,6 @@ import time
 import os
 import ONN_Setups
 
-
 # Set random seed to always get same data
 rng = 6 
 random.seed(rng)
@@ -28,7 +27,6 @@ import neuroptica as neu
 
 def blob_maker(targets=4, features=4, nsamples=10000,
                cluster_std=.1):
-
     # generate 2d classification dataset
     X, y = make_blobs(n_samples=nsamples, centers=targets,
                       n_features=features,
@@ -47,18 +45,18 @@ N = 4
 BATCH_SIZE = 2**6
 EPOCHS = 200
 STEP_SIZE = 0.0005
-FOLDER = r'nonlinearity_MNIST_analysis_additional_tests5_1000valSamples/'
-SAMPLES = 10000
+FOLDER = r'nonlinearity_MNIST_analysis_AbsoluteValuesB4NonLin/'
+SAMPLES = 20000
 DATASET_NUM = 1
 ITERATIONS = 300# number of times to retry same loss/PhaseUncert
 losses_dB = np.linspace(0,1,4)# in dB
-phase_uncerts = np.linspace(0, 1, 21) 
+phase_uncerts = np.linspace(0, 1, 41) 
 
 # Check if FOLDER is already created; create it if not
 if not os.path.isdir(FOLDER):
     os.mkdir(FOLDER)
 
-setup = np.array(['RIP', 'RDIP','RI_RI','RNIP','RPNIP','RINRI', 'RDI_N_RDI_P', 'R_N_I_R_N_I','RI_N_RI_N_RI', 'RDI_N_RDI_N_RDI'])
+setup = np.array(['RIP', 'RDIP', 'RBNIP', 'R_N_I_P', 'RI_B_RI', 'RI_BN_RI_P'])
 got_accuracy = [0 for _ in range(len(setup))]
 
 # save loss_dB and phase_uncert too
@@ -75,10 +73,9 @@ Nonlinearities = {  'a2c0.15_bpReLU2':neu.bpReLU(N, alpha=2, cutoff=0.15),
                     's0.4s10_sigmoid':neu.SS_Sigmoid(N, Shift=0.4, Squeeze=10), 
                     's0.2s30_sigmoid':neu.SS_Sigmoid(N, Shift=0.2, Squeeze=30), 
                     's0.1s40_sigmoid':neu.SS_Sigmoid(N, Shift=0.1, Squeeze=40),
-                    's0s0_sigmoid':neu.SS_Sigmoid(N, Shift=0, Squeeze=0),
                     'c0.1_modReLU':neu.modReLU(N, cutoff=0.1),
                     'c0.2_modReLU':neu.modReLU(N, cutoff=0.2),
-                    'c0.5_modReLU':neu.modReLU(N, cutoff=0.05)
+                    'c0.07_modReLU':neu.modReLU(N, cutoff=0.07)
                     }
 keys = list(Nonlinearities.keys())
 np.savetxt(FOLDER+'Nonlinearities.txt', keys, delimiter=" ", fmt="%s")
@@ -154,15 +151,13 @@ for ii in range(DATASET_NUM):
                 df = pd.DataFrame(phases_flat, columns=['Theta','Phi'])
                 df.to_csv(f'{FOLDER}phases_for_{ONN_Model}_#{ii}.txt')
 
+                # Now calculate the accuracy when adding phase noise and/or mzi loss
                 for loss in losses_dB:
-                    # Now calculate the accuracy when adding phase noise and/or mzi loss
                     acc_array = []
                     for phase_uncert in phase_uncerts:
-                        # print(f'loss = {loss:.2f} dB, Phase Uncert = {phase_uncert:.2f}')
                         model.set_all_phases_uncerts_losses(phases, phase_uncert, loss)
 
                         acc = []    
-                        # calculate validation accuracy. Since phase is shifted randomly after iteration, this is good
                         for _ in range(ITERATIONS):
                             Y_hat = model.forward_pass(Xt.T)
                             pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
@@ -173,7 +168,5 @@ for ii in range(DATASET_NUM):
 
                     accuracy.append(acc_array)
 
-                # save the accuracies of the current model. will be a 2D array for accuracies at every loss_dB and phase_uncert
                 np.savetxt(f'{FOLDER}accuracy_{ONN_Model}_{N}Features_#{ii}_{NonLin_key}.txt', np.array(accuracy).T, delimiter=',', fmt='%.3f')
             got_accuracy[ONN_Idx]=1
-

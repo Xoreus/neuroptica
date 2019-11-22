@@ -283,19 +283,6 @@ class SS_Sigmoid(Nonlinearity):
         sigma = 1 / (1 + np.exp(-self.Squeeze*(Z - self.Shift)))
         return self.Squeeze * sigma * (1 - sigma) * gamma
 
-class Shifted_Sigmoid(Nonlinearity):
-    def __init__(self, N: int, S=0):
-        super().__init__(N)
-        self.S = S
-
-    '''Sigmoid activation; maps z -> 1 / (1 + np.exp(-z))'''
-    def forward_pass(self, X: np.ndarray):
-        return 1 / (1 + np.exp(-(X - self.S)))
-
-    def backward_pass(self, gamma: np.ndarray, Z: np.ndarray):
-        sigma = 1 / (1 + np.exp(-(Z - self.S)))
-        return sigma * (1 - sigma) * gamma
-
 class Shifted_Softplus(Nonlinearity): # Shifted softplus
     def __init__(self, N: int, T=0.1, b=2):
         super().__init__(N)

@@ -2,7 +2,6 @@ import sys
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
-
 def ONN_creation(layers='R_D_I_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
 
     layers = layers.replace('_', '') 
@@ -16,7 +15,8 @@ def ONN_creation(layers='R_D_I_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu
             'A':neu.AddMask(2*N), 'M':neu.DMM_layer(2*N, loss=loss, phase_uncert=phase_uncert),
             'D':neu.DropMask(N=2*N, keep_ports=range(0, 2*N, 2)), 
             'N':neu.Activation(Nonlinearity), 
-            'P':neu.Activation(neu.AbsSquared(N))}
+            'P':neu.Activation(neu.AbsSquared(N)),
+            'B':neu.Activation(neu.Abs(N))}
 
     Model = neu.Sequential([layer_dict[layer] for layer in layers])
     return Model

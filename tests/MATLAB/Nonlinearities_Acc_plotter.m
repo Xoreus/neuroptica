@@ -6,6 +6,7 @@ cd(cwd)
 
 % Matlab plotter for Acc vs Phase inacc and loss, based on Nonlinearities
 FOLDER = '../nonlinearity_MNIST_analysis_additional_tests2/';
+FOLDER = '../nonlinearity_MNIST_analysis_additional_tests5_1000valSamples/';
 if ~exist([FOLDER, 'Figures'], 'dir')
        mkdir([FOLDER, 'Figures'])
 end
@@ -24,8 +25,8 @@ loss_dB = load([FOLDER, sprintf('LossdB_%dFeatures.txt',N)]);
 iterations = load([FOLDER, 'ITERATIONS.txt']); % How many times we test the same structure
 
 % Get only interesting Models
-Models = Models([2,6,10,7]);
-models = 'InterestingModels';
+% Models = Models([2,6,10,7]);
+% models = 'InterestingModels';
 % Nonlin = Nonlin(4);
 loss_dB = loss_dB(1);
 

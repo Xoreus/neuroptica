@@ -7,4 +7,4 @@ s0.1s40_sigmoid
 s0s0_sigmoid
 c0.1_modReLU
 c0.2_modReLU
-c0.5_modReLU
+c0.05_modReLU
