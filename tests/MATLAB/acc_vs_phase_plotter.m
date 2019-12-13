@@ -8,7 +8,7 @@ Round_Flag = false;
 % FOLDER = 'Accuracy_vs_phaseUncert_loss_500iter_100%acc_8Features/';
 % FOLDER = 'Accuracy_vs_phaseUncert_loss_500iter/';
 % FOLDER = 'Accuracy_vs_phaseUncert_loss_500iter_Round#2/';
-FOLDER = 'Accuracy_vs_phaseUncert_loss_500iter_Round_ThetaDMM=pi/';
+FOLDER = '../Accuracy_vs_phaseUncert_loss_500iter_Round_ThetaDMM=pi/';
 
 N = 8;
 

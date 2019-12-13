@@ -7,6 +7,7 @@ cd(cwd)
 % Matlab plotter for Acc vs Phase inacc and loss, based on Nonlinearities
 FOLDER = '../nonlinearity_MNIST_analysis_additional_tests2/';
 FOLDER = '../nonlinearity_MNIST_analysis_additional_tests5_1000valSamples/';
+% FOLDER = '../nonlinearity_MNIST_analysis_AbsoluteValuesB4NonLin/';
 if ~exist([FOLDER, 'Figures'], 'dir')
        mkdir([FOLDER, 'Figures'])
 end
