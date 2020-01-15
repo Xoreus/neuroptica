@@ -4,7 +4,6 @@ import numpy as np
 
 
 class Loss:
-
     @staticmethod
     def L(X: np.ndarray, T: np.ndarray) -> np.ndarray:
         '''
@@ -27,13 +26,13 @@ class Loss:
 
 
 class MeanSquaredError(Loss):
-
     @staticmethod
     def L(X: np.ndarray, T: np.ndarray) -> np.ndarray:
         return np.sum(1 / 2 * np.abs(T - X) ** 2, axis=0)
 
     @staticmethod
     def dL(X: np.ndarray, T: np.ndarray) -> np.ndarray:
+        # print(X.shape, T.shape)
         return np.conj(X - T)
 
 

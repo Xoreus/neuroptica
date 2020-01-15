@@ -57,17 +57,7 @@ class Sequential(BaseModel):
         X_out = X
         for layer in self.layers:
             if isinstance(layer, OpticalMeshNetworkLayer):
-                X_out = layer.forward_pass(X_out,
-
-                                           ####################################
-                                           # Simon Commented these out since
-                                           # they don't appear to work with
-                                           # the Reck model
-                                           ####################################
-
-#                                           cache_fields=cache_fields,
-#                                           use_partial_vectors=use_partial_vectors
-                                           )
+                X_out = layer.forward_pass(X_out)
 #                print(X_out)
             else:
                 X_out = layer.forward_pass(X_out)
@@ -108,4 +98,3 @@ class Sequential(BaseModel):
             if hasattr(layer, 'mesh'):
                 layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert, loss)
                 phase_idx += 1
-

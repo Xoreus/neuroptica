@@ -180,7 +180,7 @@ class InSituAdam(Optimizer):
 
                 batch += 1
                 self.t += 1
-
+                
                 # Propagate the data forward
                 Y_hat = self.model.forward_pass(X, cache_fields=cache_fields, use_partial_vectors=use_partial_vectors)
                 d_loss = self.loss.dL(Y_hat, Y)
@@ -189,7 +189,6 @@ class InSituAdam(Optimizer):
                 # Compute the backpropagated signals for the model
                 deltas = self.model.backward_pass(d_loss, cache_fields=cache_fields,
                                                   use_partial_vectors=use_partial_vectors)
-                # print(deltas)
                 delta_prev = d_loss  # backprop signal to send in the final layer
 
                 # Compute the foward and adjoint fields at each phase shifter in all tunable layers
@@ -266,7 +265,7 @@ class InSituAdam(Optimizer):
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
         
-        print(f'Accuracy: {val_accuracy[-1]:.2f}')
+        # print(f'Accuracy: {val_accuracy[-1]:.2f}')
         return losses, trn_accuracy, val_accuracy
 
 class Dropout():

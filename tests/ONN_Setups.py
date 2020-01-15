@@ -6,10 +6,11 @@ import sys
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
-def ONN_creation(layers='R_D_I_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
-    layers = layers.replace('_', '') 
-    layers = ''.join(char if char != 'D' else 'AMD' for char in layers) 
+def ONN_creation(layers='C_Q_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
 
+    layers = layers.replace('_', '') 
+    layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
+    # print(layers)
     layer_dict = {
             'R':neu.ReckLayer(N, include_phase_shifter_layer=False, loss=loss, phase_uncert=phase_uncert),
             'I':neu.flipped_ReckLayer(N, include_phase_shifter_layer=False, loss=loss,phase_uncert=phase_uncert), 
@@ -21,8 +22,10 @@ def ONN_creation(layers='R_D_I_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu
             'P':neu.Activation(neu.AbsSquared(N)),
             'B':neu.Activation(neu.Abs(N)),
 
-            'C':neu.DiamondLayer(N, loss=loss, phase_uncert=phase_uncert),
-            'M':neu.DropMask(N, keep_ports=range(int((N-2)/2), N))
+            'C':neu.DiamondLayer(N, loss=loss, phase_uncert=phase_uncert, include_phase_shifter_layer=False),
+            'Q':neu.DropMask(2*N - 2, keep_ports=range(N - 2, 2*N - 2)),
+            'W':neu.DropMask(2*N - 2, keep_ports=range(N - 1, 2*N - 1))
+
             }
 
     Model = neu.Sequential([layer_dict[layer] for layer in layers])
@@ -31,6 +34,6 @@ def ONN_creation(layers='R_D_I_P', N=4, loss=0, phase_uncert=0, Nonlinearity=neu
 if __name__ == '__main__':
     Model = ONN_creation()
     Phases = Model.get_all_phases()
-
+    print(Phases)
     Model = ONN_creation()
-    Model.set_all_phases_uncerts_losses(Phases)
+    Model.set_all_phases_uncerts_losses(Phases, 0, 0)

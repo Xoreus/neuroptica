@@ -89,7 +89,6 @@ class DropMask(NetworkLayer):
         return X[self.ports]
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
-
         n_features, n_samples = delta.shape
         delta_back = np.zeros((self.input_size, n_samples), dtype=NP_COMPLEX)
         for i in range(n_features):
@@ -505,6 +504,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
 
         # print(mzi_limits_lower)
         # print(mzi_limits_upper)
+
         # Finally, create each MZI Layer (the hermitian transpose of the Reck layer's MZILayer)
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
@@ -525,34 +525,33 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
     def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss=0, phase_uncert=0.0):
         '''
         Initialize the Diamond Layer
-        :param N: number of input and output waveguides - (N + 2)/2 = signals carried
+        :param N: number of input and output waveguides - N = signals carried
+        :param S: number of total waveguides, with N-2 waveguides acting as simple information processors
         :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
         the mesh (required to implement arbitrary unitary)
         :param initializer: optional initializer method (WIP)
         '''
-        super().__init__(N, N, initializer=initializer)
+
+        " N is the number of information carrying Waveguides. S is the number of total waveguides: S = 2*(N-2)"
+        S = 2*N - 2
+        super().__init__(S, S, initializer=initializer)
         self.phase_uncert = phase_uncert
         self.loss = loss
         self.N = N
-        # print(f'NNNNNNNNNNN = {N}')
+
         layers = []
         if include_phase_shifter_layer:
-            layers.append(PhaseShifterLayer(N))
+            layers.append(PhaseShifterLayer(S))
 
         # Get MZI waveguide limits, upper and lower, for the Diamond Configuration
-
-        self.S = int((N+2)/2) 
-        # print(S)
-        # print(N)
-        self.mzi_limits_lower = list(range(self.N - self.S, -1, -1)) + list(range(1, self.S - 1))
-        self.mzi_limits_upper = list(range(self.N - self.S + 1, self.N)) + list(range(self.N - 2, self.N - self.S, -1))
-        # print('Upper: ', self.mzi_limits_upper)
-        # print('Lower: ', self.mzi_limits_lower)
-
-        if (None, None) in phases:
-            phases = [(None, None) for _ in range(int((N-2)**2))]
+        self.S = S
+        self.mzi_limits_lower = list(range(self.S - self.N, -1, -1)) + list(range(1, self.N - 1))
+        self.mzi_limits_upper = list(range(self.N - 1, self.S)) + list(range(self.S - 2, self.N - 2, -1))
 
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
+        # print(mzi_nums)
+        if (None, None) in phases:
+            phases = [(None, None) for _ in range(sum(mzi_nums))]
 
         phases_mzi_layer = []
         idx = 0
@@ -567,9 +566,9 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
-        self.mesh = OpticalMesh(N, layers)
+        self.mesh = OpticalMesh(S, layers)
 
     def set_phases_uncert_loss(self, Phases, phase_uncert, loss):
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
@@ -586,12 +585,11 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=phase_uncert))
-        self.mesh = OpticalMesh(self.N, layers)
-
+            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=phase_uncert))
+        self.mesh = OpticalMesh(self.S, layers)
 
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
-        # print(self.mesh.get_transfer_matrix())
+        # print(self.mesh.get_transfer_matrix().shape)
         self.input_prev = X
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
         return self.output_prev

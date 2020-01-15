@@ -117,7 +117,6 @@ class MZI(OpticalComponent):
         if add_uncertainties:
             phi = self.phi + np.random.normal(0, self.phase_uncert)
             theta = self.theta + np.random.normal(0, self.phase_uncert)
-            # print(phi, theta)
         else:
             phi, theta = self.phi, self.theta
 

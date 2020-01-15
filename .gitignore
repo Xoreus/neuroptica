@@ -133,6 +133,7 @@ dmypy.json
 
 # Vim Swap files
 *.swo
+*.swp
 
 # Matlab savefiles
 *~*
