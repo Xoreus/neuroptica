@@ -61,7 +61,6 @@ class Beamsplitter(OpticalComponent):
     def get_transfer_matrix(self) -> np.ndarray:
         return np.copy(_B)
 
-
 class PhaseShifter(OpticalComponent):
     '''Single-mode phase shifter'''
 
@@ -81,11 +80,10 @@ class PhaseShifter(OpticalComponent):
     def get_transfer_matrix(self) -> np.ndarray:
         return np.array([[np.exp(1j * self.phi)]], dtype=NP_COMPLEX)
 
-
 class MZI(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
 
-    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss=10**(0)):
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss_dB=0):
         '''
         :param m: first waveguide index
         :param n: second waveguide index
@@ -98,7 +96,14 @@ class MZI(OpticalComponent):
         self.m = m  # input waveguide A index (0-indexed)
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
-        self.loss = loss
+
+        if loss_dB != 0:
+            self.loss_dB = get_loss(loss_dB) # Power Loss
+            self.loss = 10**(-self.loss_dB/10)/np.sqrt(2) # Field Loss
+        else:
+            self.loss_dB = loss_dB
+            self.loss = 10**(-loss_dB/10)
+
         if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
 
@@ -124,7 +129,8 @@ class MZI(OpticalComponent):
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
-        mzi_r = apply_loss(mzi_r, self.loss)
+        if self.loss_dB != 0:
+            mzi_r = apply_loss(mzi_r, self.loss)
         return(mzi_r)
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=True) -> np.ndarray:
@@ -162,9 +168,7 @@ class MZI(OpticalComponent):
             return np.array(partial_transfer_matrices)*self.loss
         else:
             # print(np.array(component_transfer_matrices))
-
             return apply_loss(component_transfer_matrices, np.array(self.loss))
-            
 
 @jit(nopython=True, nogil=True, parallel=True)
 def _get_mzi_partial_transfer_matrices(theta, phi, backward=False, cumulative=True):
@@ -208,7 +212,7 @@ class MZI_H(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer, but as a hermitian transpose
     of the original MZI transfer function. Used to create the V^\dagger section of the SVD decomposition.'''
 
-    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss=10**(0)):
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss=0):
         '''
         :param m: first waveguide index
         :param n: second waveguide index
@@ -225,7 +229,6 @@ class MZI_H(OpticalComponent):
 
         if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
-        # print(theta, phi)
         self.theta = theta
         self.phi = phi
 
@@ -244,11 +247,11 @@ class MZI_H(OpticalComponent):
         else:
             phi, theta = self.phi, self.theta
 
-        mzi_h = self.loss * 0.5 * np.array([
+        mzi_h = 0.5 * np.array([
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX).conj().T
-        # print(mzi_h)
+
         return(mzi_h)
 
 
@@ -284,10 +287,13 @@ class MZI_H(OpticalComponent):
                 T = np.dot(transfer_matrix, T)
                 partial_transfer_matrices.append(T)
 
-            return np.array(partial_transfer_matrices)*self.loss
+            return np.array(partial_transfer_matrices)
         else:
-            return np.array(component_transfer_matrices)*self.loss
+            return apply_loss(component_transfer_matrices, np.array(self.loss))
 
 def apply_loss(mzi, loss):
     return mzi * np.array([[loss, 1],[1, loss]])
-    # return mzi * loss
+
+def get_loss(loss_dB, min_loss=0.5, sigma=.3):
+    return np.random.uniform(min_loss, loss_dB)/np.sqrt(2)
+

@@ -27,19 +27,19 @@ import neuroptica as neu
 rng = 2 
 random.seed(rng)
 
-FOLDER = r'test_new_code'
+FOLDER = r'GaussianLossDistribution_large_test_singleLoss'
 
 SSD.createFOLDER(FOLDER)
 
 N = 4
 BATCH_SIZE = 2**6
-EPOCHS = 200
+EPOCHS = 1100
 STEP_SIZE = 0.0005
-SAMPLES = 300
+SAMPLES = 1300
 DATASET_NUM = 1
-ITERATIONS = 500 # number of times to retry same loss/PhaseUncert
-losses_dB = np.linspace(0, 1, 3) # dB
-phase_uncerts = np.linspace(0, 1, 2) # Rad Std dev
+ITERATIONS = 1500 # number of times to retry same loss/PhaseUncert
+losses_dB = np.linspace(0, 2, 21) # dB
+phase_uncerts = np.linspace(0, 0.5, 21) # Rad Std dev
 
 # dataset_name = 'MNIST'
 # dataset_name = 'Gauss'
@@ -127,7 +127,7 @@ for ii in range(DATASET_NUM):
 
                 # initialize the ADAM optimizer and fit the ONN to the training data
                 optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=STEP_SIZE)
-                losses, trn_accuracy, val_accuracy = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=EPOCHS, batch_size=BATCH_SIZE, show_progress=True)
+                losses, trn_accuracy, val_accuracy, best_phases = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=EPOCHS, batch_size=BATCH_SIZE, show_progress=True)
 
                 if 1:
                     ' Plot loss, training acc and val acc'
@@ -148,11 +148,21 @@ for ii in range(DATASET_NUM):
                 # save a txt file containing the loss, trn acc, val acc, in case I want to replot it using matlab
                 np.savetxt(f'{FOLDER}/Data_Fitting/{ONN_Model}_loss={0.00}dB_uncert={0.00}Rad_{N}Features_#{ii}_{NonLin_key}.txt',np.array([losses, trn_accuracy, val_accuracy]).T, delimiter=',', fmt='%.4f')
                 
+                # Get losses of MZIs
+                losses = model.get_all_losses()
+                losses_flat = [item for sublist in losses for item in sublist]
+                df = pd.DataFrame(losses_flat, columns=['Losses_dB'])
+                df.to_csv(f'{FOLDER}/Losses/losses_{ONN_Model}_meanLoss={0:.2f}dB_uncert={0:.2f}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
+
                 # Create phase array
                 phases = model.get_all_phases()
                 phases_flat = [item for sublist in phases for item in sublist]
                 df = pd.DataFrame(phases_flat, columns=['Theta','Phi'])
                 df.to_csv(f'{FOLDER}/Phases/Phases_{ONN_Model}_loss={0.00}dB_uncert={0.00}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
+                # Save best phases as well
+                best_phases_flat = [item for sublist in best_phases for item in sublist]
+                df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
+                df.to_csv(f'{FOLDER}/Phases/Phases_Best_{ONN_Model}_loss={loss:.2f}dB_uncert={phase_uncert:.2f}Rad_{N}Features_#{ii}_{Nonlin_key}.txt')
 
                 # Now calculate the accuracy when adding phase noise and/or mzi loss
                 for loss in losses_dB:

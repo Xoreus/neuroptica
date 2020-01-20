@@ -2,7 +2,6 @@
 
 import numpy as np
 
-
 class Loss:
     @staticmethod
     def L(X: np.ndarray, T: np.ndarray) -> np.ndarray:
@@ -24,7 +23,6 @@ class Loss:
         '''
         raise NotImplementedError("Derivative loss function must be specified in child class")
 
-
 class MeanSquaredError(Loss):
     @staticmethod
     def L(X: np.ndarray, T: np.ndarray) -> np.ndarray:
@@ -34,7 +32,6 @@ class MeanSquaredError(Loss):
     def dL(X: np.ndarray, T: np.ndarray) -> np.ndarray:
         # print(X.shape, T.shape)
         return np.conj(X - T)
-
 
 class CategoricalCrossEntropy(Loss):
     '''Represents categorical cross entropy with a softmax layer implicitly applied to the outputs'''

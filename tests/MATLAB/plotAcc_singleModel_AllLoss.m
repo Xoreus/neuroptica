@@ -19,8 +19,8 @@ end
 for model_idx = 1:length(Models)
     if ~contains(Models{model_idx}, 'N')
         figure
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.2f_uncert=%.2f_%dFeat_%s_set%d.txt', ...
-            Models{model_idx}, loss_dB(1), phase_uncert(1), N, Nonlin{1}, DATASET_NUM)]);
+        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%dFeat_%s_set%d.txt', ...
+            Models{model_idx}, loss_dB(1)*0, phase_uncert(1)*0, N, Nonlin{1}, DATASET_NUM)]);
         
         plot(phase_uncert, Model_acc, 'linewidth',2)
         
@@ -30,12 +30,12 @@ for model_idx = 1:length(Models)
         xlabel('Phase Uncertainty (\sigma)')
         ylabel('Accuracy (%)')
         title(sprintf('Accuracy of model with %s',strrep(Models{model_idx}, '_','\_')))
-        savefig([FOLDER, sprintf('Figures/Model=%s_Loss=[%.3f-%.2f].fig',Models{model_idx}, min(loss_dB), max(loss_dB))])
-        saveas(gcf, [FOLDER, sprintf('Figures/Model=%s_Loss=[%.3f-%.2f].png',Models{model_idx}, min(loss_dB), max(loss_dB))])
+        savefig([FOLDER, sprintf('Matlab_Figures/Model=%s_Loss=[%.3f-%.2f].fig',Models{model_idx}, min(loss_dB), max(loss_dB))])
+        saveas(gcf, [FOLDER, sprintf('Matlab_Figures/Model=%s_Loss=[%.3f-%.2f].png',Models{model_idx}, min(loss_dB), max(loss_dB))])
     else
         for nonlin_idx = 1:length(Nonlin)
             figure
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.2f_uncert=%.2f_%dFeat_%s_set%d.txt', ...
+        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%dFeat_%s_set%d.txt', ...
             Models{model_idx}, loss_dB(1), phase_uncert(1), N, Nonlin{1}, DATASET_NUM)]);
             
             plot(phase_uncert, Model_acc, 'linewidth',2)

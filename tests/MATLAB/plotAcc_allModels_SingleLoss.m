@@ -21,14 +21,14 @@ for l_idx = 1:length(loss_dB)
     for model_idx = 1:length(Models)
         legend_ = create_legend_single_loss(Models, Nonlin);
         if ~contains(Models{model_idx}, 'N')
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.2f_uncert=%.2f_%dFeat_%s_set%d.txt', ...
-            Models{model_idx}, loss_dB(1), phase_uncert(1), N, Nonlin{1}, DATASET_NUM)]);
+        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%dFeat_%s_set%d.txt', ...
+            Models{model_idx}, loss_dB(1)*0, phase_uncert(1)*0, N, Nonlin{1}, DATASET_NUM)]);
             
             plot(phase_uncert, Model_acc(:, l_idx), 'linewidth', 2)
             hold on
         else
             for nonlin_idx = 1:length(Nonlin)
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.2f_uncert=%.2f_%dFeat_%s_set%d.txt', ...
+        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%dFeat_%s_set%d.txt', ...
             Models{model_idx}, loss_dB(1), phase_uncert(1), N, Nonlin{1}, DATASET_NUM)]);
                 
                 plot(phase_uncert, Model_acc, 'linewidth',2)

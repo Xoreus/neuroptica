@@ -251,7 +251,6 @@ class ReckLayer(OpticalMeshNetworkLayer):
         # Get MZI waveguide limits, upper and lower, for the Reck configuration
         self.mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         self.mzi_limits_lower = [(i + 1) % 2 for i in self.mzi_limits_upper]
-        # print(mzi_limits_upper, mzi_limits_lower)
         
         if (None, None) in phases:
             phases = [(None, None) for _ in range(int(N*(N-1)/2))]
@@ -510,6 +509,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
             layers.append(MZILayer_H.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis))
+
 
         self.mesh = OpticalMesh(N, layers)
 

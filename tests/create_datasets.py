@@ -82,10 +82,10 @@ def get_data(digits=None, N=4, nsamples=1000): # this is for unnormalized MNIST:
 
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)          
     
-    rand_ind = random.sample(list(range(len(X))), int(SAMPLES))
+    rand_ind = random.sample(list(range(len(X))), int(nsamples))
     X = X[rand_ind]
     y = y[rand_ind]
-    rand_ind = random.sample(list(range(len(Xt))), int(SAMPLES*0.2))
+    rand_ind = random.sample(list(range(len(Xt))), int(nsamples*0.2))
     Xt = Xt[rand_ind]
     yt = yt[rand_ind]
     return X, y, Xt, yt

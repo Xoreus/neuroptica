@@ -46,6 +46,13 @@ class Sequential(BaseModel):
     def __repr__(self):
         return "<Sequential Model: {}>".format([layer.__name__ for layer in self.layers])
 
+    def get_transformation_matrix(self):
+        trf_matrix = []
+        for layer in self.layers:
+            if isinstance(layer, OpticalMeshNetworkLayer):
+                trf_matrix.append(layer.mesh.get_transfer_matrix())
+        return trf_matrix
+
     def forward_pass(self, X: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
         '''
         Propagate an input field throughout the entire network
@@ -58,7 +65,6 @@ class Sequential(BaseModel):
         for layer in self.layers:
             if isinstance(layer, OpticalMeshNetworkLayer):
                 X_out = layer.forward_pass(X_out)
-#                print(X_out)
             else:
                 X_out = layer.forward_pass(X_out)
         return X_out
@@ -91,6 +97,13 @@ class Sequential(BaseModel):
             if hasattr(layer, 'mesh'):
                 phases.append([x for x in layer.mesh.all_tunable_params()])
         return phases
+
+    def get_all_losses(self):
+        losses = []
+        for layer in self.layers:
+            if hasattr(layer, 'mesh'):
+                losses.append([x for x in layer.mesh.all_losses()])
+        return losses
 
     def set_all_phases_uncerts_losses(self, Phases, phase_uncert, loss):
         phase_idx = 0

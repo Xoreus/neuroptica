@@ -85,6 +85,11 @@ class OpticalMesh:
             for param in layer.all_tunable_params():
                 yield param
 
+    def all_losses(self) -> Iterable[float]:
+        for layer in self.layers:
+            for param in layer.all_losses():
+                yield param
+
     def all_tunable_components(self) -> Iterable[Type[OpticalComponent]]:
         for layer in self.layers:
             yield from layer
@@ -94,6 +99,7 @@ class OpticalMesh:
         assert all([N == layer.N for layer in layers]), "Dimension mismatch in layers!"
 
     def get_transfer_matrix(self) -> np.ndarray:
+        # print(reduce(np.dot, [layer.get_transfer_matrix() for layer in reversed(self.layers)]))
         return reduce(np.dot, [layer.get_transfer_matrix() for layer in reversed(self.layers)])
 
     def compute_phase_shifter_fields(self, X: np.ndarray, align="right", use_partial_vectors=False, include_bs=False) -> \
@@ -131,7 +137,6 @@ class OpticalMesh:
                         raise ValueError('align must be "left" or "right"!')
                     X_current = phi_T[0, :][:, None] * X_current + phi_T[1, :][:, None] * X_current[inds_mn, :]
                 else:
-                    # print("AAAAAAAAAAAAAAAAAA")
                     partial_transfer_matrices = layer.get_partial_transfer_matrices(backward=False, cumulative=True)
                     bs1_T, theta_T, bs2_T, phi_T = np.array(partial_transfer_matrices).round(2)
                     if 0:
@@ -396,7 +401,7 @@ class MZILayer_H(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI_H(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-loss/10), theta=thetas[len(mzis)], phi=phis[len(mzis)]))
+            mzis.append(MZI_H(waveguide_indices[i], waveguide_indices[i + 1], loss=loss, theta=thetas[len(mzis)], phi=phis[len(mzis)]))
         return cls(N, mzis)
 
     @staticmethod
@@ -521,10 +526,12 @@ class MZILayer(ComponentLayer):
         yield from self.mzis
     
     def all_tunable_params(self):
-        # yields (theta, phi)
-
         for mzi in self.mzis:
             yield (mzi.theta, mzi.phi)
+
+    def all_losses(self):
+        for mzi in self.mzis:
+            yield mzi.loss_dB
 
     @classmethod
     def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0, thetas=None, phis=None, phase_uncert=0.0):
@@ -545,7 +552,7 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss=10**(-loss/10), theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert=phase_uncert))
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss_dB=loss, theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert=phase_uncert))
 
         return cls(N, mzis)
 

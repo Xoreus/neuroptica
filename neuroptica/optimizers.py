@@ -161,10 +161,8 @@ class InSituAdam(Optimizer):
         '''
 
         losses = []
-        trn_accuracy = []
-        val_accuracy = []
-
-        best_accuracy = 0
+        trn_accuracy = [0]
+        val_accuracy = [0]
 
         n_features, n_samples = data.shape
 
@@ -261,12 +259,17 @@ class InSituAdam(Optimizer):
             pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
             gt = np.array([np.argmax(tru) for tru in val_labels.T])
             val_accuracy.append(np.sum(pred == gt)/val_data.shape[1]*100)
+            # print(val_accuracy[-1])
+            if val_accuracy[-1] > max(val_accuracy[:-1]):
+                best_phases = self.model.get_all_phases()
+                best_trf_matrix = self.model.get_transformation_matrix()
 
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
         
-        # print(f'Accuracy: {val_accuracy[-1]:.2f}')
-        return losses, trn_accuracy, val_accuracy
+        print(f'Accuracy: {val_accuracy[-1]:.2f}')
+        losses = [losses[0]] + losses
+        return losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix
 
 class Dropout():
     ''' Implements dropout for ONN '''
