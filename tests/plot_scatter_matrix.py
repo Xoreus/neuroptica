@@ -10,7 +10,7 @@ from pandas.plotting import scatter_matrix
 import numpy as np
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.datasets.samples_generator import make_blobs
+from sklearn.datasets import make_blobs
 import random
 
 # Set random seed to always get same data

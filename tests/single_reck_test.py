@@ -1,13 +1,10 @@
+
 """
-Retrained_Topology_Analysis.py
-This time, analyzing if addng a small amnt of noise helps to reduce overfitting (regularization)
-also comparing diamond layer to central diamond layer, maybe itle help with loss?
-also looks at adding etra MZIs in series (by doing R_P, R_I_P, R_D_I_P, R_D_I_R_D_I_P) to look at effects of increasing loss and/or phase uncert 
-Retrains models for every loss/phase_uncert to look at how the loss and uncert dissapear when we train the model
-Testing nonlinearities with RI, RDI, R+I, the whole thing. Saves all required files for plotting in matlab (matlab is way better an making nice graphs...), plus its good to save all data no matter what
+single_reck_test.py
+Test for a single Reck ONN with multiple Gaussian datasets, each with the same mean but with more and more samples
 
 Author: Simon Geoffroy-Gagnon
-Edit: 17.01.2020
+Edit: 20.01.2020
 """
 import pandas as pd
 import sys
@@ -32,24 +29,22 @@ import neuroptica as neu
 rng = 2 
 random.seed(rng)
 
-FOLDER = r'ReckDMM+Diamond+DoubleReck_Comparisons#2'
+FOLDER = r'singleReckTest'
 setSim.createFOLDER(FOLDER)
 
 N = 4
 BATCH_SIZE = 2**6
-EPOCHS = 2700 
-STEP_SIZE = 0.00025
-SAMPLES = 1000
+EPOCHS = 200 
+STEP_SIZE = 0.005
+SAMPLES = 6000
 DATASET_NUM = 1
 ITERATIONS = 600 # number of times to retry same loss/PhaseUncert
-losses_dB = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
-phase_uncerts = [0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.05, 0.075, 0.1] # Rad Std dev
+losses_dB = [0]
+phase_uncerts = [0.001]
 
-dataset_name = 'MNIST'
-# dataset_name = 'Gauss'
-# dataset_name = 'Iris'
+dataset_name = 'Gauss'
 
-ONN_setup = np.array(['C_Q_P', 'R_I_P', 'R_D_P'])
+ONN_setup = np.array(['R_P'])
 
 got_accuracy = [0 for _ in range(len(ONN_setup))]
 
@@ -57,14 +52,14 @@ simSettings = N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB,
 saveSimSettings(FOLDER, simSettings)
 
 if 1:
-    Nonlinearities = {'a2c0.15_bpReLU2':neu.bpReLU(N, alpha=2, cutoff=0.15), }
+    Nonlinearities = {'None':neu.bpReLU(N, alpha=2, cutoff=0.15), }
     saveNonlin(FOLDER, Nonlinearities)
 
 for ii in range(DATASET_NUM):
     if dataset_name == 'MNIST':
         X, y, Xt, yt = cd.get_data([1,3,6,7], N=N, nsamples=SAMPLES)
     elif dataset_name == 'Gauss':
-        X, y, Xt, yt = cd.blob_maker(targets=int(N), features=int(N), nsamples=SAMPLES, random_state=5)
+        X, y, Xt, yt = cd.blob_maker(targets=int(N), features=int(N), nsamples=SAMPLES, random_state=4)
     elif dataset_name == 'Iris':
         X, y, Xt, yt = cd.iris_dataset(nsamples=int(SAMPLES))
 

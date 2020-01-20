@@ -19,7 +19,7 @@ from pandas.plotting import scatter_matrix
 from sklearn.model_selection import train_test_split    
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.decomposition import PCA
-from sklearn.datasets.samples_generator import make_blobs
+from sklearn.datasets import make_blobs
 
 # Set random seed to always get same data
 rng = 5 

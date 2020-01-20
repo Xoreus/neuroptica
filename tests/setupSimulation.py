@@ -13,7 +13,7 @@ import pandas as pd
 from pandas.plotting import scatter_matrix
 from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
-from sklearn.datasets.samples_generator import make_blobs
+from sklearn.datasets import make_blobs
 import random
 
 
@@ -29,6 +29,7 @@ def plot_scatter_matrix(X, Y,  figsize=(20, 15)):
     features = ['$X_%d$' % x for x in range(len(X[1]))]
 
     df = df.rename(columns={v:'$X_%d$' % v for v in range(len(X))})
+
 
     axes = scatter_matrix(df[features], alpha=.8, figsize=figsize,
                           diagonal='kde',
@@ -75,11 +76,11 @@ def createFOLDER(FOLDER):
 
 def saveSimData(FOLDER, dataset_name, ii, N, X, y, Xt, yt):
     axes = plot_scatter_matrix(X, y)
-    plt.savefig(f'{FOLDER}/Datasets/{dataset_name}_Dataset#{ii}.png')
+    plt.savefig(f'{FOLDER}/Datasets/{dataset_name}_Samples={len(X)}_Dataset#{ii}.png')
     plt.clf()
     mpl.rcParams.update(mpl.rcParamsDefault)
 
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_X_{N}Features_Dataset#{ii}.txt',X, delimiter=',',fmt='%.3f')
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_y_{N}Features_Dataset#{ii}.txt',y, delimiter=',',fmt='%.3f')
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_Xt_{N}Features_Dataset#{ii}.txt',Xt, delimiter=',',fmt='%.3f')
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_yt_{N}Features_Dataset#{ii}.txt',yt, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_X_{N}Features_Samples={len(X)}_Dataset#{ii}.txt',X, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_y_{N}Features_Samples={len(X)}_Dataset#{ii}.txt',y, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_Xt_{N}Features_Samples={len(X)}_Dataset#{ii}.txt',Xt, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_yt_{N}Features_Samples={len(X)}_Dataset#{ii}.txt',yt, delimiter=',',fmt='%.3f')
