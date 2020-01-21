@@ -1,4 +1,0 @@
-bpReLU1
-bpReLU2
-AbsSquared
-Sigmoid

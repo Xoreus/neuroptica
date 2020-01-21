@@ -1,9 +1,0 @@
-a2c0.15_bpReLU2
-a3c0.10_bpReLU1
-a4c0.05_bpReLU3
-s0.4s10_sigmoid
-s0.2s30_sigmoid
-s0.1s40_sigmoid
-c0.1_modReLU
-c0.2_modReLU
-c0.5_modReLU
