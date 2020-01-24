@@ -29,12 +29,12 @@ import neuroptica as neu
 # Set random seed to always get same data
 rng = 2 
 
-for rng in range(2, 3):
+for rng in range(2, 20):
     random.seed(rng)
 
     ROOT_FOLDER = r'Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = ROOT_FOLDER + FUNCTION + f'loss_diff_0.1_test_rng{rng}'
+    FOLDER = ROOT_FOLDER + FUNCTION + f'acc_plot{rng}'
     setSim.createFOLDER(FOLDER)
 
     N = 4
@@ -43,9 +43,9 @@ for rng in range(2, 3):
     STEP_SIZE = 0.005
     SAMPLES = 800
     DATASET_NUM = 1
-    ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
-    losses_dB = np.linspace(0, 1, 13)
-    phase_uncerts = np.linspace(0, 2, 21)
+    ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+    losses_dB = np.linspace(0, 1, 6)
+    phase_uncerts = np.linspace(0, 2, 11)
 
     # dataset_name = 'MNIST'
     dataset_name = 'Gauss'

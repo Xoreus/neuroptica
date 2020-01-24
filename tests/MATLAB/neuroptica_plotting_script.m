@@ -11,7 +11,8 @@ Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
 ActualFolder = 'loss_diff_0.01_test_rng2'          ;
 ActualFolder = 'loss_diff_0.0_test_rng2'          ;
-
+ActualFolder = 'loss_diff_0.1_test_LossMatrix_rng2';
+ActualFolder = 'loss_diff_0.01_test_LossMatrix_rng2';
 FOLDER = [Folder ActualFolder '/'];
 
 plotAcc_allModels_SingleLoss(FOLDER)

@@ -292,9 +292,17 @@ class MZI_H(OpticalComponent):
             return apply_loss(component_transfer_matrices, np.array(self.loss))
 
 def apply_loss(mzi, loss):
+    # print(mzi)
+    # print('Loss Matrix')
+    # print(mzi * np.array([[loss, 1],[1, loss]]))
+    # print('2x2 loss matrix')
+    # print(mzi * np.array([[loss, loss],[loss, loss]]))
+    # print('Loss Scalar')
+    # print(mzi * loss)
     # return mzi * np.array([[loss, 1],[1, loss]])
-    return mzi * loss
+    return mzi * np.array([[loss, loss],[loss, loss]])
+    # return mzi * loss
 
-def get_loss(loss_dB, loss_diff=0.1):
+def get_loss(loss_dB, loss_diff=0.01):
     return np.random.uniform(loss_dB - loss_diff, loss_dB)/np.sqrt(2)
 
