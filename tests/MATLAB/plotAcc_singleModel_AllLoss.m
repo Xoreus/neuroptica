@@ -15,12 +15,12 @@ if ~exist([FOLDER, 'Matlab_Figures'], 'dir')
 end
 
 [N, Models, Nonlin, phase_uncert, loss_dB, ~, DATASET_NUM] = load_ONN_data(FOLDER);
-
+loss_dB = loss_dB([1,2,3,6,8,9,end])
 for model_idx = 1:length(Models)
     if ~contains(Models{model_idx}, 'N')
         figure
         Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%dFeat_%s_set%d.txt', ...
-            Models{model_idx},0.100, 0.100, N, Nonlin{1}, DATASET_NUM)]);
+            Models{model_idx}, loss_dB(1),phase_uncert(1), N, Nonlin{1}, DATASET_NUM)]);
         
         plot(phase_uncert, Model_acc, 'linewidth',2)
         
@@ -36,7 +36,7 @@ for model_idx = 1:length(Models)
         for nonlin_idx = 1:length(Nonlin)
             figure
         Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%dFeat_%s_set%d.txt', ...
-            Models{model_idx}, 0.100, 0.100, N, Nonlin{1}, DATASET_NUM)]);
+            Models{model_idx}, loss_dB(1), phase_uncert(1),  N, Nonlin{1}, DATASET_NUM)]);
             
             plot(phase_uncert, Model_acc, 'linewidth',2)
             

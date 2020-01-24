@@ -345,7 +345,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=self.loss, phase_uncert=self.phase_uncert, thetas=thetas, phis=phis))
 
         self.mesh = OpticalMesh(N, layers)
     
@@ -369,7 +369,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)),  thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss=loss))
+            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss=loss))
         self.mesh = OpticalMesh(self.N, layers)
 
 

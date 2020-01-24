@@ -9,7 +9,7 @@ cd(cwd)
 % FOLDER = '../nonlinearity_MNIST_analysis_additional_tests5_1000valSamples/';
 % FOLDER = '../nonlinearity_MNIST_analysis_AbsoluteValuesB4NonLin/';
 % FOLDER = '../training_at_loss=0dB_iris_N=4_forFigures/';
-FOLDER = '../training_at_every_loss_gauss_N=8/';
+FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/Gauss_Dataset_SingleLoss_GoodFigs/';
 
 if ~exist([FOLDER, 'Figures'], 'dir')
        mkdir([FOLDER, 'Figures'])

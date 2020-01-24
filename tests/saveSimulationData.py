@@ -24,10 +24,39 @@ def saveSimSettings(FOLDER, simSettings):
     np.savetxt(f'{FOLDER}/dataset_name.txt', [ITERATIONS], delimiter=',', fmt='%.d')
     np.savetxt(f'{FOLDER}/ONN_Setups.txt', [setup for setup in ONN_setups], delimiter=" ", fmt="%s")
 
+def saveSimSettings_multiTrainings(FOLDER, simSettings):
+    " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
+    N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB_train, losses_dB_test, phase_uncerts_train, phase_uncerts_test, dataset_name, ONN_setups = simSettings
+
+    np.savetxt(f'{FOLDER}/N.txt', [N], fmt='%d')
+    np.savetxt(f'{FOLDER}/EPOCHS.txt', [EPOCHS], fmt='%.3f')
+    np.savetxt(f'{FOLDER}/STEP_SIZE.txt', [STEP_SIZE], fmt='%.3f')
+    np.savetxt(f'{FOLDER}/SAMPLES.txt', [SAMPLES], fmt='%.3f')
+    np.savetxt(f'{FOLDER}/DATASET_NUM.txt', [DATASET_NUM], fmt='%.3f')
+    np.savetxt(f'{FOLDER}/ITERATIONS.txt', [ITERATIONS], fmt='%.3f')
+    np.savetxt(f'{FOLDER}/LossdB_train.txt', losses_dB_train, delimiter=',', fmt='%.3f')
+    np.savetxt(f'{FOLDER}/LossdB_test.txt', losses_dB_test, delimiter=',', fmt='%.3f')
+    np.savetxt(f'{FOLDER}/PhaseUncert_train.txt', phase_uncerts_train, delimiter=',', fmt='%.3f')
+    np.savetxt(f'{FOLDER}/PhaseUncert_test.txt', phase_uncerts_test, delimiter=',', fmt='%.3f')
+    np.savetxt(f'{FOLDER}/dataset_name.txt', [ITERATIONS], delimiter=',', fmt='%.d')
+    np.savetxt(f'{FOLDER}/ONN_Setups.txt', [setup for setup in ONN_setups], delimiter=" ", fmt="%s")
 
 def saveSimData(currentSimSettings, currentSimResults, model):
     losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix = currentSimResults
-    FOLDER, ONN_Model, loss, phase_uncert, N, ii, NonLin_key = currentSimSettings
+    FOLDER, ONN_Model, loss, phase_uncert, N, ii, NonLin_key, dataset_name = currentSimSettings
+    if ONN_Model == 'R_P':
+        Topology = 'Reck'
+    elif ONN_Model == 'I_P':
+        Topology = 'Inverted Reck'
+    elif ONN_Model == 'R_I_P':
+        Topology = 'Reck + Inverted Reck'
+    elif ONN_Model == 'R_D_I_P':
+        Topology = 'Reck + DMM + Inverted Reck'
+    elif ONN_Model == 'C_Q_P':
+        Topology = 'Diamond'
+    else:
+        Topology = ONN_Model
+
 
     # Plot loss, training acc and val acc
     ax1 = plt.plot()
@@ -39,7 +68,7 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     ax2.plot(val_accuracy, color='g')
     plt.ylabel('Accuracy', color='r')
     plt.legend(['Training Accuracy', 'Validation Accuracy'])
-    plt.title(f'Gradient Descent, Max Validation Accuracy: {max(val_accuracy):.2f}')
+    plt.title(f'Gradient Descent, Max Validation Accuracy: {max(val_accuracy):.2f}\n Dataset: {dataset_name}, Topology: {Topology}')
     plt.ylim([0, 100])
     plt.savefig(f'{FOLDER}/Figures_Fitting/{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.png')
     plt.clf()
@@ -83,10 +112,9 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
     df.to_csv(f'{FOLDER}/Phases/Phases_Best_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
 
-
 def saveAccuracyData(FOLDER, currentSimSettings, accuracy):
-    FOLDER, ONN_Model, loss, phase_uncert, N, ii, NonLin_key = currentSimSettings
-    np.savetxt(f"{FOLDER}/acc_{ONN_Model}_loss={phase_uncert:.3f}_uncert={phase_uncert:.3f}_{N}Feat_{NonLin_key}_set{ii}.txt", np.array(accuracy).T, delimiter=',', fmt='%.3f')
+    FOLDER, ONN_Model, loss, phase_uncert, N, ii, NonLin_key, dataset_name = currentSimSettings
+    np.savetxt(f"{FOLDER}/acc_{ONN_Model}_loss={loss:.3f}_uncert={phase_uncert:.3f}_{N}Feat_{NonLin_key}_set{ii}.txt", np.array(accuracy).T, delimiter=',', fmt='%.3f')
 
 def saveNonlin(FOLDER, Nonlinearities):
     keys = list(Nonlinearities.keys())

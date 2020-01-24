@@ -73,6 +73,8 @@ def createFOLDER(FOLDER):
         os.makedirs(FOLDER + '/Datasets')
     if not os.path.isdir(FOLDER + '/Losses_per_MZI'):
         os.makedirs(FOLDER + '/Losses_per_MZI')
+    if not os.path.isdir(FOLDER + '/Losses'):
+        os.makedirs(FOLDER + '/Losses')
 
 def saveSimData(FOLDER, dataset_name, ii, N, X, y, Xt, yt):
     axes = plot_scatter_matrix(X, y)

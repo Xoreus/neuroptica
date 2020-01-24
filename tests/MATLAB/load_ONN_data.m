@@ -7,5 +7,4 @@ phase_uncert = load([FOLDER, 'PhaseUncert.txt']);
 loss_dB = load([FOLDER, 'LossdB.txt']);
 iterations = load([FOLDER, 'ITERATIONS.txt']); % How many times we test the same structure
 DATASET_NUM = 0;
-
 end

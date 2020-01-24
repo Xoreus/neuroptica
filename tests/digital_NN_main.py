@@ -26,6 +26,8 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
     saving = True
     plotting = True
 
+    batch_size = 2**6
+
     beta = 1
     eta = .05
     alpha = 0.1
@@ -41,6 +43,7 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
 
     # Train model with Gradient Descent
     for epoch in range(EPOCHS):
+
         err = 0
         # Shuffle data at the start of each epoch
         instances, targets = shuffle(X, y)
@@ -95,9 +98,9 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
     return net, weights
 
 if __name__ == '__main__':
-    dataset_name = 'Gauss'
+    dataset_name = 'MNIST'
     FOLDER = 'Digital_Neural_Network'
-    SAMPLES = 500
+    SAMPLES = 5000
     EPOCHS = 300
     N = 4
     ii = 0
@@ -109,7 +112,11 @@ if __name__ == '__main__':
     elif dataset_name == 'Iris':
         X, y, Xt, yt = cd.iris_dataset(nsamples=int(SAMPLES))
 
-    setSim.saveSimData(FOLDER, dataset_name, ii, N, X, y, Xt, yt)
+    X = (X - np.min(X))/(np.max(X) - np.min(X))
+    Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
+    Xog, Xtog = X, Xt
+
 
     create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS)
+    setSim.saveSimData(FOLDER, dataset_name, ii, N, X, y, Xt, yt)
 

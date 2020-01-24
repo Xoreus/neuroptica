@@ -622,7 +622,6 @@ class MZILayer(ComponentLayer):
 
     def get_partial_transfer_vectors(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
         '''
-
         :param backward:
         :param cumulative:
         :param add_uncertainties:
