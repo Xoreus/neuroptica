@@ -9,18 +9,14 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
-ActualFolder = 'loss_diff_0.01_test_rng2'          ;
-ActualFolder = 'loss_diff_0.0_test_rng2'          ;
-ActualFolder = 'loss_diff_0.1_test_LossMatrix_rng2';
-ActualFolder = 'loss_diff_0.01_test_LossMatrix_rng2';
+ActualFolder = 'diff_00_rng8';
 FOLDER = [Folder ActualFolder '/'];
 
-plotAcc_allModels_SingleLoss(FOLDER)
-close all;
+% plotAcc_allModels_SingleLoss(FOLDER)
+% close all;
 
 plotAcc_allModels_SinglePhaseUncert(FOLDER)
-close all;
-
+% close all;
+% 
 % plotAcc_singleModel_AllLoss(FOLDER)
-% plotAcc_allModels_SingleLoss_SingleNonlinearity(FOLDER)
-cd('../MATLAB')
+% cd('../MATLAB')

@@ -29,23 +29,24 @@ import neuroptica as neu
 # Set random seed to always get same data
 rng = 2 
 
-for rng in range(2, 20):
+for rng in [8, 9]:
     random.seed(rng)
 
     ROOT_FOLDER = r'Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = ROOT_FOLDER + FUNCTION + f'acc_plot{rng}'
+    FOLDER = ROOT_FOLDER + FUNCTION + f'test{rng}'
     setSim.createFOLDER(FOLDER)
 
     N = 4
     BATCH_SIZE = 2**6
-    EPOCHS = 200
+    EPOCHS = 100
     STEP_SIZE = 0.005
-    SAMPLES = 800
+    SAMPLES = 400
     DATASET_NUM = 1
-    ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
-    losses_dB = np.linspace(0, 1, 6)
-    phase_uncerts = np.linspace(0, 2, 11)
+    ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
+    loss_diff = 0.0 # +/- dB
+    losses_dB = np.linspace(0, 2, 6)
+    phase_uncerts = np.linspace(0, 2, 21)
 
     # dataset_name = 'MNIST'
     dataset_name = 'Gauss'
@@ -55,7 +56,7 @@ for rng in range(2, 20):
 
     got_accuracy = [0 for _ in range(len(ONN_setup))]
 
-    simSettings = N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB, phase_uncerts, dataset_name, ONN_setup
+    simSettings = N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB, phase_uncerts, dataset_name, ONN_setup, loss_diff
     saveSimSettings(FOLDER, simSettings)
 
     if 1:
@@ -105,11 +106,11 @@ for rng in range(2, 20):
                 saveSimData(currentSimSettings, currentSimResults, model)
                 
                 phases = currentSimResults[3]
-                for loss in losses_dB:
+                for loss_dB in losses_dB:
                     acc_array = []
                     for phase_uncert in phase_uncerts:
                         acc = []    
-                        model.set_all_phases_uncerts_losses(phases, phase_uncert, loss)
+                        model.set_all_phases_uncerts_losses(phases, phase_uncert, loss_dB, loss_diff)
                         for _ in range(ITERATIONS):
                             Y_hat = model.forward_pass(Xt.T)
                             pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])

@@ -83,7 +83,7 @@ class PhaseShifter(OpticalComponent):
 class MZI(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
 
-    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss_dB=0):
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss_dB=0, loss_diff=0):
         '''
         :param m: first waveguide index
         :param n: second waveguide index
@@ -98,8 +98,8 @@ class MZI(OpticalComponent):
         self.phase_uncert = phase_uncert
 
         if loss_dB != 0:
-            self.loss_dB = get_loss(loss_dB) # Power Loss
-            self.loss = 10**(-self.loss_dB/10)/np.sqrt(2) # Field Loss
+            self.loss_dB = get_loss(loss_dB, loss_diff=loss_diff) # Power Loss
+            self.loss = 10**(-self.loss_dB/10) # Field Loss
         else:
             self.loss_dB = loss_dB
             self.loss = 10**(-loss_dB/10)
@@ -292,17 +292,10 @@ class MZI_H(OpticalComponent):
             return apply_loss(component_transfer_matrices, np.array(self.loss))
 
 def apply_loss(mzi, loss):
-    # print(mzi)
-    # print('Loss Matrix')
-    # print(mzi * np.array([[loss, 1],[1, loss]]))
-    # print('2x2 loss matrix')
-    # print(mzi * np.array([[loss, loss],[loss, loss]]))
-    # print('Loss Scalar')
-    # print(mzi * loss)
-    # return mzi * np.array([[loss, 1],[1, loss]])
-    return mzi * np.array([[loss, loss],[loss, loss]])
+    return mzi * np.array([[loss, 1],[1, loss]])
+    # return mzi * np.array([[loss, loss],[loss, loss]])
     # return mzi * loss
 
 def get_loss(loss_dB, loss_diff=0.01):
-    return np.random.uniform(loss_dB - loss_diff, loss_dB)/np.sqrt(2)
+    return np.abs(np.random.uniform(loss_dB - loss_diff, loss_dB + loss_diff))
 

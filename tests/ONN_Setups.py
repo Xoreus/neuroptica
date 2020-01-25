@@ -8,7 +8,7 @@ import neuroptica as neu
 import numpy as np
 
 
-def ONN_creation(layers='R', N=4, loss=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
+def ONN_creation(layers='R', N=4, loss_dB=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
     """ 
     Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond
     """
@@ -16,18 +16,18 @@ def ONN_creation(layers='R', N=4, loss=0, phase_uncert=0, Nonlinearity=neu.Sigmo
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
     # print(layers)
     layer_dict = {
-            'R':neu.ReckLayer(N, include_phase_shifter_layer=False, loss=loss, phase_uncert=phase_uncert),
-            'I':neu.flipped_ReckLayer(N, include_phase_shifter_layer=False, loss=loss, phase_uncert=phase_uncert), 
+            'R':neu.ReckLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, phase_uncert=phase_uncert),
+            'I':neu.flipped_ReckLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, phase_uncert=phase_uncert), 
 
             'A':neu.AddMask(2*N), 
-            'M':neu.DMM_layer(2*N, loss=loss, phase_uncert=phase_uncert),
+            'M':neu.DMM_layer(2*N, loss_dB=loss_dB, phase_uncert=phase_uncert),
             'D':neu.DropMask(N=2*N, keep_ports=range(0, 2*N, 2)), 
 
             'N':neu.Activation(Nonlinearity), 
             'P':neu.Activation(neu.AbsSquared(N)),
             'B':neu.Activation(neu.Abs(N)),
 
-            'C':neu.DiamondLayer(N, loss=loss, phase_uncert=phase_uncert, include_phase_shifter_layer=False),
+            'C':neu.DiamondLayer(N, loss_dB=loss_dB, phase_uncert=phase_uncert, include_phase_shifter_layer=False),
             'Q':neu.DropMask(2*N - 2, keep_ports=range(N - 2, 2*N - 2)),
             'W':neu.DropMask(2*N - 2, keep_ports=range(N - 1, 2*N - 1))
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # phases.append((50*pi/180, 30*pi/180)) 
     # phases = [phases]
 
-    # Model.set_all_phases_uncerts_losses(phases, 0, 0)
+    # Model.loss_dB(phases, 0, 0)
 
     # Phases = Model.get_all_phases()
 

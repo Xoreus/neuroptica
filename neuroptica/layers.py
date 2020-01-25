@@ -231,7 +231,7 @@ class ClementsLayer(OpticalMeshNetworkLayer):
 class ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss=0, phase_uncert=0.0):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, phase_uncert=0.0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -241,7 +241,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
         '''
         super().__init__(N, N, initializer=initializer)
         self.phase_uncert = phase_uncert
-        self.loss = loss
+        self.loss_dB = loss_dB
         self.N = N
 
         layers = []
@@ -270,11 +270,11 @@ class ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
         self.mesh = OpticalMesh(N, layers)
 
-    def set_phases_uncert_loss(self, Phases, phase_uncert, loss):
+    def set_phases_uncert_loss(self, Phases, phase_uncert, loss_dB, loss_diff):
         # Get MZI waveguide limits, upper and lower, for the Reck configuration
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
         layers = []
@@ -290,7 +290,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
         self.mesh = OpticalMesh(self.N, layers)
 
 
@@ -306,7 +306,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition, but flipped. This means that the triangle is facing
     up rather than down, like in the originali Reck mesh'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0, phases=[(None, None)],  phase_uncert=0.0):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss_dB=0, phases=[(None, None)],  phase_uncert=0.0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -316,7 +316,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         '''
         super().__init__(N, N, initializer=initializer)
         self.phase_uncert = phase_uncert
-        self.loss = loss
+        self.loss_dB = loss_dB
         self.N = N
         layers = []
 
@@ -345,12 +345,11 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=self.loss, phase_uncert=self.phase_uncert, thetas=thetas, phis=phis))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss_dB=self.loss_dB, phase_uncert=self.phase_uncert, thetas=thetas, phis=phis))
 
         self.mesh = OpticalMesh(N, layers)
-    
 
-    def set_phases_uncert_loss(self, Phases, phase_uncert, loss):
+    def set_phases_uncert_loss(self, Phases, phase_uncert, loss_dB, loss_diff):
         # Essentially recreate the network with specified phases
         # Get MZI waveguide limits, upper and lower, for the inverse Reck configuration
         mzi_limits_lower = [i for i in range(self.N - 2, 0, -1)] + [i for i in range(0, self.N - 1)]
@@ -369,7 +368,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss=loss))
+            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
         self.mesh = OpticalMesh(self.N, layers)
 
 
@@ -382,7 +381,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DMM_layer(OpticalMeshNetworkLayer):
-    def __init__(self, N: int, initializer=None, loss=0, phases=[(None, None)], phase_uncert=0.0):
+    def __init__(self, N: int, initializer=None, loss_dB=0, phases=[(None, None)], phase_uncert=0.0):
         '''
         Initialize DMM (diagonal MZI layer to create the Sigma portion of the SVD Decomposition)
         :param N: Number of MZIs in the Mesh, will be twice as many as the Reck and Reck' layer.
@@ -391,7 +390,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
         '''
         super().__init__(N, N, initializer=initializer)
         self.phase_uncert = phase_uncert
-        self.loss = loss
+        self.loss_dB = loss_dB
         self.N = N
 
         layers = []
@@ -415,11 +414,11 @@ class DMM_layer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
         self.mesh = OpticalMesh(N, layers)
 
-    def set_phases_uncert_loss(self, Phases, phase_uncert, loss):
+    def set_phases_uncert_loss(self, Phases, phase_uncert, loss_dB, loss_diff):
         layers = []
         # Get MZI waveguide limits, upper and lower, for the DMM configuration
         mzi_limits_upper = [self.N - 1]
@@ -437,7 +436,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)),  thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss=loss))
+            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)),  thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
         self.mesh = OpticalMesh(self.N, layers)
 
 
@@ -454,7 +453,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
     but in the inverse setup (Reck^-1), to create the V^\dagger
     portion of the SVD Decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss=0, thetas=[None], phis=[None]):
+    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss_dB=0, thetas=[None], phis=[None]):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -508,7 +507,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer_H.from_waveguide_indices(N, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis))
+            layers.append(MZILayer_H.from_waveguide_indices(N, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis))
 
 
         self.mesh = OpticalMesh(N, layers)
@@ -522,7 +521,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a diamond shape:
-    def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss=0, phase_uncert=0.0):
+    def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss_dB=0, phase_uncert=0.0):
         '''
         Initialize the Diamond Layer
         :param N: number of input and output waveguides - N = signals carried
@@ -536,7 +535,7 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
         S = 2*N - 2
         super().__init__(S, S, initializer=initializer)
         self.phase_uncert = phase_uncert
-        self.loss = loss
+        self.loss_dB = loss_dB
         self.N = N
 
         layers = []
@@ -566,11 +565,11 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis, phase_uncert=self.phase_uncert))
 
         self.mesh = OpticalMesh(S, layers)
 
-    def set_phases_uncert_loss(self, Phases, phase_uncert, loss):
+    def set_phases_uncert_loss(self, Phases, phase_uncert, loss_dB, loss_diff):
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
         layers = []
         phases_mzi_layer = []
@@ -585,7 +584,7 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), loss=loss, thetas=thetas, phis=phis, phase_uncert=phase_uncert))
+            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
         self.mesh = OpticalMesh(self.S, layers)
 
     def forward_pass(self, X: np.ndarray) -> np.ndarray:

@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 
 def saveSimSettings(FOLDER, simSettings):
     " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
-    N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB, phase_uncerts, dataset_name, ONN_setups = simSettings
+    N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB, phase_uncerts, dataset_name, ONN_setups, loss_diff = simSettings 
 
     np.savetxt(f'{FOLDER}/N.txt', [N], fmt='%d')
     np.savetxt(f'{FOLDER}/EPOCHS.txt', [EPOCHS], fmt='%.3f')
@@ -23,6 +23,7 @@ def saveSimSettings(FOLDER, simSettings):
     np.savetxt(f'{FOLDER}/PhaseUncert.txt', phase_uncerts, delimiter=',', fmt='%.3f')
     np.savetxt(f'{FOLDER}/dataset_name.txt', [ITERATIONS], delimiter=',', fmt='%.d')
     np.savetxt(f'{FOLDER}/ONN_Setups.txt', [setup for setup in ONN_setups], delimiter=" ", fmt="%s")
+    np.savetxt(f'{FOLDER}/loss_diff.txt', [loss_diff], fmt="%s")
 
 def saveSimSettings_multiTrainings(FOLDER, simSettings):
     " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "

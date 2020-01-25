@@ -534,7 +534,7 @@ class MZILayer(ComponentLayer):
             yield mzi.loss_dB
 
     @classmethod
-    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], loss=0, thetas=None, phis=None, phase_uncert=0.0):
+    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], thetas=None, phis=None, phase_uncert=0.0, loss_dB=0, loss_diff=0):
         '''
         Create an MZI layer from a list of an even number of input/output indices. Each pair of waveguides in the
         iteration order will be assigned to an MZI
@@ -552,7 +552,7 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], loss_dB=loss, theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert=phase_uncert))
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
 
         return cls(N, mzis)
 

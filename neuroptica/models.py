@@ -105,9 +105,9 @@ class Sequential(BaseModel):
                 losses.append([x for x in layer.mesh.all_losses()])
         return losses
 
-    def set_all_phases_uncerts_losses(self, Phases, phase_uncert, loss):
+    def set_all_phases_uncerts_losses(self, Phases, phase_uncert, loss_dB, loss_diff):
         phase_idx = 0
         for layer in self.layers:
             if hasattr(layer, 'mesh'):
-                layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert, loss)
+                layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert, loss_dB, loss_diff)
                 phase_idx += 1
