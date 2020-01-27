@@ -28,29 +28,28 @@ import neuroptica as neu
 
 N = 4
 BATCH_SIZE = 2**6
-EPOCHS = 400
-STEP_SIZE = 0.005
-SAMPLES = 1400
+EPOCHS = 600
+STEP_SIZE = 0.0005
+SAMPLES = 1600
 DATASET_NUM = 1
-ITERATIONS = 200 # number of times to retry same loss/PhaseUncert
+ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
 loss_diff = 0.1 # +/- dB
-losses_dB = np.linspace(0, 1.25, 41)
-phase_uncerts = np.linspace(0, 2.5, 41)
+losses_dB = np.linspace(0, 3, 11)
+phase_uncerts = np.linspace(0, 1.5, 11)
 
 
 # dataset_name = 'MNIST'
 dataset_name = 'Gauss'
 # dataset_name = 'Iris'
 
-ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P'])
-# ONN_setup = np.array(['R_P', 'R_I_P'])
+ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
 
 for rng in [4]:
     random.seed(rng)
 
     ROOT_FOLDER = r'Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = ROOT_FOLDER + FUNCTION + f'lossDiff={loss_diff}_NormalDistribution_rng={rng}_dataset={dataset_name}_ColorMap'
+    FOLDER = ROOT_FOLDER + FUNCTION + f'lossDiff={loss_diff}_NormalDistribution_rng={rng}_dataset={dataset_name}_ColorMap#3'
     # FOLDER = ROOT_FOLDER + FUNCTION + f'test'
     setSim.createFOLDER(FOLDER)
 
@@ -95,10 +94,8 @@ for rng in [4]:
                 X = np.array([list(np.zeros(int((N-2)))) + list(samples) for samples in X])
                 Xt = np.array([list(np.zeros(int((N-2)))) + list(samples) for samples in Xt])
             elif 'C' in ONN_Model and 'W' in ONN_Model:
-                X = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(np.ceil((N-2)/2)))
-                    for samples in X])
-                Xt = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(np.ceil((N-2)/2))) 
-                    for samples in Xt])
+                X = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(int(np.ceil((N-2)/2)))) for samples in X])
+                Xt = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(int(np.ceil((N-2)/2)))) for samples in Xt])
 
             # initialize the ADAM optimizer and fit the ONN to the training data
             optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=STEP_SIZE)

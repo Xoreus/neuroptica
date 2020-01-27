@@ -52,7 +52,6 @@ class Optimizer:
     def fit(self, data: np.ndarray, labels: np.ndarray, epochs=None, batch_size=None):
         raise NotImplementedError("must extend Optimizer.fit() method in child classes!")
 
-
 class InSituGradientDescent(Optimizer):
     '''
     On-chip training with in-situ backpropagation using adjoint field method and standard gradient descent
@@ -118,7 +117,6 @@ class InSituGradientDescent(Optimizer):
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=False)
 
         return losses, accuracy
-
 
 class InSituAdam(Optimizer):
     '''
@@ -271,8 +269,8 @@ class InSituAdam(Optimizer):
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
         
-        print(f'Accuracy: {val_accuracy[-1]:.2f}')
-        losses = [losses[0]] + losses
+        print(f'Max Validation Accuracy: {max(val_accuracy):.2f}')
+        losses = [losses[3]] + losses
         return losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix
 
 class Dropout():

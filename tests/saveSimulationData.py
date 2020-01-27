@@ -44,6 +44,8 @@ def saveSimData(currentSimSettings, currentSimResults, model):
         Topology = 'Reck + DMM + Inverted Reck'
     elif ONN_Model == 'C_Q_P':
         Topology = 'Diamond'
+    elif ONN_Model == 'C_W_P':
+        Topology = 'Central Diamond'
     else:
         Topology = ONN_Model
 

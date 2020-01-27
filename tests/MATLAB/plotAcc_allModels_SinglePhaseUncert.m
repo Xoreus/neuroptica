@@ -27,7 +27,6 @@ for p_idx = 1:length(SimulationSettings.phase_uncerts)
     end
     hold off
     legend(legend_, 'fontsize', fontsz,  'interpreter','latex');
-    ylim([0, 100])
     
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
@@ -41,7 +40,9 @@ for p_idx = 1:length(SimulationSettings.phase_uncerts)
     title(sprintf('Accuracy of Models with Phase Uncertainty $\\sigma_{Phase\\; Uncert}$ = %.2f Rad', SimulationSettings.phase_uncerts(p_idx)),...
         'fontsize', 1.5*fontsz, 'interpreter','latex')
     
-    
+    axis('tight')
+    ylim([0, 100])
+
     savefig([FOLDER, sprintf('Matlab_Figs/AllModels_PhaseUncert=%.3f.fig', SimulationSettings.phase_uncerts(p_idx))])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_PhaseUncert=%.3f.png', SimulationSettings.phase_uncerts(p_idx))])
 end

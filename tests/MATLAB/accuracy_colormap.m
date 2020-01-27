@@ -16,7 +16,7 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.txt', ...
         SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncerts(1), SimulationSettings.N)]);
     
-    imagesc(SimulationSettings.phase_uncerts, SimulationSettings.loss_dB, Model_acc)
+    imagesc(SimulationSettings.loss_dB, SimulationSettings.phase_uncerts, Model_acc)
     set(gca,'YDir','normal')
     c = colorbar;
     c.Label.String = 'Accuracy (%)';
@@ -28,12 +28,11 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
     
-    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('Loss (dB/MZI)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
+    xlabel('Loss (dB/MZI)', 'fontsize', fontsz, 'interpreter','latex')
     
     title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI',SimulationSettings.models{model_idx},...
         SimulationSettings.loss_diff), 'fontsize', 1.5*fontsz, 'interpreter','latex')
-    
     
     savefig([FOLDER, sprintf('Matlab_Figs/ColorMap-Model=%s_Loss=[%.3f-%.2f].fig', SimulationSettings.ONN_Setups{model_idx}, ...
         min(SimulationSettings.loss_dB), max(SimulationSettings.loss_dB))])
