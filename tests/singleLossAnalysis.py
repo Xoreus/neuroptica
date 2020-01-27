@@ -12,6 +12,7 @@ import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+mpl.use('Agg')
 from sklearn.model_selection import train_test_split
 import time
 import os
@@ -28,9 +29,9 @@ import neuroptica as neu
 
 N = 4
 BATCH_SIZE = 2**6
-EPOCHS = 600
+EPOCHS = 200
 STEP_SIZE = 0.0005
-SAMPLES = 1600
+SAMPLES = 600
 DATASET_NUM = 1
 ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
 loss_diff = 0.1 # +/- dB
@@ -43,6 +44,7 @@ dataset_name = 'Gauss'
 # dataset_name = 'Iris'
 
 ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
+ONN_setup = np.array(['R_P'])
 
 for rng in [4]:
     random.seed(rng)
@@ -50,7 +52,7 @@ for rng in [4]:
     ROOT_FOLDER = r'Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
     FOLDER = ROOT_FOLDER + FUNCTION + f'lossDiff={loss_diff}_NormalDistribution_rng={rng}_dataset={dataset_name}_ColorMap#3'
-    # FOLDER = ROOT_FOLDER + FUNCTION + f'test'
+    FOLDER = ROOT_FOLDER + FUNCTION + f'test'
     setSim.createFOLDER(FOLDER)
 
 
@@ -61,7 +63,6 @@ for rng in [4]:
     simSettings = pd.DataFrame.from_dict(simSettings, orient='index', columns=['Simulation Settings'])
     saveSimSettings(FOLDER, simSettings)
     saveSim_Loss_PhaseUncert_Ranges(FOLDER, losses_dB, phase_uncerts, ONN_setup)
-
     if 1:
         Nonlinearities = {'a2c0.15_bpReLU2':neu.bpReLU(N, alpha=2, cutoff=0.15), }
         saveNonlin(FOLDER, Nonlinearities)

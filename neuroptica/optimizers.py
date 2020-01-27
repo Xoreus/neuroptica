@@ -270,7 +270,8 @@ class InSituAdam(Optimizer):
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
         
         print(f'Max Validation Accuracy: {max(val_accuracy):.2f}')
-        losses = [losses[3]] + losses
+        trn_accuracy = trn_accuracy[1:]
+        val_accuracy = val_accuracy[1:]
         return losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix
 
 class Dropout():

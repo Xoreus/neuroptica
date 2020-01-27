@@ -28,6 +28,3 @@ def createFOLDER(FOLDER):
         os.makedirs(FOLDER + '/Datasets')
     if not os.path.isdir(FOLDER + '/Losses_per_MZI'):
         os.makedirs(FOLDER + '/Losses_per_MZI')
-    if not os.path.isdir(FOLDER + '/Losses'):
-        os.makedirs(FOLDER + '/Losses')
-

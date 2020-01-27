@@ -4,13 +4,15 @@ Function to save all of the simulation data at every loss/phase_uncert training 
 Author: Simon Geoffroy-Gagnon
 Edit: 17.01.2020
 """
-
+import sys
 import numpy as np
 import pandas as pd
 from pandas.plotting import scatter_matrix
 import matplotlib.pyplot as plt
 import plot_scatter_matrix as psm
 import matplotlib as mpl
+mpl.use('Agg')
+
 
 def saveSimSettings(FOLDER, simSettings):
     " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
@@ -170,3 +172,16 @@ def saveSimDataset(FOLDER, dataset_name, N, X, y, Xt, yt):
     np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_y_{N}Features_Samples={len(X)}_Dataset.txt',y, delimiter=',',fmt='%.3f')
     np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_Xt_{N}Features_Samples={len(X)}_Dataset.txt',Xt, delimiter=',',fmt='%.3f')
     np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_yt_{N}Features_Samples={len(X)}_Dataset.txt',yt, delimiter=',',fmt='%.3f')
+
+if __name__ == '__main__':
+    FOLDER = '/home/simon/Downloads'
+    N = 4
+
+    sys.path.append('/home/simon/Documents/neuroptica')
+    import neuroptica as neu
+    import setupSimulation as setSim
+
+    setSim.createFOLDER(FOLDER)
+
+    Nonlinearities = {'a2c0.15_bpReLU2':neu.bpReLU(N, alpha=2, cutoff=0.15), }
+    saveNonlin(FOLDER, Nonlinearities)
