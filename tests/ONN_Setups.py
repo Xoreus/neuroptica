@@ -8,7 +8,7 @@ import neuroptica as neu
 import numpy as np
 
 
-def ONN_creation(layers='R', N=4, loss_dB=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
+def ONN_creation(layers='R', N=4, loss_dB=0, loss_diff=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), Phases=[(None, None)]):
     """ 
     Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond
     """

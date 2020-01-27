@@ -7,44 +7,33 @@ Edit: 17.01.2020
 
 import numpy as np
 import pandas as pd
+from pandas.plotting import scatter_matrix
 import matplotlib.pyplot as plt
+import plot_scatter_matrix as psm
+import matplotlib as mpl
 
 def saveSimSettings(FOLDER, simSettings):
     " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
-    N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB, phase_uncerts, dataset_name, ONN_setups, loss_diff = simSettings 
+    simulationSettings = simSettings.to_string()
+    output_file = open(f'{FOLDER}/SimulationSettings.txt','w')
+    output_file.write(simulationSettings)
+    output_file.close()
 
-    np.savetxt(f'{FOLDER}/N.txt', [N], fmt='%d')
-    np.savetxt(f'{FOLDER}/EPOCHS.txt', [EPOCHS], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/STEP_SIZE.txt', [STEP_SIZE], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/SAMPLES.txt', [SAMPLES], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/DATASET_NUM.txt', [DATASET_NUM], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/ITERATIONS.txt', [ITERATIONS], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/LossdB.txt', losses_dB, delimiter=',', fmt='%.3f')
-    np.savetxt(f'{FOLDER}/PhaseUncert.txt', phase_uncerts, delimiter=',', fmt='%.3f')
-    np.savetxt(f'{FOLDER}/dataset_name.txt', [ITERATIONS], delimiter=',', fmt='%.d')
-    np.savetxt(f'{FOLDER}/ONN_Setups.txt', [setup for setup in ONN_setups], delimiter=" ", fmt="%s")
-    np.savetxt(f'{FOLDER}/loss_diff.txt', [loss_diff], fmt="%s")
+def saveSim_Loss_PhaseUncert_Ranges(FOLDER, losses_dB, phase_uncerts, ONN_setup):
+    np.savetxt(f'{FOLDER}/losses_dB.txt', losses_dB, fmt='%.4f')
+    np.savetxt(f'{FOLDER}/phase_uncerts.txt', phase_uncerts, fmt='%.4f')
+    np.savetxt(f'{FOLDER}/ONN_Setups.txt', ONN_setup, fmt='%s')
 
-def saveSimSettings_multiTrainings(FOLDER, simSettings):
-    " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
-    N, EPOCHS, STEP_SIZE, SAMPLES, DATASET_NUM, ITERATIONS, losses_dB_train, losses_dB_test, phase_uncerts_train, phase_uncerts_test, dataset_name, ONN_setups = simSettings
-
-    np.savetxt(f'{FOLDER}/N.txt', [N], fmt='%d')
-    np.savetxt(f'{FOLDER}/EPOCHS.txt', [EPOCHS], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/STEP_SIZE.txt', [STEP_SIZE], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/SAMPLES.txt', [SAMPLES], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/DATASET_NUM.txt', [DATASET_NUM], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/ITERATIONS.txt', [ITERATIONS], fmt='%.3f')
-    np.savetxt(f'{FOLDER}/LossdB_train.txt', losses_dB_train, delimiter=',', fmt='%.3f')
-    np.savetxt(f'{FOLDER}/LossdB_test.txt', losses_dB_test, delimiter=',', fmt='%.3f')
-    np.savetxt(f'{FOLDER}/PhaseUncert_train.txt', phase_uncerts_train, delimiter=',', fmt='%.3f')
-    np.savetxt(f'{FOLDER}/PhaseUncert_test.txt', phase_uncerts_test, delimiter=',', fmt='%.3f')
-    np.savetxt(f'{FOLDER}/dataset_name.txt', [ITERATIONS], delimiter=',', fmt='%.d')
-    np.savetxt(f'{FOLDER}/ONN_Setups.txt', [setup for setup in ONN_setups], delimiter=" ", fmt="%s")
+def saveSim_Loss_PhaseUncert_Ranges_Multi(FOLDER, losses_dB_train, losses_dB_test, phase_uncerts_train, phase_uncerts_test, ONN_setup):
+    np.savetxt(f'{FOLDER}/losses_dB_train.txt', losses_dB_train, fmt='%.4f')
+    np.savetxt(f'{FOLDER}/phase_uncerts_train.txt', phase_uncerts_train, fmt='%.4f')
+    np.savetxt(f'{FOLDER}/losses_dB_test.txt', losses_dB_test, fmt='%.4f')
+    np.savetxt(f'{FOLDER}/phase_uncerts_test.txt', phase_uncerts_test, fmt='%.4f',)
+    np.savetxt(f'{FOLDER}/ONN_Setups.txt', ONN_setup, fmt='%s')
 
 def saveSimData(currentSimSettings, currentSimResults, model):
     losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix = currentSimResults
-    FOLDER, ONN_Model, loss, phase_uncert, N, ii, NonLin_key, dataset_name = currentSimSettings
+    FOLDER, ONN_Model, loss, phase_uncert, N, NonLin_key, dataset_name = currentSimSettings
     if ONN_Model == 'R_P':
         Topology = 'Reck'
     elif ONN_Model == 'I_P':
@@ -71,33 +60,33 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     plt.legend(['Training Accuracy', 'Validation Accuracy'])
     plt.title(f'Gradient Descent, Max Validation Accuracy: {max(val_accuracy):.2f}\n Dataset: {dataset_name}, Topology: {Topology}')
     plt.ylim([0, 100])
-    plt.savefig(f'{FOLDER}/Figures_Fitting/{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.png')
+    plt.savefig(f'{FOLDER}/Figures_Fitting/{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.png')
     plt.clf()
 
     # save a txt file containing the loss, trn acc, val acc, in case i want to replot it using matlab
     df = pd.DataFrame({'Losses':losses, 'Training Accuracy':trn_accuracy, 'Validation Accuracy':val_accuracy})
-    df.to_csv(f'{FOLDER}/Data_Fitting/{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
+    df.to_csv(f'{FOLDER}/Data_Fitting/{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt')
 
     # Get losses of MZIs
     losses_MZI = model.get_all_losses()
     losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
     df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-    df.to_csv(f'{FOLDER}/Losses_per_MZI/lossPerMZI_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
+    df.to_csv(f'{FOLDER}/Losses_per_MZI/lossPerMZI_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_{NonLin_key}.txt')
 
     # Save best transformation matrix
     best_trf_matrix = np.array(best_trf_matrix)
-    f_obj = open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt', 'w')
+    f_obj = open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', 'w')
     f_obj.close()
-    with open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt', "a") as myfile:
+    with open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "a") as myfile:
         for trf in best_trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')
 
     # Save final transformation matrix
     trf_matrix = np.array(model.get_transformation_matrix())
-    f_obj = open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt', 'w')
+    f_obj = open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', 'w')
     f_obj.close()
-    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt', "a") as myfile:
+    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_{NonLin_key}.txt', "a") as myfile:
         for trf in trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')
@@ -106,16 +95,16 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     last_phases = model.get_all_phases()
     last_phases_flat = [item for sublist in last_phases for item in sublist]
     df = pd.DataFrame(last_phases_flat, columns=['Theta','Phi'])
-    df.to_csv(f'{FOLDER}/Phases/last_phases_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
+    df.to_csv(f'{FOLDER}/Phases/last_phases_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt')
 
     # Save best phases as well
     best_phases_flat = [item for sublist in best_phases for item in sublist]
     df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
-    df.to_csv(f'{FOLDER}/Phases/Phases_Best_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_#{ii}_{NonLin_key}.txt')
+    df.to_csv(f'{FOLDER}/Phases/Phases_Best_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt')
 
 def saveAccuracyData(FOLDER, currentSimSettings, accuracy):
-    FOLDER, ONN_Model, loss, phase_uncert, N, ii, NonLin_key, dataset_name = currentSimSettings
-    np.savetxt(f"{FOLDER}/acc_{ONN_Model}_loss={loss:.3f}_uncert={phase_uncert:.3f}_{N}Feat_{NonLin_key}_set{ii}.txt", np.array(accuracy).T, delimiter=',', fmt='%.3f')
+    FOLDER, ONN_Model, loss, phase_uncert, N, NonLin_key, dataset_name = currentSimSettings
+    np.savetxt(f"{FOLDER}/acc_{ONN_Model}_loss={loss:.3f}_uncert={phase_uncert:.3f}_{N}Feat.txt", np.array(accuracy).T, delimiter=',', fmt='%.3f')
 
 def saveNonlin(FOLDER, Nonlinearities):
     keys = list(Nonlinearities.keys())
@@ -127,3 +116,55 @@ def saveNonlin(FOLDER, Nonlinearities):
         plt.ylabel("Output field (a.u.)")
     plt.legend()
     plt.savefig(f'{FOLDER}/Figures/nonlin_activation.png')
+
+def plot_scatter_matrix(X, Y,  figsize=(20, 15)):
+    plt.rcParams.update({'font.size': 44})
+    df = pd.DataFrame(X)
+    df['Labels'] = [np.argmax(y) for y in Y]
+
+    #now plot using pandas
+    color_wheel = {0: 'r', 1: 'b', 2: 'g', 3: 'k', 4: 'c', 5: 'm', 6: 'y', 7:'tab:blue', 8:'tab:orange',9:'tab:purple'}
+    colors = df["Labels"].map(lambda x: color_wheel.get(x))
+
+    features = ['$X_%d$' % x for x in range(len(X[1]))]
+
+    df = df.rename(columns={v:'$X_%d$' % v for v in range(len(X))})
+
+
+    axes = scatter_matrix(df[features], alpha=.8, figsize=figsize,
+                          diagonal='kde',
+                          color=colors, s=100, range_padding=0.1)
+
+
+    for item in axes:
+        for idx, ax in enumerate(item):
+            ax.set_yticks([0, 0.5, 1])
+            ax.set_xticks([0, 0.5, 1])
+#            ax.set_yticklabels([0, 0.5, 1])
+#            ax.set_xticklabels([0, 0.5, 1])
+            ax.set_yticklabels('')
+            ax.set_xticklabels('')
+
+
+#            ax.subplots_adjust(hspace=3)
+
+            # We change the fontsize of minor ticks label
+#            ax.set_ylim([-0.2, 1.2])
+#            ax.set_xlim([-0.05, 1.1])
+            ax.tick_params(axis='both', which='major', labelsize=24)
+    #        ax.tick_params(axis='both', which='minor', labelsize=42)
+            ax.tick_params(axis='both', pad=10)
+#            ax.tick_params(axis='x', pad=30)
+            ax.xaxis.labelpad = 20
+    return axes
+
+def saveSimDataset(FOLDER, dataset_name, N, X, y, Xt, yt):
+    axes = plot_scatter_matrix(X, y)
+    plt.savefig(f'{FOLDER}/Datasets/{dataset_name}_Samples={len(X)}_Dataset.png')
+    plt.clf()
+    mpl.rcParams.update(mpl.rcParamsDefault)
+
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_X_{N}Features_Samples={len(X)}_Dataset.txt',X, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_y_{N}Features_Samples={len(X)}_Dataset.txt',y, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_Xt_{N}Features_Samples={len(X)}_Dataset.txt',Xt, delimiter=',',fmt='%.3f')
+    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_yt_{N}Features_Samples={len(X)}_Dataset.txt',yt, delimiter=',',fmt='%.3f')

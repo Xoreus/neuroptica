@@ -97,12 +97,8 @@ class MZI(OpticalComponent):
         self.n = n  # input waveguide B index
         self.phase_uncert = phase_uncert
 
-        if loss_dB != 0:
-            self.loss_dB = get_loss(loss_dB, loss_diff=loss_diff) # Power Loss
-            self.loss = 10**(-self.loss_dB/10) # Field Loss
-        else:
-            self.loss_dB = loss_dB
-            self.loss = 10**(-loss_dB/10)
+        self.loss_dB = get_loss(loss_dB, loss_diff=loss_diff) # dB Loss
+        self.loss = 10**(-self.loss_dB/10) # Linear Loss
 
         if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
@@ -297,5 +293,6 @@ def apply_loss(mzi, loss):
     # return mzi * loss
 
 def get_loss(loss_dB, loss_diff=0.01):
-    return np.abs(np.random.uniform(loss_dB - loss_diff, loss_dB + loss_diff))
+    # return np.abs(np.random.uniform(loss_dB - loss_diff, loss_dB + loss_diff))
+    return np.abs(np.random.normal(loss_dB, loss_diff))
 

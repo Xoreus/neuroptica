@@ -14,6 +14,12 @@ for ii = 1:length(Models)
             models{ii} = 'Reck + Inverted Reck';
         case 'R_D_I_P'
             models{ii} = 'Reck + DMM + Inverted Reck';
+        case 'C_W_P'
+            models{ii} = 'Center Diamond';
+        case 'I_P'
+            models{ii} = 'Inverted Reck';
+        otherwise
+            model{ii} = 'Unknown Mesh';
     end
 end
 
