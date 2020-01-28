@@ -31,12 +31,12 @@ N = 4
 BATCH_SIZE = 2**6
 EPOCHS = 600
 STEP_SIZE = 0.0005
-SAMPLES = 1600
+SAMPLES = 1100
 DATASET_NUM = 1
-ITERATIONS = 200 # number of times to retry same loss/PhaseUncert
-loss_diff = 0.1 # +/- dB
-losses_dB = np.linspace(0, 3, 51)
-phase_uncerts = np.linspace(0, 1.5, 51)
+ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+loss_diff = 0.0 # +/- dB
+losses_dB = np.linspace(0, 3, 31)
+phase_uncerts = np.linspace(0, 1.5, 16)
 
 
 # dataset_name = 'MNIST'
@@ -46,7 +46,7 @@ dataset_name = 'Iris'
 ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
 # ONN_setup = np.array(['R_P'])
 
-for rng in [4]:
+for rng in [4, 19]:
     random.seed(rng)
 
     ROOT_FOLDER = r'Analysis/'

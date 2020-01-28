@@ -10,7 +10,7 @@
 function plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
 fontsz = 28;
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-for p_idx = 1:length(SimulationSettings.phase_uncerts(1:steps:end))
+for p_idx = 1:length(SimulationSettings.phase_uncerts)
     
     
     for model_idx = 1:length(SimulationSettings.ONN_Setups)

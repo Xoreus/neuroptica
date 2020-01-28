@@ -159,7 +159,7 @@ class ClementsLayer(OpticalMeshNetworkLayer):
     perform any arbitrary unitary operator
     '''
 
-    def __init__(self, N: int, M=None, include_phase_shifter_layer=True, initializer=None):
+    def __init__(self, N: int, M=None, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
         '''
         Initialize the ClementsLayer
         :param N: number of input and output waveguides
@@ -169,6 +169,10 @@ class ClementsLayer(OpticalMeshNetworkLayer):
         :param initializer: optional initializer method (WIP)
         '''
         super().__init__(N, N, initializer=initializer)
+
+        self.phase_uncert = phase_uncert
+        self.loss_dB = loss_dB
+        self.N = N
 
         layers = []
         if include_phase_shifter_layer:

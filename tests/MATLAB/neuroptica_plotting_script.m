@@ -10,11 +10,13 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
-loss_diff = 0.10;
-rng = [2];
+loss_diff = 0.25;
+rng = [4];
+dataset = 'Gauss';
 
 for ii = 1:length(rng)
-    ActualFolder = sprintf('test');
+    ActualFolder = 'lossDiff=0.1_NormalDistribution_rng=4_dataset=Iris_ColorMap';
+%     ActualFolder = sprintf('lossDiff=%.2f_NormalDistribution_rng=%d_dataset=%s_ColorMap', loss_diff, rng(ii), dataset);
 %     ActualFolder = 'test';
     FOLDER = [Folder ActualFolder '/'];
     
@@ -22,15 +24,15 @@ for ii = 1:length(rng)
     makeMatlabDirs(FOLDER)
     
     accuracy_colormap(FOLDER, SimulationSettings)
-    close all;
-    
-    plotAcc_allModels_SingleLoss(FOLDER, SimulationSettings)
-    close all;
-    
-    plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
-    close all;
-    
-    plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
-    close all;
+%     close all;
+%     
+%     plotAcc_allModels_SingleLoss(FOLDER, SimulationSettings)
+%     close all;
+%     
+%     plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
+%     close all;
+%     
+%     plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
+%     close all;
     cd('../MATLAB')
 end
