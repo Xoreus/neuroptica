@@ -26,7 +26,7 @@ for l_idx = 1:length(SimulationSettings.loss_dB)
     
     legend_ = create_legend_single_loss(SimulationSettings.models);
     
-    legend(legend_, 'fontsize', fontsz, 'interpreter','latex');
+    legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
     ylim([0, 100])
     
     a = get(gca,'XTickLabel');

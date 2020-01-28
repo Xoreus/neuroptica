@@ -14,12 +14,13 @@ loss_diff = 0.10;
 rng = [2];
 
 for ii = 1:length(rng)
-    ActualFolder = sprintf('lossDiff=0.1_NormalDistribution_rng=4_dataset=Gauss_ColorMap');
+    ActualFolder = sprintf('test');
 %     ActualFolder = 'test';
     FOLDER = [Folder ActualFolder '/'];
     
     SimulationSettings = load_ONN_data(FOLDER);
     makeMatlabDirs(FOLDER)
+    
     accuracy_colormap(FOLDER, SimulationSettings)
     close all;
     
@@ -31,5 +32,5 @@ for ii = 1:length(rng)
     
     plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
     close all;
-%     cd('../MATLAB')
+    cd('../MATLAB')
 end
