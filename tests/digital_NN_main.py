@@ -1,3 +1,11 @@
+"""
+digital_NN_main.py
+Simple single layer fully connected neural network, used to test whether or not the unitary-ness of 
+ONNs actually affect accuracy
+
+Author: Simon Geoffroy-Gagnon
+Edit: 29.01.2020
+"""
 import sys
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
@@ -6,7 +14,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 sys.path.append('/home/simon/Documents/neuroptica/digital_neural_network/')
-
 import Digital_Neural_Network as dnn
 import neural_network as nn
 import create_datasets as cd 
@@ -92,7 +99,7 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
             Xt, yt, net)*100))
 
     # Test Accuracy
-    print('Testing Accuracy: {:.1f}%'.format(get_current_accuracy(
+    print('Training Accuracy: {:.1f}%'.format(get_current_accuracy(
             X, y, net)*100))
 
     return net, weights

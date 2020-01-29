@@ -54,8 +54,8 @@ def load_mnist_labels(filename):
     # The labels are vectors of integers now, that's exactly what we want.
     return data
 
-def get_data(digits=None, N=4, nsamples=1000): # this is for unnormalized MNIST: [1,3,6,7]):
-    # Download MNIST dataset
+def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized MNIST: [1,3,6,7]):
+    " Download MNIST dataset "
     X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1)
     y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
     X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
@@ -88,12 +88,11 @@ def get_data(digits=None, N=4, nsamples=1000): # this is for unnormalized MNIST:
     rand_ind = random.sample(list(range(len(Xt))), int(nsamples*0.2))
     Xt = Xt[rand_ind]
     yt = yt[rand_ind]
+
     return X, y, Xt, yt
 
-
-# IRIS DATASET MAKER
-
 def iris_dataset(print_plots=False, divide_mean=1.25, save=False, nsamples=1):
+    " IRIS DATASET MAKER "
     iris = datasets.load_iris()
 
     predictors = [i for i in iris.feature_names]
@@ -244,11 +243,10 @@ def plot_OG_iris():
     plt.suptitle('', fontname='Calibri', fontsize=20)
     plt.savefig('Figures/iris_scatter_matrix_OG.png')
 
-# GAUSSIAN BLOB MAKER
-
-def blob_maker(targets=4, features=4, nsamples=10000, cluster_std=.1, random_state=1):
+def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=1):
+    " GAUSSIAN BLOB MAKER "
     X, y = make_blobs(n_samples=nsamples, centers=targets, n_features=features, cluster_std=cluster_std,
-                      center_box=(0, 1), shuffle=False, random_state=random_state)
+                      center_box=(0, 1), shuffle=False, random_state=rng)
     ohe_labels = pd.get_dummies(y).values
-    x, xt, y, yt = train_test_split(X, ohe_labels, test_size=0.2)
-    return x, y, xt, yt
+    X, Xt, y, yt = train_test_split(X, ohe_labels, test_size=0.2)
+    return X, y, Xt, yt

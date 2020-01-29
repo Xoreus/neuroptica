@@ -14,13 +14,6 @@ import matplotlib as mpl
 mpl.use('Agg')
 
 
-def saveSimSettings(FOLDER, simSettings):
-    " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
-    simulationSettings = simSettings.to_string()
-    output_file = open(f'{FOLDER}/SimulationSettings.txt','w')
-    output_file.write(simulationSettings)
-    output_file.close()
-
 def saveSim_Loss_PhaseUncert_Ranges(FOLDER, losses_dB, phase_uncerts, ONN_setup):
     np.savetxt(f'{FOLDER}/losses_dB.txt', losses_dB, fmt='%.4f')
     np.savetxt(f'{FOLDER}/phase_uncerts.txt', phase_uncerts, fmt='%.4f')
@@ -144,34 +137,13 @@ def plot_scatter_matrix(X, Y,  figsize=(20, 15)):
         for idx, ax in enumerate(item):
             ax.set_yticks([0, 0.5, 1])
             ax.set_xticks([0, 0.5, 1])
-#            ax.set_yticklabels([0, 0.5, 1])
-#            ax.set_xticklabels([0, 0.5, 1])
             ax.set_yticklabels('')
             ax.set_xticklabels('')
 
-
-#            ax.subplots_adjust(hspace=3)
-
-            # We change the fontsize of minor ticks label
-#            ax.set_ylim([-0.2, 1.2])
-#            ax.set_xlim([-0.05, 1.1])
             ax.tick_params(axis='both', which='major', labelsize=24)
-    #        ax.tick_params(axis='both', which='minor', labelsize=42)
             ax.tick_params(axis='both', pad=10)
-#            ax.tick_params(axis='x', pad=30)
             ax.xaxis.labelpad = 20
     return axes
-
-def saveSimDataset(FOLDER, dataset_name, N, X, y, Xt, yt):
-    axes = plot_scatter_matrix(X, y)
-    plt.savefig(f'{FOLDER}/Datasets/{dataset_name}_Samples={len(X)}_Dataset.png')
-    plt.clf()
-    mpl.rcParams.update(mpl.rcParamsDefault)
-
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_X_{N}Features_Samples={len(X)}_Dataset.txt',X, delimiter=',',fmt='%.3f')
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_y_{N}Features_Samples={len(X)}_Dataset.txt',y, delimiter=',',fmt='%.3f')
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_Xt_{N}Features_Samples={len(X)}_Dataset.txt',Xt, delimiter=',',fmt='%.3f')
-    np.savetxt(f'{FOLDER}/Datasets/{dataset_name}_yt_{N}Features_Samples={len(X)}_Dataset.txt',yt, delimiter=',',fmt='%.3f')
 
 if __name__ == '__main__':
     FOLDER = '/home/simon/Downloads'

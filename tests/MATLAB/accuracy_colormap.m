@@ -21,6 +21,7 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     c = colorbar;
     c.Label.String = 'Accuracy (%)';
     caxis([20 80]) 
+    colormap('hot')
     
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
