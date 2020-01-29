@@ -52,13 +52,9 @@ for rng in [4]:
     FOLDER = ROOT_FOLDER + FUNCTION + f'lossDiff={loss_diff}_GaussAlways_rng{rng}_avgFig'
     setSim.createFOLDER(FOLDER)
 
-
-    ONN_setup = np.array(['R_P', 'R_D_I_P', 'R_I_P', 'R_D_P', 'C_Q_P'])
     ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
-    # ONN_setup = np.array(['R_P', 'R_D_P', 'R_D_I_P', 'R_I_P'])
 
     got_accuracy = [0 for _ in range(len(ONN_setup))]
-
 
     if 1:
         Nonlinearities = {'a2c0.15_bpReLU2':neu.bpReLU(N, alpha=2, cutoff=0.15), }
@@ -99,14 +95,12 @@ for rng in [4]:
                     X = Xog
                     Xt = Xtog
 
-                    if 'C' in ONN_Model and 'Q' in ONN_Model:
-                        X = np.array([list(np.zeros(int((N-2)))) + list(samples) for samples in X])
-                        Xt = np.array([list(np.zeros(int((N-2)))) + list(samples) for samples in Xt])
-                    elif 'C' in ONN_Model and 'W' in ONN_Model:
-                        X = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(np.ceil((N-2)/2)))
-                            for samples in X])
-                        Xt = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(np.ceil((N-2)/2))) 
-                            for samples in Xt])
+            if 'C' in ONN_Model and 'Q' in ONN_Model:
+                X = np.array([list(np.zeros(int((N-2)))) + list(samples) for samples in X])
+                Xt = np.array([list(np.zeros(int((N-2)))) + list(samples) for samples in Xt])
+            elif 'C' in ONN_Model and 'W' in ONN_Model:
+                X = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(int(np.ceil((N-2)/2)))) for samples in X])
+                Xt = np.array([list(np.zeros(int((N-2)/2))) + list(samples) + list(np.zeros(int(np.ceil((N-2)/2)))) for samples in Xt])
 
                     # initialize the ADAM optimizer and fit the ONN to the training data
                     optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=STEP_SIZE)
@@ -135,5 +129,5 @@ for rng in [4]:
                     saveAccuracyData(FOLDER, currentSimSettings, accuracy)
 
 # Now test the same dataset using a Digital Neural Networks, just to see the difference between unitary and non-unitary matrix
-# digital_NN_main.create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS = 500)
+digital_NN_main.create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS = 500)
 print(f'Simulation in Folder {FOLDER} completed')
