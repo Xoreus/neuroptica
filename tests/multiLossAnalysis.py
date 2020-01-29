@@ -27,32 +27,34 @@ import digital_NN_main
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
+N = 4
+BATCH_SIZE = 2**6
+EPOCHS = 500
+STEP_SIZE = 0.0005
+SAMPLES = 1000
+DATASET_NUM = 0
+ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+loss_diff = 0 # +/- dB
+losses_dB_train = np.linspace(0, .05, 3)
+losses_dB_test = np.linspace(0, 3, 31)
+phase_uncerts_train = np.linspace(0, .05, 3)
+phase_uncerts_test = np.linspace(0, 1.5, 21)
+
+# dataset_name = 'MNIST'
+dataset_name = 'Gauss'
+# dataset_name = 'Iris'
+
 # Set random seed to always get same data
-for rng in [2]: 
+for rng in [4]: 
     random.seed(rng)
     ROOT_FOLDER = r'Analysis/'
     FUNCTION = r'multiLossAnalysis/'
-    FOLDER = ROOT_FOLDER + FUNCTION + f'lossDiff=0.01_GaussAlways_rng{rng}'
+    FOLDER = ROOT_FOLDER + FUNCTION + f'lossDiff={loss_diff}_GaussAlways_rng{rng}_avgFig'
     setSim.createFOLDER(FOLDER)
 
-    N = 4
-    BATCH_SIZE = 2**6
-    EPOCHS = 500
-    STEP_SIZE = 0.005
-    SAMPLES = 1000
-    DATASET_NUM = 0
-    ITERATIONS = 300 # number of times to retry same loss/PhaseUncert
-    loss_diff = 0.01 # +/- dB
-    losses_dB_train = np.linspace(0, .05, 2)
-    losses_dB_test = np.linspace(0, 1, 11)
-    phase_uncerts_train = np.linspace(0, .05, 2)
-    phase_uncerts_test = np.linspace(0, 2, 21)
-
-    # dataset_name = 'MNIST'
-    dataset_name = 'Gauss'
-    # dataset_name = 'Iris'
 
     ONN_setup = np.array(['R_P', 'R_D_I_P', 'R_I_P', 'R_D_P', 'C_Q_P'])
+    ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
     # ONN_setup = np.array(['R_P', 'R_D_P', 'R_D_I_P', 'R_I_P'])
 
     got_accuracy = [0 for _ in range(len(ONN_setup))]

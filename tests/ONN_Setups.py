@@ -28,7 +28,7 @@ def ONN_creation(layers='R', N=4, loss_dB=0, loss_diff=0, phase_uncert=0, Nonlin
 
             'C':neu.DiamondLayer(N, loss_dB=loss_dB, phase_uncert=phase_uncert, include_phase_shifter_layer=False), # Diamond Mesh
             'Q':neu.DropMask(2*N - 2, keep_ports=range(N - 2, 2*N - 2)), # Bottom Diamond Topology
-            'W':neu.DropMask(2*N - 2, drop_ports=[0, 5]) # Central Diamond Topology
+            'W':neu.DropMask(2*N - 2, drop_ports=[0, 5]), # Central Diamond Topology
 
             'E':neu.ClementsLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, phase_uncert=phase_uncert),
             }
