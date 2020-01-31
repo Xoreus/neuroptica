@@ -14,11 +14,6 @@ import matplotlib as mpl
 mpl.use('Agg')
 
 
-def saveSim_Loss_PhaseUncert_Ranges(FOLDER, losses_dB, phase_uncerts, ONN_setup):
-    np.savetxt(f'{FOLDER}/losses_dB.txt', losses_dB, fmt='%.4f')
-    np.savetxt(f'{FOLDER}/phase_uncerts.txt', phase_uncerts, fmt='%.4f')
-    np.savetxt(f'{FOLDER}/ONN_Setups.txt', ONN_setup, fmt='%s')
-
 def saveSim_Loss_PhaseUncert_Ranges_Multi(FOLDER, losses_dB_train, losses_dB_test, phase_uncerts_train, phase_uncerts_test, ONN_setup):
     np.savetxt(f'{FOLDER}/losses_dB_train.txt', losses_dB_train, fmt='%.4f')
     np.savetxt(f'{FOLDER}/phase_uncerts_train.txt', phase_uncerts_train, fmt='%.4f')
@@ -28,7 +23,7 @@ def saveSim_Loss_PhaseUncert_Ranges_Multi(FOLDER, losses_dB_train, losses_dB_tes
 
 def saveSimData(currentSimSettings, currentSimResults, model):
     losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix = currentSimResults
-    FOLDER, ONN_Model, loss, phase_uncert, N, NonLin_key, dataset_name = currentSimSettings
+    FOLDER, ONN_Model, loss, phase_uncert, N, dataset_name = currentSimSettings
     if ONN_Model == 'R_P':
         Topology = 'Reck'
     elif ONN_Model == 'I_P':
@@ -68,7 +63,7 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     losses_MZI = model.get_all_losses()
     losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
     df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-    df.to_csv(f'{FOLDER}/Losses_per_MZI/lossPerMZI_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_{NonLin_key}.txt')
+    df.to_csv(f'{FOLDER}/Losses_per_MZI/lossPerMZI_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt')
 
     # Save best transformation matrix
     best_trf_matrix = np.array(best_trf_matrix)
@@ -83,7 +78,7 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     trf_matrix = np.array(model.get_transformation_matrix())
     f_obj = open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', 'w')
     f_obj.close()
-    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features_{NonLin_key}.txt', "a") as myfile:
+    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "a") as myfile:
         for trf in trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')
@@ -100,7 +95,7 @@ def saveSimData(currentSimSettings, currentSimResults, model):
     df.to_csv(f'{FOLDER}/Phases/Phases_Best_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt')
 
 def saveAccuracyData(FOLDER, currentSimSettings, accuracy):
-    FOLDER, ONN_Model, loss, phase_uncert, N, NonLin_key, dataset_name = currentSimSettings
+    FOLDER, ONN_Model, loss, phase_uncert, N, dataset_name = currentSimSettings
     np.savetxt(f"{FOLDER}/acc_{ONN_Model}_loss={loss:.3f}_uncert={phase_uncert:.3f}_{N}Feat.txt", np.array(accuracy).T, delimiter=',', fmt='%.3f')
 
 def saveNonlin(FOLDER, Nonlinearities):

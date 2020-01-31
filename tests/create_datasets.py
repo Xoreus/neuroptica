@@ -135,66 +135,10 @@ def iris_dataset(print_plots=False, divide_mean=1.25, save=False, nsamples=1):
     target = np.hstack([np.ones(50+int(nsamples/4))*0, np.ones(50+int(nsamples/4))*1,
                         np.ones(50+int(nsamples/4))*2, np.ones(50+int(nsamples/4))*3])
 
-    dataset = datasets.base.Bunch(data=iris_new, target=target,
-                                  feature_names = iris.feature_names,
-                                  target_names = ['setosa', 'versicolor',
-                                                  'virginica','germanica'])
+    y = pd.get_dummies(list(target)).values
+              
+    X = iris_new
 
-    df_features = pd.DataFrame(dict(x_0=dataset.data[:,0],
-                                    x_1=dataset.data[:,1],
-                                    x_2=dataset.data[:,2],
-                                    x_3=dataset.data[:,3],
-                                    label=dataset.target))
-
-    #df_targets = pd.DataFrame({'color': ['red', 'blue', 'green','pink']})
-    df_targets = pd.get_dummies(dataset.target, prefix='color')
-
-    # Rename features
-    features = {'x_{}'.format(x):iris.feature_names[x] for x in range(4)}
-    df_features.rename(columns = features, inplace = True)
-
-    df_features[predictors] = (df_features[predictors] -
-       df_features[predictors].min()) / (
-               df_features[predictors].max() -
-               df_features[predictors].min())
-
-    ## The indices of the features that we are plotting
-    if print_plots:
-        df_features.rename(columns = {'label':'Label'}, inplace = True)
-
-        #now plot using pandas
-        color_wheel = {0: 'red',  1: 'green', 2: 'blue', 3: 'black'}
-
-        colors = df_features["Label"].map(lambda x: color_wheel.get(x))
-        # Preprocess the data
-
-        fig = scatter_matrix(df_features[predictors], alpha=0.6,
-                             figsize=(10, 8),
-                             diagonal='hist', color=colors)
-
-        for item in fig:
-            for ax in item:
-                # We change the fontsize of minor ticks label
-                ax.tick_params(axis='both', which='major', labelsize=5)
-                ax.tick_params(axis='both', which='minor', labelsize=5)
-    #            ax.set_yticklabels([0, 0.5, 1])
-    #            ax.set_xticklabels([0, 0.5, 1])
-
-        plt.rcParams.update({'font.size': 10})
-
-        plt.suptitle('Scatter-Matrix', fontsize=30)
-        # plt.savefig('Figures/iris_scatter_matrix.png')
-        plt.show()
-    if save:
-        df_features[iris.feature_names].to_csv(
-                r'../Weights/4_flowers_100_X.txt',
-                   header=None, index=None, sep=',')
-
-        pd.get_dummies(df_features['Label']).to_csv(
-                r'../Weights/4_flowers_100_Y.txt', header=None, index=None,
-                sep=',')
-
-    X, y = df_features[predictors].values, df_targets.values
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)          
     return X, y, Xt, yt
 
@@ -250,3 +194,7 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     ohe_labels = pd.get_dummies(y).values
     X, Xt, y, yt = train_test_split(X, ohe_labels, test_size=0.2)
     return X, y, Xt, yt
+
+
+if __name__ == '__main__':
+    X, y, Xt, yt = iris_dataset() 

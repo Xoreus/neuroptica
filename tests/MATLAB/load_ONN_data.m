@@ -29,11 +29,11 @@ if ~isempty(fold)
     SimulationSettings.phase_uncerts_train = phase_uncerts_train;
     SimulationSettings.phase_uncerts_test = phase_uncerts_test;
 else
-    losses_dB = load([FOLDER, 'losses_dB.txt']);
-    phase_uncerts = load([FOLDER, 'phase_uncerts.txt']);
+    loss_dB = load([FOLDER, 'loss_dB.txt']);
+    phase_uncert = load([FOLDER, 'phase_uncert.txt']);
     
-    SimulationSettings.loss_dB = losses_dB;
-    SimulationSettings.phase_uncerts = phase_uncerts;
+    SimulationSettings.loss_dB = loss_dB;
+    SimulationSettings.phase_uncerts = phase_uncert;
 end
 
 fid = fopen([FOLDER, 'ONN_Setups.txt'], 'rt');

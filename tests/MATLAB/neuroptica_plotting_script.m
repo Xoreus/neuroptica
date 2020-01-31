@@ -10,13 +10,12 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
-rng = 0:5;
+rng = 2:5;
 % Dataset = 'Gauss'
 % loss_diff = 0
 for ii = 1:length(rng)
-%     ActualFolder = 'lossDiff=0.1_NormalDistribution_rng=4_dataset=Iris_ColorMap';
-    ActualFolder = sprintf('Reck+Diamond-Comparisons_rng%d', rng(ii));
-    ActualFolder = sprintf('Reck+Diamond-Comparisons_rng%d_loss_diff=0.5', rng(ii));
+
+    ActualFolder = sprintf('Reck+Diamond_loss-diff=0.1_rng%d', rng(ii));
 %     ActualFolder = 'test';
     FOLDER = [Folder ActualFolder '/'];
     

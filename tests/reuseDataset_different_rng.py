@@ -10,6 +10,7 @@ import pandas as pd
 import sys
 import random
 import csv
+import re
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
@@ -31,63 +32,67 @@ import neuroptica as neu
 
 # Get old ONN class using pickle load
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/'
-LOWER_FOLD = 'test/'
+LOWER_FOLD = 'Reck+Diamond_loss-diff=0.1_rng2/'
 PKL_NAME = 'ONN_Pickled_Class.P'
 
 with open(FOLDER + LOWER_FOLD + PKL_NAME, 'rb') as f:
     ONN = pickle.load(f)
-print(ONN.RNG_RANGE)
-ONN.RNG_RANGE = range(6,10)
+
+ONN.loss_dB = np.linspace(0, 3, 61)
+ONN.phase_uncert = np.linspace(0, 1.5, 61)
+ONN.RNG_RANGE = range(3, 6)
+
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
-    ONN.FOLDER += f'_new_rng{ONN.rng:d}' 
+    ONN.FOLDER = re.sub('\d$', f'{ONN.rng}', ONN.FOLDER)
+    print(ONN.FOLDER)
     setSim.createFOLDER(ONN.FOLDER)
 
     got_accuracy = [0 for _ in range(len(ONN.ONN_setup))]
 
     ONN.saveSimSettings()
 
-    ONN.X, ONN.Xt = ONN.normalize_dataset()
     Xog, Xtog = ONN.X, ONN.Xt
 
     ONN.saveSimDataset()
 
-    for NonLin_key, Nonlinearity in Nonlinearities.items():
-        for ONN_Idx, ONN_Model in enumerate(ONN.ONN_setup):
-            t = time.time()
-            print(f'model: {ONN_Model}, Loss = {0:.3f} dB, Phase Uncert = {0:.3f} Rad, dataset = {ONN.dataset_name}')
+    for ONN_Idx, ONN_Model in enumerate(ONN.ONN_setup):
+        t = time.time()
+        print(f'model: {ONN_Model}, Loss = {0:.3f} dB, Phase Uncert = {0:.3f} Rad, dataset = {ONN.dataset_name}, rng = {ONN.rng}')
 
-            model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N)
+        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N)
 
-            ONN.X = Xog
-            ONN.Xt = Xtog
+        X, y, Xt, yt = ONN.normalize_dataset()
+        Xog, Xtog = X, Xt
 
-            if 'C' in ONN_Model and 'Q' in ONN_Model:
-                ONN.X = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.X])
-                ONN.Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
-            elif 'C' in ONN_Model and 'W' in ONN_Model:
-                ONN.X = np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) + list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.X])
-                ONN.Xt = np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) + list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt])
+        if 'C' in ONN_Model and 'Q' in ONN_Model:
+            X = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.X])
+            Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
+        elif 'C' in ONN_Model and 'W' in ONN_Model:
+            X = (np.array([list(np.zeros(int((ONN.N-2)/2))) + 
+                list(samples) + list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.X]))
+            Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) + 
+                list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
-            # initialize the ADAM optimizer and fit the ONN to the training data
-            optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
+        # initialize the ADAM optimizer and fit the ONN to the training data
+        optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
 
-            currentSimResults  = optimizer.fit(ONN.X.T, ONN.y.T, ONN.Xt.T, ONN.yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
-            currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert[0], ONN.N, NonLin_key, ONN.dataset_name
+        currentSimResults = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
+        currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert[0], ONN.N, ONN.dataset_name
 
-            sSD.saveSimData(currentSimSettings, currentSimResults, model)
-            
-            phases = currentSimResults[3]
-            ONN.Phases.append(phases)
-            accuracy = calc_acc.get_accuracy(ONN, model)
+        sSD.saveSimData(currentSimSettings, currentSimResults, model)
+        
+        phases = currentSimResults[3]
+        ONN.Phases.append(phases)
+        accuracy = calc_acc.get_accuracy(ONN, model, Xt, yt)
 
-            print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
-            got_accuracy[ONN_Idx]=1
-            sSD.saveAccuracyData(ONN.FOLDER, currentSimSettings, accuracy)
+        print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
+        got_accuracy[ONN_Idx]=1
+        sSD.saveAccuracyData(ONN.FOLDER, currentSimSettings, accuracy)
 
     # Now test the same dataset using a Digital Neural Networks, just to see the difference between unitary and non-unitary matrix
-    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 400)
+    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 300)
 
     with open(ONN.FOLDER + '/ONN_Pickled_Class.P', 'wb') as f:
         pickle.dump(ONN, f)

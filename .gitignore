@@ -141,3 +141,5 @@ dmypy.json
 # Simulation folders in neuroptica/test/
 /tests/**/*.txt
 
+# Also pickle files
+*.P
