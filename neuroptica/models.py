@@ -17,15 +17,12 @@ class BaseModel:
     def backward_pass(self, d_loss: np.ndarray) -> Dict[str, np.ndarray]:
         raise NotImplementedError
 
-
 class Model(BaseModel):
-    '''
-    Functional model class similar to the Keras model class, simulating an optical neural network with multiple layers
+    ''' Functional model class similar to the Keras model class, simulating an optical neural network with multiple layers
     '''
 
     def __init__(self):  # TODO
         pass
-
 
 class Sequential(BaseModel):
     '''Feed-foward model class similar to the Keras Sequential() model class'''
@@ -45,6 +42,14 @@ class Sequential(BaseModel):
 
     def __repr__(self):
         return "<Sequential Model: {}>".format([layer.__name__ for layer in self.layers])
+
+
+    def get_transformation_matrix_diamond(self):
+        trf_matrix = []
+        for layer in self.layers:
+            if isinstance(layer, OpticalMeshNetworkLayer):
+                trf_matrix.append(layer.mesh.get_indiv_transfer_matrices())
+        return trf_matrix
 
     def get_transformation_matrix(self):
         trf_matrix = []

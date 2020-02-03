@@ -34,13 +34,16 @@ import neuroptica as neu
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/'
 LOWER_FOLD = 'Reck+Diamond_loss-diff=0.1_rng2/'
 PKL_NAME = 'ONN_Pickled_Class.P'
+OG_FOLDER = FOLDER + LOWER_FOLD + PKL_NAME
 
-with open(FOLDER + LOWER_FOLD + PKL_NAME, 'rb') as f:
+with open(OG_FOLDER, 'rb') as f:
     ONN = pickle.load(f)
 
 ONN.loss_dB = np.linspace(0, 3, 61)
 ONN.phase_uncert = np.linspace(0, 1.5, 61)
-ONN.RNG_RANGE = range(3, 6)
+ONN.RNG_RANGE = range(6, 8)
+ONN.loss_diff = 0
+ONN.STEP_SIZE = 0.005
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
@@ -61,7 +64,7 @@ for ONN.rng in ONN.RNG_RANGE:
         t = time.time()
         print(f'model: {ONN_Model}, Loss = {0:.3f} dB, Phase Uncert = {0:.3f} Rad, dataset = {ONN.dataset_name}, rng = {ONN.rng}')
 
-        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N)
+        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N, loss_diff=ONN.loss_diff, loss_dB=ONN.loss_dB[0], phase_uncert=ONN.phase_uncert[0])
 
         X, y, Xt, yt = ONN.normalize_dataset()
         Xog, Xtog = X, Xt

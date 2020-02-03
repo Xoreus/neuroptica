@@ -289,10 +289,7 @@ class MZI_H(OpticalComponent):
 
 def apply_loss(mzi, loss):
     return mzi * np.array([[loss, 1],[1, loss]])
-    # return mzi * np.array([[loss, loss],[loss, loss]])
-    # return mzi * loss
 
 def get_loss(loss_dB, loss_diff=0.01):
-    # return np.abs(np.random.uniform(loss_dB - loss_diff, loss_dB + loss_diff))
     return np.abs(np.random.normal(loss_dB, loss_diff))
 

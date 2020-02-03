@@ -236,7 +236,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
     def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
-        '''
+        ''' 
         Initialize the ReckLayer
         :param N: number of input and output waveguides
         :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
@@ -255,7 +255,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
         # Get MZI waveguide limits, upper and lower, for the Reck configuration
         self.mzi_limits_upper = [i for i in range(1, N)] + [i for i in range(N - 2, 1 - 1, -1)]
         self.mzi_limits_lower = [(i + 1) % 2 for i in self.mzi_limits_upper]
-        
+
         if (None, None) in phases:
             phases = [(None, None) for _ in range(int(N*(N-1)/2))]
 
@@ -266,6 +266,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
         for ii in mzi_nums:
             phases_layer = []
             for jj in range(ii):
+                # print(phases[idx])
                 phases_layer.append(phases[idx])
                 idx += 1
             phases_mzi_layer.append(phases_layer)
@@ -279,7 +280,7 @@ class ReckLayer(OpticalMeshNetworkLayer):
         self.mesh = OpticalMesh(N, layers)
 
     def set_phases_uncert_loss(self, Phases, phase_uncert, loss_dB, loss_diff):
-        # Get MZI waveguide limits, upper and lower, for the Reck configuration
+        """ Get MZI waveguide limits, upper and lower, for the Reck configuration """
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
         layers = []
         phases_mzi_layer = []
@@ -296,7 +297,6 @@ class ReckLayer(OpticalMeshNetworkLayer):
             phis = [phase[1] for phase in phases]
             layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
         self.mesh = OpticalMesh(self.N, layers)
-
 
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
@@ -374,7 +374,6 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
             phis = [phase[1] for phase in phases]
             layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
         self.mesh = OpticalMesh(self.N, layers)
-
 
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
@@ -524,9 +523,9 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
 class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a diamond shape:
+    """ Diamond layer"""
     def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], phase_uncert=0.0, loss_dB=0, loss_diff=0):
-        '''
-        Initialize the Diamond Layer
+        ''' Initialize the Diamond Layer
         :param N: number of input and output waveguides - N = signals carried
         :param S: number of total waveguides, with N-2 waveguides acting as simple information processors
         :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
@@ -551,10 +550,8 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
         self.mzi_limits_upper = list(range(self.N - 1, self.S)) + list(range(self.S - 2, self.N - 2, -1))
 
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
-        # print(mzi_nums)
         if (None, None) in phases:
             phases = [(None, None) for _ in range(sum(mzi_nums))]
-
         phases_mzi_layer = []
         idx = 0
         for ii in mzi_nums:
@@ -599,3 +596,7 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
+def get_wavefront_matrix_diamond(mzi_num):
+    for ii in range(np.sqrt(mzi_num)):
+        for jj in range(np.sqrt(mzi_num)):
+            mzi_idx[ii][jj] = ii+jj

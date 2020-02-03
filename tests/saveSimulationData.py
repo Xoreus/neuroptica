@@ -14,18 +14,14 @@ import matplotlib as mpl
 mpl.use('Agg')
 
 
-def saveSim_Loss_PhaseUncert_Ranges_Multi(FOLDER, losses_dB_train, losses_dB_test, phase_uncerts_train, phase_uncerts_test, ONN_setup):
-    np.savetxt(f'{FOLDER}/losses_dB_train.txt', losses_dB_train, fmt='%.4f')
-    np.savetxt(f'{FOLDER}/phase_uncerts_train.txt', phase_uncerts_train, fmt='%.4f')
-    np.savetxt(f'{FOLDER}/losses_dB_test.txt', losses_dB_test, fmt='%.4f')
-    np.savetxt(f'{FOLDER}/phase_uncerts_test.txt', phase_uncerts_test, fmt='%.4f',)
-    np.savetxt(f'{FOLDER}/ONN_Setups.txt', ONN_setup, fmt='%s')
 
 def saveSimData(currentSimSettings, currentSimResults, model):
     losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix = currentSimResults
     FOLDER, ONN_Model, loss, phase_uncert, N, dataset_name = currentSimSettings
     if ONN_Model == 'R_P':
         Topology = 'Reck'
+    if ONN_Model == 'R_D_P':
+        Topology = 'Reck + DMM'
     elif ONN_Model == 'I_P':
         Topology = 'Inverted Reck'
     elif ONN_Model == 'R_I_P':

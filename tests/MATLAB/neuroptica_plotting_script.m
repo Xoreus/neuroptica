@@ -10,13 +10,14 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
-rng = 2:5;
+rng = 2;
 % Dataset = 'Gauss'
 % loss_diff = 0
 for ii = 1:length(rng)
 
     ActualFolder = sprintf('Reck+Diamond_loss-diff=0.1_rng%d', rng(ii));
-%     ActualFolder = 'test';
+    ActualFolder = 'Reck+Diamond_MNIST_loss-diff=0.1_rng2';
+    ActualFolder = 'Reck+Diamond_MNIST_loss-diff=1_rng2_TEST';
     FOLDER = [Folder ActualFolder '/'];
     
     SimulationSettings = load_ONN_data(FOLDER);

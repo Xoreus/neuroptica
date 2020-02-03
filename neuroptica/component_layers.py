@@ -67,8 +67,7 @@ class OpticalMesh:
     '''Represents an optical "mesh" consisting of several layers of optical components, e.g. a rectangular MZI mesh'''
 
     def __init__(self, N: int, layers: List[Type[ComponentLayer]]):
-        '''
-        Initialize the OpticalMesh
+        '''Initialize the OpticalMesh
         :param N: number of waveguides in the system the mesh is embedded in
         :param layers: list of ComponentLayers that the mesh contains (enumerates the columns of components)
         '''
@@ -87,8 +86,8 @@ class OpticalMesh:
 
     def all_losses(self) -> Iterable[float]:
         for layer in self.layers:
-            for param in layer.all_losses():
-                yield param
+            for loss in layer.all_losses():
+                yield loss
 
     def all_tunable_components(self) -> Iterable[Type[OpticalComponent]]:
         for layer in self.layers:
@@ -99,8 +98,10 @@ class OpticalMesh:
         assert all([N == layer.N for layer in layers]), "Dimension mismatch in layers!"
 
     def get_transfer_matrix(self) -> np.ndarray:
-        # print(reduce(np.dot, [layer.get_transfer_matrix() for layer in reversed(self.layers)]))
         return reduce(np.dot, [layer.get_transfer_matrix() for layer in reversed(self.layers)])
+    
+    def get_indiv_transfer_matrices(self) -> np.ndarray:
+        return [layer.get_indiv_transfer_matrices() for layer in reversed(self.layers)]
 
     def compute_phase_shifter_fields(self, X: np.ndarray, align="right", use_partial_vectors=False, include_bs=False) -> \
             List[List[np.ndarray]]:
@@ -139,19 +140,6 @@ class OpticalMesh:
                 else:
                     partial_transfer_matrices = layer.get_partial_transfer_matrices(backward=False, cumulative=True)
                     bs1_T, theta_T, bs2_T, phi_T = np.array(partial_transfer_matrices).round(2)
-                    if 0:
-                        print('bs1_T')
-                        print(bs1_T)
-                        print('Theta_T')
-                        print(theta_T)
-                        print('phi_T')
-                        print(phi_T)
-                        print('bs2_T')
-                        print(bs2_T)
-
-                        print('')
-
-                        return -1
 
                     if align == "right":
                         if include_bs:
@@ -531,7 +519,7 @@ class MZILayer(ComponentLayer):
 
     def all_losses(self):
         for mzi in self.mzis:
-            yield mzi.loss_dB
+            yield np.log10(mzi.loss)*10
 
     @classmethod
     def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], thetas=None, phis=None, phase_uncert=0.0, loss_dB=0, loss_diff=0):
@@ -577,6 +565,19 @@ class MZILayer(ComponentLayer):
             T[n][m] = U[1, 0]
             T[n][n] = U[1, 1]
         return T
+
+    def get_indiv_transfer_matrices(self, add_uncertainties=True) -> np.ndarray:
+        tf = [] 
+        for mzi in self.mzis:
+            T = np.eye(self.N, dtype=NP_COMPLEX)
+            U = mzi.get_transfer_matrix(add_uncertainties)
+            m, n = mzi.m, mzi.n
+            T[m][m] = U[0, 0]
+            T[m][n] = U[0, 1]
+            T[n][m] = U[1, 0]
+            T[n][n] = U[1, 1]
+            tf.append(T)
+        return np.array(tf)
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=False) -> np.ndarray:
         '''
@@ -660,4 +661,3 @@ class MZILayer(ComponentLayer):
                 partial_transfer_vectors.append(Tvec)
 
         return (partial_transfer_vectors, inds_mn)
-

@@ -44,6 +44,7 @@ class ONN_Simulation:
         self.y = []
         self.Xt = []
         self.yt = []
+        self.phases = []
 
     def create_dict(self):
         " Creates a dict of the simulation variables"
@@ -60,8 +61,12 @@ class ONN_Simulation:
         output_file = open(f'{self.FOLDER}/SimulationSettings.txt','w')
         output_file.write(simulationSettings)
         output_file.close()
+
         np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
         np.savetxt(f'{self.FOLDER}/phase_uncert.txt', self.phase_uncert, fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/phase_uncerts_train.txt', self.phase_uncerts_test, fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/phase_uncerts_test.txt', self.phase_uncerts_test, fmt='%.4f',)
+
         np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
 
     def get_topology_name(self):
@@ -108,4 +113,3 @@ class ONN_Simulation:
         self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
         self.Xt = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
         return self.X, self.y, self.Xt, self.yt
-

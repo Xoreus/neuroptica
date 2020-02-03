@@ -37,20 +37,21 @@ ONN.N = 4
 ONN.BATCH_SIZE = 2**6
 ONN.EPOCHS = 1300
 ONN.STEP_SIZE = 0.0005
-ONN.SAMPLES = 700
+ONN.SAMPLES = 1000
 ONN.DATASET_NUM = 1
 ONN.ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
-ONN.loss_diff = 0.1 # +/- dB
-ONN.loss_dB = np.linspace(0, 3, 61)
-ONN.phase_uncert = np.linspace(0, 1.5, 61)
+ONN.loss_diff = 0.1 # \sigma dB
+ONN.loss_dB = np.linspace(0, 3, 31)
+ONN.phase_uncert = np.linspace(0, 1.5, 21)
 ONN.RNG_RANGE = [2]
 
 # ONN.dataset_name = 'MNIST'
-# ONN.dataset_name = 'Gauss'
-ONN.dataset_name = 'Iris'
+ONN.dataset_name = 'Gauss'
+# ONN.dataset_name = 'Iris'
 
 # ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
-ONN.ONN_setup = np.array(['R_D_P', 'C_Q_P'])
+ONN.ONN_setup = np.array(['R_D_P', 'C_Q_P', 'R_P', 'R_I_P'])
+# ONN.ONN_setup = np.array(['R_D_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
@@ -84,7 +85,7 @@ for ONN.rng in ONN.RNG_RANGE:
         t = time.time()
         print(f'model: {ONN_Model}, Loss = {0:.3f} dB, Phase Uncert = {0:.3f} Rad, dataset = {ONN.dataset_name}, rng = {ONN.rng}')
 
-        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N)
+        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N, loss_diff=ONN.loss_diff, loss_dB=ONN.loss_dB[0]+0.5, phase_uncert=ONN.phase_uncert[0])
 
         X = Xog
         Xt = Xtog
@@ -117,7 +118,7 @@ for ONN.rng in ONN.RNG_RANGE:
 
     # Now test the same dataset using a Digital Neural Networks, 
     # just to see the difference between unitary and non-unitary matrix
-    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 100)
+    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 500)
 
     with open(ONN.FOLDER + '/ONN_Pickled_Class.P', 'wb') as f:
         pickle.dump(ONN, f)
