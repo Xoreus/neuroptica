@@ -33,7 +33,7 @@ class ONN_Simulation:
 
         self.BATCH_SIZE = 2**6
         self.ONN_setup = np.array(['R_D_P', 'C_Q_P'])
-        self.topology_name = self.get_topology_name()
+        self.get_topology_name()
         self.Phases = []
 
         self.ROOT_FOLDER = r'Analysis/'
@@ -62,9 +62,10 @@ class ONN_Simulation:
             f.write(simulationSettings)
 
         np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/loss_dB_test.txt', self.loss_dB_test, fmt='%.4f')
+
         np.savetxt(f'{self.FOLDER}/phase_uncert.txt', self.phase_uncert, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/phase_uncerts_train.txt', self.phase_uncerts_test, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/phase_uncerts_test.txt', self.phase_uncerts_test, fmt='%.4f',)
+        np.savetxt(f'{self.FOLDER}/phase_uncert_test.txt', self.phase_uncert_test, fmt='%.4f',)
 
         np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
 
@@ -93,7 +94,8 @@ class ONN_Simulation:
             else:
                 Topo = ONN_Model
             topology_name.append(Topo)
-        return topology_name
+
+        self.topology_name = topology_name
 
     def saveSimDataset(self):
         " Save simulation's datasset, both in plot and txt form"
