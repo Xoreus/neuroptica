@@ -13,8 +13,6 @@ import plot_scatter_matrix as psm
 import matplotlib as mpl
 mpl.use('Agg')
 
-
-
 def saveSimData(currentSimSettings, currentSimResults, model):
     losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix = currentSimResults
     FOLDER, ONN_Model, loss, phase_uncert, N, dataset_name = currentSimSettings
@@ -34,7 +32,6 @@ def saveSimData(currentSimSettings, currentSimResults, model):
         Topology = 'Central Diamond'
     else:
         Topology = ONN_Model
-
 
     # Plot loss, training acc and val acc
     ax1 = plt.plot()

@@ -9,11 +9,6 @@ import numpy as np
 np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
 
-def get_wavefront_matrix_diamond(mzi_num):
-    for ii in range(np.sqrt(mzi_num)):
-        for jj in range(np.sqrt(mzi_num)):
-            mzi_idx[ii][jj] = ii+jj
-
 def ONN_creation(layers='R', N=4, loss_dB=0, loss_diff=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), phases=[(None, None)]):
     """ 
     Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond
@@ -63,14 +58,16 @@ if __name__ == '__main__':
     print("Farhad's original phases:")
     print(df)
 
-    phases = to_neuro_phases(farhad_phases, 'diamond')
+    # phases = to_neuro_phases(farhad_phases, 'diamond')
+    phases = to_neuro_phases(farhad_phases, 'reck')
 
-    Model = ONN_creation(layers='C_Q_P', phases=phases)
+    # Model = ONN_creation(layers='C_Q_P', phases=phases)
+    Model = ONN_creation(layers='R_D_P', phases=phases)
     phases = Model.get_all_phases()
     df = list_to_df(phases) 
     print("\nNeuroptica's original phases:")
     print(df)
-    df_far = to_farhad_phases(df, 'diamond')
+    df_far = to_farhad_phases(df, 'reck')
     print("\nNeuroptica's phases converted to Farhad phasing:")
     print(df_far)
 

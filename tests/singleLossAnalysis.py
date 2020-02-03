@@ -102,8 +102,7 @@ for ONN.rng in ONN.RNG_RANGE:
         # initialize the ADAM optimizer and fit the ONN to the training data
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
 
-        currentSimResults  = optimizer.fit(X.T, y.T, Xt.T, yt.T, 
-                epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
+        currentSimResults  = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
         currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert[0], ONN.N, ONN.dataset_name
 
         sSD.saveSimData(currentSimSettings, currentSimResults, model)

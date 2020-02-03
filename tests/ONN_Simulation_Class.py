@@ -58,9 +58,8 @@ class ONN_Simulation:
         " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
         simSettings = self.create_dict()
         simulationSettings = simSettings.to_string()
-        output_file = open(f'{self.FOLDER}/SimulationSettings.txt','w')
-        output_file.write(simulationSettings)
-        output_file.close()
+        with open(f'{self.FOLDER}/SimulationSettings.txt','w') as f:
+            f.write(simulationSettings)
 
         np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
         np.savetxt(f'{self.FOLDER}/phase_uncert.txt', self.phase_uncert, fmt='%.4f')
