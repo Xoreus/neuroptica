@@ -39,18 +39,18 @@ ONN.EPOCHS = 1300
 ONN.STEP_SIZE = 0.0005
 ONN.SAMPLES = 1000
 ONN.DATASET_NUM = 1
-ONN.ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
+ONN.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0.1 # \sigma dB
-ONN.loss_dB = np.linspace(0, 3, 31)
-ONN.phase_uncert = np.linspace(0, 1.5, 21)
-ONN.RNG_RANGE = [2]
+ONN.loss_dB = np.linspace(0, 3, 61)
+ONN.phase_uncert = np.linspace(0, 1.5, 61)
+ONN.RNG_RANGE = [2, 5]
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gauss'
 # ONN.dataset_name = 'Iris'
 
 # ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
-ONN.ONN_setup = np.array(['R_D_P', 'C_Q_P', 'R_P', 'R_I_P'])
+ONN.ONN_setup = np.array(['R_D_P', 'C_Q_P', 'R_I_P'])
 # ONN.ONN_setup = np.array(['R_D_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
@@ -85,7 +85,7 @@ for ONN.rng in ONN.RNG_RANGE:
         t = time.time()
         print(f'model: {ONN_Model}, Loss = {0:.3f} dB, Phase Uncert = {0:.3f} Rad, dataset = {ONN.dataset_name}, rng = {ONN.rng}')
 
-        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N, loss_diff=ONN.loss_diff, loss_dB=ONN.loss_dB[0]+0.5, phase_uncert=ONN.phase_uncert[0])
+        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N, loss_diff=ONN.loss_diff, loss_dB=ONN.loss_dB[0]+0.1, phase_uncert=ONN.phase_uncert[0])
 
         X = Xog
         Xt = Xtog

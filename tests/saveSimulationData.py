@@ -2,7 +2,7 @@
 Function to save all of the simulation data at every loss/phase_uncert training setting
 
 Author: Simon Geoffroy-Gagnon
-Edit: 17.01.2020
+Edit: 03.02.2020
 """
 import sys
 import numpy as np

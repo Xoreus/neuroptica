@@ -38,6 +38,14 @@ def ONN_creation(layers='R', N=4, loss_dB=0, loss_diff=0, phase_uncert=0, Nonlin
     return Model
 
 if __name__ == '__main__':
+    Model = ONN_creation('E_P', N=4)
+    print(len(Model.get_all_phases()[0]))
+
+    tf = Model.get_transformation_matrix()
+    print(tf)
+
+            
+if __name__ == '__main__1':
     from numpy import pi
     import pandas as pd
     from functools import reduce
@@ -73,7 +81,7 @@ if __name__ == '__main__':
 
     # Model = ONN_creation(layers='R_P', phases=phases[0])
 
-    tf = Model.get_transformation_matrix()
+    tf = model.get_transformation_matrix()
     print(tf)
 
     # trf_matrix = np.array(Model.get_transformation_matrix_diamond())

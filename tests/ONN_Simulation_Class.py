@@ -46,6 +46,12 @@ class ONN_Simulation:
         self.yt = []
         self.phases = []
 
+    def normalize_dataset(self):
+        " Normalize the dataset to be in range [0, 1]"
+        self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
+        self.Xt = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
+        return self.X, self.y, self.Xt, self.yt
+
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
@@ -53,21 +59,6 @@ class ONN_Simulation:
 
         simSettings = pd.DataFrame.from_dict(simSettings, orient='index', columns=['Simulation Settings'])
         return simSettings
-
-    def saveSimSettings(self):
-        " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
-        simSettings = self.create_dict()
-        simulationSettings = simSettings.to_string()
-        with open(f'{self.FOLDER}/SimulationSettings.txt','w') as f:
-            f.write(simulationSettings)
-
-        np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/loss_dB_test.txt', self.loss_dB_test, fmt='%.4f')
-
-        np.savetxt(f'{self.FOLDER}/phase_uncert.txt', self.phase_uncert, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/phase_uncert_test.txt', self.phase_uncert_test, fmt='%.4f',)
-
-        np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
 
     def get_topology_name(self):
         " Get list of actual topology names instead of C_Q_P"
@@ -109,8 +100,17 @@ class ONN_Simulation:
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_Xt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.Xt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_yt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.yt, delimiter=',',fmt='%.3f')
 
-    def normalize_dataset(self):
-        " Normalize the dataset to be in range [0, 1]"
-        self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
-        self.Xt = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
-        return self.X, self.y, self.Xt, self.yt
+    def saveSimSettings(self):
+        " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
+        simSettings = self.create_dict()
+        simulationSettings = simSettings.to_string()
+        with open(f'{self.FOLDER}/SimulationSettings.txt','w') as f:
+            f.write(simulationSettings)
+
+        np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/loss_dB_test.txt', self.loss_dB_test, fmt='%.4f')
+
+        np.savetxt(f'{self.FOLDER}/phase_uncert.txt', self.phase_uncert, fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/phase_uncert_test.txt', self.phase_uncert_test, fmt='%.4f',)
+
+        np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
