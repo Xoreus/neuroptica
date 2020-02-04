@@ -60,18 +60,14 @@ def saveSimData(currentSimSettings, currentSimResults, model):
 
     # Save best transformation matrix
     best_trf_matrix = np.array(best_trf_matrix)
-    f_obj = open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', 'w')
-    f_obj.close()
-    with open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "a") as myfile:
+    with open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "w") as myfile:
         for trf in best_trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')
 
     # Save final transformation matrix
     trf_matrix = np.array(model.get_transformation_matrix())
-    f_obj = open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', 'w')
-    f_obj.close()
-    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "a") as myfile:
+    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "w") as myfile:
         for trf in trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')
@@ -116,9 +112,9 @@ def plot_scatter_matrix(X, Y,  figsize=(20, 15)):
     df = df.rename(columns={v:'$X_%d$' % v for v in range(len(X))})
 
 
-    axes = scatter_matrix(df[features], alpha=.8, figsize=figsize,
+    axes = scatter_matrix(df[features], alpha=.6, figsize=figsize,
                           diagonal='kde',
-                          color=colors, s=100, range_padding=0.1)
+                          color=colors, s=44, range_padding=0.1)
 
 
     for item in axes:

@@ -30,10 +30,10 @@ for l_idx = 1:length(SimulationSettings.loss_dB)
     ylim([0, 100])
     
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2, 'interpreter','latex')
     
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2, 'interpreter','latex')
     
     xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')

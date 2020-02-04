@@ -18,8 +18,10 @@ for ii = 1:length(Models)
             models{ii} = 'Center Diamond';
         case 'I_P'
             models{ii} = 'Inverted Reck';
+        case 'E_P'
+            models{ii} = 'Clements';
         otherwise
-            model{ii} = 'Unknown Mesh';
+            models{ii} = 'Unknown Mesh';
     end
 end
 

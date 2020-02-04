@@ -16,11 +16,13 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.txt', ...
         SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncerts(1), SimulationSettings.N)]);
     
-    imagesc(SimulationSettings.loss_dB, SimulationSettings.phase_uncerts, Model_acc)
+%     imagesc(SimulationSettings.loss_dB, SimulationSettings.phase_uncerts, Model_acc)
+    pcolor(SimulationSettings.loss_dB, SimulationSettings.phase_uncerts, Model_acc)
+    shading('interp')
     set(gca,'YDir','normal')
     c = colorbar;
     c.Label.String = 'Accuracy (%)';
-    caxis([20 80]) 
+    caxis([20 90]) 
     colormap('hot')
     
     a = get(gca,'XTickLabel');

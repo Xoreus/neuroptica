@@ -10,26 +10,30 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
-rng = 2;
+rng = 7:10;
 % Dataset = 'Gauss'
 % loss_diff = 0
 for ii = 1:length(rng)
-
-    ActualFolder = sprintf('Reck+Diamond_loss-diff=0.1_rng%d', rng(ii));
-    ActualFolder = 'Reck+Diamond_MNIST_loss-diff=0.1_rng2';
-    ActualFolder = 'Reck+Diamond_MNIST_loss-diff=1_rng2_TEST';
+    
+    ActualFolder = sprintf('Loss_Imbalance_figures_rng%d', rng(ii));
+%     ActualFolder = 'Reck+Diamond+clements_MNIST_loss-diff=0.1_rng5';
+%     ActualFolder = 'Loss_Imbalance_figures_rng5';
+    %     ActualFolder = 'Reck+Diamond+clements_MNIST_loss-diff=0.1_rng7';
+    %     ActualFolder = 'Reck+Diamond+clements_MNIST_loss-diff=0.1_rng5';
     FOLDER = [Folder ActualFolder '/'];
     
     SimulationSettings = load_ONN_data(FOLDER);
     makeMatlabDirs(FOLDER)
-    
+    warning( 'off', 'MATLAB:table:ModifiedAndSavedVarnames')
     accuracy_colormap(FOLDER, SimulationSettings)
-%     close all;
-%     plotAcc_allModels_SingleLoss(FOLDER, SimulationSettings)
-%     close all;
-%     plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
-%     close all;
-%     plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
-%     close all;
+    ONN_Accuracy_Plot(FOLDER, SimulationSettings)
+    
+    %     close all;
+    %     plotAcc_allModels_SingleLoss(FOLDER, SimulationSettings)
+    %     close all;
+    %     plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
+    %     close all;
+        plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
+    %     close 5all;
     cd('../MATLAB')
 end

@@ -11,7 +11,7 @@
 function plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
 fontsz = 28;
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-step_sz = 10;
+step_sz = 3;
 SimulationSettings.loss_dB = SimulationSettings.loss_dB(1:step_sz:end);
 
 for model_idx = 1:length(SimulationSettings.ONN_Setups)
@@ -20,7 +20,7 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
         SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncerts(1), ...
         SimulationSettings.N)]);
     
-    plot(SimulationSettings.phase_uncerts(1:step_sz:end), Model_acc(1:step_sz:end, :), 'linewidth', 3)
+    plot(SimulationSettings.phase_uncerts, Model_acc(:, 1:step_sz:end), 'linewidth', 3)
     
     legend_ = create_legend_single_model(SimulationSettings.loss_dB);
     legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
@@ -29,7 +29,6 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
-    
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
     

@@ -32,18 +32,19 @@ import neuroptica as neu
 
 # Get old ONN class using pickle load
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/'
-LOWER_FOLD = 'Reck+Diamond_loss-diff=0.1_rng2/'
+LOWER_FOLD = 'Reck+Diamond+clements_MNIST_loss-diff=0.1_rng4/'
 PKL_NAME = 'ONN_Pickled_Class.P'
 OG_FOLDER = FOLDER + LOWER_FOLD + PKL_NAME
 
 with open(OG_FOLDER, 'rb') as f:
     ONN = pickle.load(f)
 
-ONN.loss_dB = np.linspace(0, 3, 61)
-ONN.phase_uncert = np.linspace(0, 1.5, 61)
-ONN.RNG_RANGE = range(6, 8)
-ONN.loss_diff = 0
+ONN.loss_dB = np.linspace(0, 3, 31)
+ONN.phase_uncert = np.linspace(0, 1.5, 16)
+ONN.RNG_RANGE = range(5, 6)
+# ONN.loss_diff = 0.2
 ONN.STEP_SIZE = 0.005
+ONN.ITERATIONS = 100
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
