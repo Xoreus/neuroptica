@@ -35,15 +35,15 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 800
+ONN.EPOCHS = 1400
 ONN.STEP_SIZE = 0.001
 ONN.SAMPLES = 500
 ONN.DATASET_NUM = 1
-ONN.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
-ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 1, 16)
-ONN.phase_uncert = np.linspace(0, 1.5, 16)
-ONN.RNG_RANGE = list(range(7,11))
+ONN.ITERATIONS = 70 # number of times to retry same loss/PhaseUncert
+ONN.loss_diff = 0.1 # \sigma dB
+ONN.loss_dB = np.linspace(0, 3, 31)
+ONN.phase_uncert = np.linspace(0, 1.5, 31)
+ONN.RNG_RANGE = list(range(20,21))
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gaussian'
@@ -51,15 +51,14 @@ ONN.dataset_name = 'Gaussian'
 
 # ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
 # ONN.ONN_setup = np.array(['R_D_P', 'C_Q_P', 'R_I_P', 'E_P'])
-ONN.ONN_setup = np.array(['R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P'])
-# ONN.ONN_setup = np.array(['R_D_P'])
+ONN.ONN_setup = np.array(['R_P', 'R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P', 'C_W_P', 'E_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
     ROOT_FOLDER = r'/home/simon/Documents/neuroptica/tests/Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = f'Reck+Diamond+clements_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
+    FOLDER = f'AllTopologies_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
     FOLDER = f'Loss_Imbalance_figures_rng{ONN.rng}'
     ONN.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
 
