@@ -385,6 +385,25 @@ class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
+    def set_phases_uncert_loss(self, phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff):
+        mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
+        layers = []
+        phases_mzi_layer = []
+        idx = 0
+        for ii in mzi_nums:
+            phases_layer = []
+            for jj in range(ii):
+                phases_layer.append(phases[idx])
+                idx += 1
+            phases_mzi_layer.append(phases_layer)
+        # create every layer of MZIs within the Reck Mesh
+        for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
+            thetas = [phase[0] for phase in phases]
+            phis = [phase[1] for phase in phases]
+            # print(phase_uncert_phi, phase_uncert_theta, loss_dB)
+            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+        self.mesh = OpticalMesh(self.S, layers)
+
 class DMM_layer(OpticalMeshNetworkLayer):
     """ Diagonal Matrix Multiplication Layer """    
 

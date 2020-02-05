@@ -16,9 +16,10 @@ rng = 33;
 % loss_diff = 0
 for ii = 1:length(rng)
     
-    ActualFolder = sprintf('Loss_Imbalance_figures_rng%d', rng(ii));
-    ActualFolder = 'Reck+Diamond+clements_MNIST_N=10_loss-diff=0.1_rng5';
-    ActualFolder = 'Loss_Imbalance_figures_rng333_retest';
+%     ActualFolder = sprintf('Loss_Imbalance_figures_rng%d', rng(ii));
+%     ActualFolder = 'Reck+Diamond+clements_MNIST_N=10_loss-diff=0.1_rng5';
+%     ActualFolder = 'Loss_Imbalance_figures_rng333_retest';
+    ActualFolder = 'phaseUncertTest';
     %     ActualFolder = 'Reck+Diamond+clements_MNIST_loss-diff=0.1_rng7';
     %     ActualFolder = 'Reck+Diamond+clements_MNIST_loss-diff=0.1_rng5';
     FOLDER = [Folder ActualFolder '/'];

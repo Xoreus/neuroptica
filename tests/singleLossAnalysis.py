@@ -5,7 +5,7 @@ plus its good to save all data no matter what
 
 
 Author: Simon Geoffroy-Gagnon
-Edit: 30.01.2020
+Edit: 05.02.2020
 """
 import pandas as pd
 import sys
@@ -36,23 +36,23 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 140
+ONN.EPOCHS = 700
 ONN.STEP_SIZE = 0.001
-ONN.SAMPLES = 500
+ONN.SAMPLES = 700
 ONN.DATASET_NUM = 1
-ONN.ITERATIONS = 7 # number of times to retry same loss/PhaseUncert
-ONN.loss_diff = 0.1 # \sigma dB
-ONN.loss_dB = np.linspace(0, 3, 6)
-ONN.phase_uncert_theta = np.linspace(0, 105, 5)
-ONN.phase_uncert_phi = np.linspace(0, 1.5, 5)
-ONN.RNG_RANGE = list(range(20,21))
+ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
+ONN.loss_diff = 0.5 # \sigma dB
+ONN.loss_dB = np.linspace(0, 2, 6)
+ONN.phase_uncert_theta = np.linspace(0, 1.5, 16)
+ONN.phase_uncert_phi = np.linspace(0, 1.5, 26)
+ONN.RNG_RANGE = [4]
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gaussian'
 # ONN.dataset_name = 'Iris'
 
 # ONN.ONN_setup = np.array(['R_P', 'R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P', 'C_W_P', 'E_P'])
-ONN.ONN_setup = np.array(['R_P'])
+ONN.ONN_setup = np.array(['C_Q_P', 'R_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)

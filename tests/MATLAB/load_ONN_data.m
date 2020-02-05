@@ -14,27 +14,13 @@ for ii = 1:length(tmp{1})
     SimulationSettings.(tmp{1}{ii}) = tmp{2}{ii};
 end
 
-fold = dir([FOLDER, '*_train.txt']);
+loss_dB = load([FOLDER, 'loss_dB.txt']);
+phase_uncert_theta = load([FOLDER, 'phase_uncert_theta.txt']);
+phase_uncert_phi = load([FOLDER, 'phase_uncert_phi.txt']);
 
-if ~isempty(fold)
-    losses_dB_train = load([FOLDER, 'losses_dB_train.txt']);
-    losses_dB_test = load([FOLDER, 'losses_dB_test.txt']);
-    
-    phase_uncerts_train = load([FOLDER, 'phase_uncerts_train.txt']);
-    phase_uncerts_test = load([FOLDER, 'phase_uncerts_test.txt']);
-    
-    SimulationSettings.losses_dB_train = losses_dB_train;
-    SimulationSettings.losses_dB_test = losses_dB_test;
-    
-    SimulationSettings.phase_uncerts_train = phase_uncerts_train;
-    SimulationSettings.phase_uncerts_test = phase_uncerts_test;
-else
-    loss_dB = load([FOLDER, 'loss_dB.txt']);
-    phase_uncert = load([FOLDER, 'phase_uncert.txt']);
-    
-    SimulationSettings.loss_dB = loss_dB;
-    SimulationSettings.phase_uncerts = phase_uncert;
-end
+SimulationSettings.loss_dB = loss_dB;
+SimulationSettings.phase_uncert_theta = phase_uncert_theta;
+SimulationSettings.phase_uncert_phi = phase_uncert_phi;
 
 fid = fopen([FOLDER, 'ONN_Setups.txt'], 'rt');
 ONN_Setups = textscan(fid, '%s', 'Headerlines', 0);

@@ -14,10 +14,10 @@ sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
 def get_accuracy(ONN, model, Xt, yt):
-    pbar = tqdm(total=len(ONN.loss_dB))
+    pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB:
-        pbar.set_description(f'Loss: {loss_dB:.2f}/{ONN.loss_dB[-1]:.2f}', refresh=True)
+        pbar.set_description(f'Loss/MZI (dB): {loss_dB:.2f}/{ONN.loss_dB[-1]:.2f}', refresh=True)
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
             acc_phi = []
@@ -31,11 +31,12 @@ def get_accuracy(ONN, model, Xt, yt):
                     acc.append(np.sum(pred == gt)/yt.shape[0]*100)
                 acc_phi.append(np.mean(acc)) 
             acc_theta.append(acc_phi)
-
+            pbar.update(1)
         accuracy.append(acc_theta)
-        pbar.update(1)
+    # print(np.array(accuracy).shape)
+    # print(np.swapaxes(np.array(accuracy), 0, 2).shape)
     pbar.close()
-    return accuracy
+    return np.swapaxes(np.array(accuracy), 0, 2)
 
 if __name__ == '__main__':
     iterator = tqdm(total=10)
