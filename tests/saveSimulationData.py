@@ -6,6 +6,7 @@ Edit: 03.02.2020
 """
 import sys
 import numpy as np
+import scipy.io
 import pandas as pd
 from pandas.plotting import scatter_matrix
 import matplotlib.pyplot as plt
@@ -85,7 +86,7 @@ def saveSimData(currentSimSettings, currentSimResults, model):
 
 def saveAccuracyData(FOLDER, currentSimSettings, accuracy):
     FOLDER, ONN_Model, loss, phase_uncert, N, dataset_name = currentSimSettings
-    np.savetxt(f"{FOLDER}/acc_{ONN_Model}_loss={loss:.3f}_uncert={phase_uncert:.3f}_{N}Feat.txt", np.array(accuracy).T, delimiter=',', fmt='%.3f')
+    scipy.io.savemat(f"{FOLDER}/acc_{ONN_Model}_loss={loss:.3f}_uncert={phase_uncert:.3f}_{N}Feat.mat", mdict={'accuracy':accuracy})
 
 def saveNonlin(FOLDER, Nonlinearities):
     keys = list(Nonlinearities.keys())

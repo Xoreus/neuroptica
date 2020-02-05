@@ -3,9 +3,10 @@ ONN_Simulation_Class.py
 ONN Simulation data class, containing all the simulation variables such as loss_dB, phase_uncert, ONN_Setups, X, y, Xt, yt, EPOCHS, ect...
 Useful because it makes it possible to pickle.dump() the class into a binary file, retrieving it at a later date to continue testing
 saves the Phases of each ONN Setups in the order that they appear
+also saves the 3D accuracy array to a .mat file with accuracy[losses_dB, theta, phi]
 
 Author: Simon Geoffroy-Gagnon
-Edit: 31.01.2020
+Edit: 05.02.2020
 """
 import numpy as np
 import pandas as pd
@@ -28,8 +29,8 @@ class ONN_Simulation:
         self.loss_dB = np.linspace(0, 3, 31)
         self.loss_dB_test = [0]
 
-        self.phase_uncert = np.linspace(0, 1.5, 16)
-        self.phase_uncert_test = [0]
+        self.phase_uncert_theta = np.linspace(0, 1.5, 16)
+        self.phase_uncert_phi = np.linspace(0, 1.5, 16)
 
         self.BATCH_SIZE = 2**6
         self.ONN_setup = np.array(['R_D_P', 'C_Q_P'])
@@ -108,9 +109,8 @@ class ONN_Simulation:
             f.write(simulationSettings)
 
         np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/loss_dB_test.txt', self.loss_dB_test, fmt='%.4f')
 
-        np.savetxt(f'{self.FOLDER}/phase_uncert.txt', self.phase_uncert, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/phase_uncert_test.txt', self.phase_uncert_test, fmt='%.4f',)
+        np.savetxt(f'{self.FOLDER}/phase_uncert_theta.txt', self.phase_uncert_theta, fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/phase_uncert_phi.txt', self.phase_uncert_phi, fmt='%.4f')
 
         np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')

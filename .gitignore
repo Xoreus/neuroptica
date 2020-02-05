@@ -143,3 +143,6 @@ dmypy.json
 
 # Also pickle files
 *.P
+
+# .mat files are to be ignored
+*.mat

@@ -2,6 +2,9 @@
 
 phase shifter, a beamsplitter, or an MZI. Components are combined in a :class:`~neuroptica.components.ComponentLayer`,
 which describes the arrangement of the components on-chip.
+
+Last Author: Simon Geoffroy-Gagnon
+Edit: 05.02.2020
 '''
 
 from typing import List
@@ -83,7 +86,7 @@ class PhaseShifter(OpticalComponent):
 class MZI(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
 
-    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert=0.0, loss_dB=0, loss_diff=0):
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0):
         '''
         :param m: first waveguide index
         :param n: second waveguide index
@@ -95,7 +98,8 @@ class MZI(OpticalComponent):
         super().__init__([m, n], dof=2)
         self.m = m  # input waveguide A index (0-indexed)
         self.n = n  # input waveguide B index
-        self.phase_uncert = phase_uncert
+        self.phase_uncert_theta = phase_uncert_theta
+        self.phase_uncert_phi = phase_uncert_phi
 
         self.loss_dB = get_loss(loss_dB, loss_diff=loss_diff) # dB Loss
         self.loss = 10**(-self.loss_dB/10) # Linear Loss
@@ -116,8 +120,8 @@ class MZI(OpticalComponent):
         :return: the transfer matrix
         '''
         if add_uncertainties:
-            phi = self.phi + np.random.normal(0, self.phase_uncert)
-            theta = self.theta + np.random.normal(0, self.phase_uncert)
+            phi = self.phi + np.random.normal(0, self.phase_uncert_phi)
+            theta = self.theta + np.random.normal(0, self.phase_uncert_theta)
         else:
             phi, theta = self.phi, self.theta
 
@@ -141,8 +145,8 @@ class MZI(OpticalComponent):
 
         '''
         if add_uncertainties:
-            phi = self.phi + np.random.normal(0, self.phase_uncert)
-            theta = self.theta + np.random.normal(0, self.phase_uncert)
+            phi = self.phi + np.random.normal(0, self.phase_uncert_phi)
+            theta = self.theta + np.random.normal(0, self.phase_uncert_theta)
         else:
             theta, phi = self.theta, self.phi
 

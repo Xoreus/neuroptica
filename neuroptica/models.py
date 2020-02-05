@@ -43,14 +43,6 @@ class Sequential(BaseModel):
     def __repr__(self):
         return "<Sequential Model: {}>".format([layer.__name__ for layer in self.layers])
 
-
-    def get_transformation_matrix_diamond(self):
-        trf_matrix = []
-        for layer in self.layers:
-            if isinstance(layer, OpticalMeshNetworkLayer):
-                trf_matrix.append(layer.mesh.get_indiv_transfer_matrices())
-        return trf_matrix
-
     def get_transformation_matrix(self):
         trf_matrix = []
         for layer in self.layers:

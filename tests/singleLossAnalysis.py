@@ -3,6 +3,7 @@ newSingleLossAnalysis.py
 Testing nonlinearities with RI, RDI, R+I, the whole thing. Saves all required files for plotting in matlab (matlab is way better an making nice graphs...)
 plus its good to save all data no matter what
 
+
 Author: Simon Geoffroy-Gagnon
 Edit: 30.01.2020
 """
@@ -35,34 +36,32 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 1400
+ONN.EPOCHS = 140
 ONN.STEP_SIZE = 0.001
 ONN.SAMPLES = 500
 ONN.DATASET_NUM = 1
-ONN.ITERATIONS = 70 # number of times to retry same loss/PhaseUncert
+ONN.ITERATIONS = 7 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0.1 # \sigma dB
-ONN.loss_dB = np.linspace(0, 3, 31)
-ONN.phase_uncert = np.linspace(0, 1.5, 31)
+ONN.loss_dB = np.linspace(0, 3, 6)
+ONN.phase_uncert_theta = np.linspace(0, 105, 5)
+ONN.phase_uncert_phi = np.linspace(0, 1.5, 5)
 ONN.RNG_RANGE = list(range(20,21))
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gaussian'
 # ONN.dataset_name = 'Iris'
 
-# ONN_setup = np.array(['R_P', 'R_I_P', 'R_D_I_P', 'R_D_P', 'C_Q_P', 'C_W_P'])
-# ONN.ONN_setup = np.array(['R_D_P', 'C_Q_P', 'R_I_P', 'E_P'])
-ONN.ONN_setup = np.array(['R_P', 'R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P', 'C_W_P', 'E_P'])
+# ONN.ONN_setup = np.array(['R_P', 'R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P', 'C_W_P', 'E_P'])
+ONN.ONN_setup = np.array(['R_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
     ROOT_FOLDER = r'/home/simon/Documents/neuroptica/tests/Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = f'AllTopologies_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
-    FOLDER = f'Loss_Imbalance_figures_rng{ONN.rng}'
+    # FOLDER = f'AllTopologies_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
+    FOLDER = f'phaseUncertTest'
     ONN.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
-
-    # ONN.FOLDER = ROOT_FOLDER + FUNCTION + f'test'
 
     setSim.createFOLDER(ONN.FOLDER)
 
@@ -88,7 +87,7 @@ for ONN.rng in ONN.RNG_RANGE:
         t = time.time()
         print(f'model: {ONN_Model}, Loss = {0:.3f} dB, Phase Uncert = {0:.3f} Rad, dataset = {ONN.dataset_name}, rng = {ONN.rng}')
 
-        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N, loss_diff=ONN.loss_diff, loss_dB=ONN.loss_dB[0]+0.1, phase_uncert=ONN.phase_uncert[0])
+        model = ONN_Setups.ONN_creation(ONN_Model, N=ONN.N, loss_diff=ONN.loss_diff, loss_dB=ONN.loss_dB[0], phase_uncert=ONN.phase_uncert_theta[0])
 
         X = Xog
         Xt = Xtog
@@ -106,7 +105,7 @@ for ONN.rng in ONN.RNG_RANGE:
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
 
         currentSimResults  = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
-        currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert[0], ONN.N, ONN.dataset_name
+        currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert_theta[0], ONN.N, ONN.dataset_name
 
         sSD.saveSimData(currentSimSettings, currentSimResults, model)
         
