@@ -32,24 +32,24 @@ import neuroptica as neu
 
 # Get old ONN class using pickle load
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/'
-LOWER_FOLD = 'Loss_Imbalance_figures_rng33/'
+LOWER_FOLD = 'AllTopologies_3DAccMap_MNIST_N=4_loss-diff=0.5_rng5/'
 PKL_NAME = 'ONN_Pickled_Class.P'
 OG_FOLDER = FOLDER + LOWER_FOLD + PKL_NAME
 
 with open(OG_FOLDER, 'rb') as f:
     ONN = pickle.load(f)
 
-ONN.loss_dB = np.linspace(0, 1, 31)
-ONN.phase_uncert = np.linspace(0, 1.5, 31)
-ONN.RNG_RANGE = [33]
-# ONN.STEP_SIZE = 0.005
+ONN.loss_dB = np.linspace(0, 1, 11)
+ONN.phase_uncert_theta = np.linspace(0, 1.5, 26)
+ONN.phase_uncert_phi = np.linspace(0, 2.5, 26)
+ONN.RNG_RANGE = [3]
 ONN.STEP_SIZE = 0.001
-ONN.ITERATIONS = 150
+ONN.ITERATIONS = 50
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
-    ONN.FOLDER = re.sub('\d$', f'{ONN.rng}', ONN.FOLDER) + '_retest#2'
+    ONN.FOLDER = 'retest' + re.sub('\d$', f'{ONN.rng}', ONN.FOLDER) 
     print(ONN.FOLDER)
     setSim.createFOLDER(ONN.FOLDER)
 

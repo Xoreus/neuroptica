@@ -28,12 +28,12 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     ylim([0, 100])
     
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz)
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
     
-    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
+    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz*1.5, 'interpreter','latex')
+    ylabel('Accuracy (\%)', 'fontsize', fontsz*1.5, 'interpreter','latex')
     
     title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI',SimulationSettings.models{model_idx},...
         SimulationSettings.loss_diff), 'fontsize', 1.5*fontsz, 'interpreter','latex')

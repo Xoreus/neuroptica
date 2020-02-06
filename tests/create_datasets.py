@@ -70,14 +70,12 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
     X_train_4_digits, y_train_4_digits = X_train[train_mask], y_train[train_mask]
     X_test_4_digits, y_test_4_digits = X_test[test_mask], y_test[test_mask]
 
-    # Create dimensionality reducer (PCA with 4 dimensions) and fit it to
-    # X_train_4_digits
-    pca = PCA(n_components=N)
+    # Create dimensionality reducer (PCA with 4 dimensions) and fit it to dataset
+    pca = PCA(n_components=len(digits))
     pca.fit(X_train_4_digits)
 
     # transform the training and testing datasets
     X = pca.transform(X_train_4_digits)
-
     y = pd.get_dummies(y_train_4_digits, len(digits)).values
 
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)          

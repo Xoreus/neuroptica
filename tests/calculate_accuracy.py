@@ -33,8 +33,6 @@ def get_accuracy(ONN, model, Xt, yt):
             acc_theta.append(acc_phi)
             pbar.update(1)
         accuracy.append(acc_theta)
-    # print(np.array(accuracy).shape)
-    # print(np.swapaxes(np.array(accuracy), 0, 2).shape)
     pbar.close()
     return np.swapaxes(np.array(accuracy), 0, 2)
 

@@ -2,11 +2,8 @@
 optical neural network. Currently, only sequential models are supported, but more may be added in the future.'''
 
 from typing import Dict, List
-
 import numpy as np
-
 from neuroptica.layers import NetworkLayer, OpticalMeshNetworkLayer
-
 
 class BaseModel:
     '''Base class for all models'''
@@ -78,10 +75,7 @@ class Sequential(BaseModel):
         gradients = {"output": d_loss}
         for layer in reversed(self.layers):
             if isinstance(layer, OpticalMeshNetworkLayer):
-                backprop_signal = layer.backward_pass(backprop_signal,
-#                                                      cache_fields=cache_fields,
-#                                                      use_partial_vectors=use_partial_vectors
-                                                      )
+                backprop_signal = layer.backward_pass(backprop_signal)
             else:
                 backprop_signal = layer.backward_pass(backprop_signal)
 

@@ -2,7 +2,7 @@
 Function to save all of the simulation data at every loss/phase_uncert training setting
 
 Author: Simon Geoffroy-Gagnon
-Edit: 03.02.2020
+Edit: 05.02.2020
 """
 import sys
 import numpy as np
@@ -31,6 +31,8 @@ def saveSimData(currentSimSettings, currentSimResults, model):
         Topology = 'Diamond'
     elif ONN_Model == 'C_W_P':
         Topology = 'Central Diamond'
+    elif ONN_Model == 'E_P':
+        Topology = 'Clements'
     else:
         Topology = ONN_Model
 
@@ -61,14 +63,14 @@ def saveSimData(currentSimSettings, currentSimResults, model):
 
     # Save best transformation matrix
     best_trf_matrix = np.array(best_trf_matrix)
-    with open(f'{FOLDER}/Phases/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "w") as myfile:
+    with open(f'{FOLDER}/TransformationMatrices/Best_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "w") as myfile:
         for trf in best_trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')
 
     # Save final transformation matrix
     trf_matrix = np.array(model.get_transformation_matrix())
-    with open(f'{FOLDER}/Phases/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "w") as myfile:
+    with open(f'{FOLDER}/TransformationMatrices/Last_TransformationMatrix_{ONN_Model}_loss={loss:.3f}dB_uncert={phase_uncert:.3f}Rad_{N}Features.txt', "w") as myfile:
         for trf in trf_matrix:
             np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
             myfile.write('\n')

@@ -1,8 +1,6 @@
 """
-newSingleLossAnalysis.py
-Testing nonlinearities with RI, RDI, R+I, the whole thing. Saves all required files for plotting in matlab (matlab is way better an making nice graphs...)
-plus its good to save all data no matter what
-
+singleLossAnalysis.py - trains topology and tests with diff losses/phase uncerts (phi and theta)
+Saves all required files for plotting in matlab (matlab is way better an making nice graphs...)
 
 Author: Simon Geoffroy-Gagnon
 Edit: 05.02.2020
@@ -36,31 +34,31 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 700
+ONN.EPOCHS = 800
 ONN.STEP_SIZE = 0.001
 ONN.SAMPLES = 700
 ONN.DATASET_NUM = 1
 ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0.5 # \sigma dB
-ONN.loss_dB = np.linspace(0, 2, 6)
-ONN.phase_uncert_theta = np.linspace(0, 1.5, 16)
-ONN.phase_uncert_phi = np.linspace(0, 1.5, 26)
-ONN.RNG_RANGE = [4]
+ONN.loss_dB = np.linspace(0, 2, 11)
+ONN.phase_uncert_theta = np.linspace(0, 1.5, 26)
+ONN.phase_uncert_phi = np.linspace(0, 2.5, 26)
+ONN.RNG_RANGE = [5]
 
-# ONN.dataset_name = 'MNIST'
-ONN.dataset_name = 'Gaussian'
+ONN.dataset_name = 'MNIST'
+# ONN.dataset_name = 'Gaussian'
 # ONN.dataset_name = 'Iris'
 
 # ONN.ONN_setup = np.array(['R_P', 'R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P', 'C_W_P', 'E_P'])
-ONN.ONN_setup = np.array(['C_Q_P', 'R_P'])
+ONN.ONN_setup = np.array(['R_I_P', 'C_Q_P', 'R_P', 'C_W_P', 'E_P', 'R_D_P', 'R_D_I_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
     ROOT_FOLDER = r'/home/simon/Documents/neuroptica/tests/Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    # FOLDER = f'AllTopologies_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
-    FOLDER = f'phaseUncertTest'
+    FOLDER = f'AllTopologies_3DAccMap_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
+    # FOLDER = f'phaseUncertTest'
     ONN.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
 
     setSim.createFOLDER(ONN.FOLDER)
@@ -70,17 +68,14 @@ for ONN.rng in ONN.RNG_RANGE:
     ONN.saveSimSettings()
 
     if ONN.dataset_name == 'MNIST':
-        # ONN.X, ONN.y, ONN.Xt, ONN.yt = cd.MNIST_dataset([1,3,6,7], N=ONN.N, nsamples=ONN.SAMPLES)
-        ONN.X, ONN.y, ONN.Xt, ONN.yt = cd.MNIST_dataset(list(range(10)), N=ONN.N, nsamples=ONN.SAMPLES)
+        ONN.X, ONN.y, ONN.Xt, ONN.yt = cd.MNIST_dataset([1,3,6,7], nsamples=ONN.SAMPLES)
     elif ONN.dataset_name == 'Gaussian':
-        ONN.X, ONN.y, ONN.Xt, ONN.yt = cd.gaussian_dataset(targets=int(ONN.N), 
-                features=int(ONN.N), nsamples=ONN.SAMPLES, rng=ONN.rng)
+        ONN.X, ONN.y, ONN.Xt, ONN.yt = cd.gaussian_dataset(targets=int(ONN.N), features=int(ONN.N), nsamples=ONN.SAMPLES, rng=ONN.rng)
     elif ONN.dataset_name == 'Iris':
         ONN.X, ONN.y, ONN.Xt, ONN.yt = cd.iris_dataset(nsamples=int(ONN.SAMPLES))
 
     X, y, Xt, yt = ONN.normalize_dataset()
     Xog, Xtog = X, Xt
-
     ONN.saveSimDataset()
 
     for ONN_Idx, ONN_Model in enumerate(ONN.ONN_setup):
@@ -119,7 +114,7 @@ for ONN.rng in ONN.RNG_RANGE:
 
     # Now test the same dataset using a Digital Neural Networks, 
     # just to see the difference between unitary and non-unitary matrix
-    # digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 500)
+    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 500)
 
     with open(ONN.FOLDER + '/ONN_Pickled_Class.P', 'wb') as f:
         pickle.dump(ONN, f)
