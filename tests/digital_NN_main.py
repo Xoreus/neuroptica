@@ -17,7 +17,10 @@ sys.path.append('/home/simon/Documents/neuroptica/digital_neural_network/')
 import Digital_Neural_Network as dnn
 import neural_network as nn
 import create_datasets as cd 
+import create_datasets as cd 
 import setupSimulation as setSim
+import saveSimulationData as sSD
+import plot_scatter_matrix
 
 def get_current_accuracy(xtst, ytst, net):
     correct_pred = 0
@@ -40,6 +43,7 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
     alpha = 0.1
 
     val_accuracy = []
+
     trn_accuracy = []
     losses = []
 
@@ -105,17 +109,18 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
     return net, weights
 
 if __name__ == '__main__':
-    dataset_name = 'MNIST'
-    FOLDER = 'Digital_Neural_Network'
-    SAMPLES = 5000
-    EPOCHS = 300
+    dataset_name = 'Gauss'
+    SAMPLES = 2000
+    rng = 7
+    EPOCHS = 400
+    FOLDER = f'Digital_Neural_Network_{SAMPLES}'
     N = 4
     ii = 0
 
     if dataset_name == 'MNIST':
         X, y, Xt, yt = cd.get_data([1,3,6,7], N=N, nsamples=SAMPLES)
     elif dataset_name == 'Gauss':
-        X, y, Xt, yt = cd.blob_maker(targets=int(N), features=int(N), nsamples=SAMPLES, random_state=5)
+        X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES, rng=rng)
     elif dataset_name == 'Iris':
         X, y, Xt, yt = cd.iris_dataset(nsamples=int(SAMPLES))
 
@@ -125,5 +130,5 @@ if __name__ == '__main__':
 
 
     create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS)
-    setSim.saveSimData(FOLDER, dataset_name, ii, N, X, y, Xt, yt)
-
+    ax = plot_scatter_matrix.plot_scatter_matrix(X, y)
+    plt.savefig(f'{FOLDER}/GaussianDataset{FOLDER}.png')

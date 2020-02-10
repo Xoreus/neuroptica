@@ -12,9 +12,15 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_blobs
 import random
+import matplotlib as mpl
+mpl.use('Agg')
+from matplotlib import rc
+rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
+## for Palatino and other serif fonts use:
+#rc('font',**{'family':'serif','serif':['Palatino']})
+rc('text', usetex=True)
 
-# Set random seed to always get same data
-rng = 6 
+rng = 4 
 random.seed(rng)
 
 def blob_maker(targets=4, features=4, nsamples=10000,
@@ -30,7 +36,7 @@ def blob_maker(targets=4, features=4, nsamples=10000,
 
     return x, y, xt, yt
 
-def plot_scatter_matrix(X, Y,  figsize=(20, 15)):
+def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
     plt.rcParams.update({'font.size': 44})
     df = pd.DataFrame(X)
     df['Labels'] = [np.argmax(y) for y in Y]
@@ -71,13 +77,12 @@ def plot_scatter_matrix(X, Y,  figsize=(20, 15)):
     return axes
 
 if __name__ == "__main__":
-    X, Y, Xt, Yt = blob_maker(nsamples=1000)
-    # FOLDER = 'Datasets/'
-    FOLDER = 'nonlinearity_analysis/'
-    print([FOLDER + 'X4Features0.txt'])
-
-    X = np.loadtxt(FOLDER + 'X4Features0.txt',delimiter=',') 
-    y =  np.loadtxt(FOLDER + 'y4Features0.txt',delimiter=',')
-    axes = plot_scatter_matrix(X, y)
-    plt.show()
+    import os
+    SAMPLES = 100
+    X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
+    FOLDER = '/home/simon/Documents/Thesis/Figures'
+    if not os.path.isdir(FOLDER):
+        os.makedirs(FOLDER)
+    axes = plot_scatter_matrix(X, Y)
+    plt.savefig(f"{FOLDER}/Gauss-SampleDataset_{SAMPLES}.png")
 

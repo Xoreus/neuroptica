@@ -29,4 +29,14 @@ SimulationSettings.ONN_Setups = ONN_Setups{1};
 
 models = get_model_names(SimulationSettings.ONN_Setups);
 SimulationSettings.models = models;
+
+max_accuracy = [];
+for ii = 1:length(ONN_Setups)
+    Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.mat', ...
+        SimulationSettings.ONN_Setups{ii}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncert_theta(1), SimulationSettings.N)]);
+    accuracy = Model_acc.accuracy;
+    max_accuracy(end+1) = max(max(max(accuracy)));
+end
+SimulationSettings.max_accuracy = max(max_accuracy);
+
 end

@@ -9,18 +9,23 @@
 
 
 function plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
-fontsz = 28;
+fontsz = 44;
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-step_sz = 3;
+step_sz = 1;
 SimulationSettings.loss_dB = SimulationSettings.loss_dB(1:step_sz:end);
 
 for model_idx = 1:length(SimulationSettings.ONN_Setups)
     
-    Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.txt', ...
-        SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncerts(1), ...
-        SimulationSettings.N)]);
+    Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.mat', ...
+        SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncert_theta(1), SimulationSettings.N)]);
+    accuracy = Model_acc.accuracy;
     
-    plot(SimulationSettings.phase_uncerts, Model_acc(:, 1:step_sz:end), 'linewidth', 3)
+    same_phaseUncert = zeros(length(SimulationSettings.phase_uncert_phi), length(SimulationSettings.loss_dB));
+    for ii = 1:length(SimulationSettings.phase_uncert_phi)
+        same_phaseUncert(ii, :) = accuracy(ii,ii,:);
+    end
+    
+    plot(SimulationSettings.phase_uncert_phi, same_phaseUncert(:, 1:step_sz:end), 'linewidth', 3)
     
     legend_ = create_legend_single_model(SimulationSettings.loss_dB);
     legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
@@ -28,15 +33,16 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     ylim([0, 100])
     
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     
-    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz*1.5, 'interpreter','latex')
-    ylabel('Accuracy (\%)', 'fontsize', fontsz*1.5, 'interpreter','latex')
+    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
-    title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI',SimulationSettings.models{model_idx},...
-        SimulationSettings.loss_diff), 'fontsize', 1.5*fontsz, 'interpreter','latex')
+%     title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI',SimulationSettings.models{model_idx},...
+%         SimulationSettings.loss_diff), 'fontsize', fontsz, 'interpreter','latex')
+    title(sprintf('Accuracy of Model with %s Topology',SimulationSettings.models{model_idx}), 'fontsize', fontsz, 'interpreter','latex')
     
     
     savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_Loss=[%.3f-%.2f].fig', SimulationSettings.ONN_Setups{model_idx}, ...
