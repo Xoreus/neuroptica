@@ -29,6 +29,7 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     plot(model.val_accuracy, '-', 'linewidth', 3)
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     xlabel('Epoch', 'fontsize', fontsz, 'interpreter','latex')
+    axis image
     ylim([0 100])
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
@@ -41,6 +42,8 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     %         SimulationSettings.models{ii}, SimulationSettings.dataset_name, SimulationSettings.loss_dB(1),...
     %         SimulationSettings.loss_diff, SimulationSettings.phase_uncert_theta(1)), 'fontsize', fontsz, 'interpreter','latex')
     title(sprintf('Accuracy of Model with %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
+    
+    drawnow;
     
     savefig([FOLDER, sprintf('Matlab_Figs/AccuracyPlot-Model=%s_Loss=%.3f.fig',  model.topology, ...
         min(SimulationSettings.loss_dB))])

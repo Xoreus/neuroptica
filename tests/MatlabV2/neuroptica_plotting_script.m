@@ -13,7 +13,8 @@ Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 fig_of_merit_value = 0.9;
 showContour = false;
 
-rng = [93, 1, 2];
+rng = [4, 5, 6, 7, 8, 9];
+% rng = [4];
 % Dataset = 'Gauss'
 % loss_diff = 0
 for ii = 1:length(rng)
@@ -32,7 +33,7 @@ for ii = 1:length(rng)
     if ~SimulationSettings.same_phase_uncert
         accuracy_colormap_phi_theta_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
-    accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % plots colormap of acc with phase uncert vs loss/MZI
+%     accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % plots colormap of acc with phase uncert vs loss/MZI
     close all
     ONN_Accuracy_Plot(FOLDER, SimulationSettings)
     close all

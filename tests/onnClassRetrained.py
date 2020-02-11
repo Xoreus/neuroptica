@@ -33,14 +33,14 @@ import neuroptica as neu
 
 # Get old ONN class using pickle load
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/'
-LOWER_FOLD = 'samePhaseUncertTest_Gaussian_N=4_loss-diff=0.5_rng93/'
+LOWER_FOLD = 'samePhaseUncertTest_Gaussian_N=4_loss-diff=0.5_rng7/'
 PKL_NAME = 'ONN_Pickled_Class.P'
 OG_FOLDER = FOLDER + LOWER_FOLD + PKL_NAME
 
 with open(OG_FOLDER, 'rb') as f:
     ONN = pickle.load(f)
 
-ONN.RNG_RANGE = [1,  2]
+ONN.RNG_RANGE = [4, 5, 6, 7, 8, 9]
 
 ONN_Classes = []
 for onn in ONN.ONN_setup:
@@ -52,9 +52,7 @@ for onn in ONN_Classes:
     for onn.rng in onn.RNG_RANGE:
         random.seed(onn.rng)
 
-        print(onn.FOLDER)
         onn.FOLDER = re.sub('\d+$', f'{onn.rng}', onn.FOLDER)
-        print(onn.FOLDER)
         setSim.createFOLDER(onn.FOLDER)
 
         X, y, Xt, yt = onn.normalize_dataset()

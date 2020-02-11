@@ -34,7 +34,7 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 900
+ONN.EPOCHS = 1400
 ONN.STEP_SIZE = 0.001
 ONN.SAMPLES = 600
 ONN.ITERATIONS = 31 # number of times to retry same loss/PhaseUncert
@@ -43,7 +43,7 @@ ONN.loss_dB = np.linspace(0, 2, 3)
 
 ONN.phase_uncert_theta = np.linspace(0, 1.5, 26)
 ONN.phase_uncert_phi = np.linspace(0, 1.5, 26)
-ONN.RNG_RANGE = [93]
+ONN.RNG_RANGE = [10]
 ONN.same_phase_uncert = True
 
 # ONN.dataset_name = 'MNIST'
