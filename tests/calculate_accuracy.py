@@ -21,10 +21,12 @@ def get_accuracy(ONN, model, Xt, yt):
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
             acc_phi = []
+            if ONN.same_phase_uncert:
+                ONN.phase_uncert_phi = [phase_uncert_theta]
             for phase_uncert_phi in ONN.phase_uncert_phi:
                 acc = []    
                 for _ in range(ONN.ITERATIONS):
-                    model.set_all_phases_uncerts_losses(ONN.Phases[-1], phase_uncert_theta, phase_uncert_phi, loss_dB, ONN.loss_diff)
+                    model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, ONN.loss_diff)
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
                     gt = np.array([np.argmax(tru) for tru in yt])
@@ -35,6 +37,7 @@ def get_accuracy(ONN, model, Xt, yt):
         accuracy.append(acc_theta)
     pbar.close()
     return np.swapaxes(np.array(accuracy), 0, 2)
+
 
 if __name__ == '__main__':
     iterator = tqdm(total=10)

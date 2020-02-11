@@ -14,19 +14,22 @@ figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
 step_sz = 1;
 % SimulationSettings.loss_dB = SimulationSettings.loss_dB;
 
-for model_idx = 1:length(SimulationSettings.ONN_Setups)
+for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     
-    Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.mat', ...
-        SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncert_theta(1), SimulationSettings.N)]);
-    accuracy = Model_acc.accuracy;
-    
-    %     same_phaseUncert = zeros(length(SimulationSettings.phase_uncert_phi), length(SimulationSettings.loss_dB));
-    for ii = 1:length(SimulationSettings.phase_uncert_phi)
-        same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
+    modelTopo = sprintf('%s',strrep(SimulationSettings.ONN_setup(model_idx, :), ' ', ''));
+    Model_acc = load([FOLDER, modelTopo, '.mat']);
+    model = Model_acc.(modelTopo);
+    accuracy = model.accuracy;
+    if ~model.same_phase_uncert
+        for ii = 1:length(SimulationSettings.phase_uncert_phi)
+            same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
+        end
+    else
+        accuracy = squeeze(accuracy);
+        same_phaseUncert = accuracy(:, 1:step_sz:end);
     end
     
-    
-    plot(SimulationSettings.phase_uncert_phi, same_phaseUncert(:, 1:end), 'linewidth', 3)
+    plot(SimulationSettings.phase_uncert_theta, same_phaseUncert, 'linewidth', 3)
     
     legend_ = create_legend_single_model(SimulationSettings.loss_dB);
     legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
@@ -43,12 +46,10 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     
     %     title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI',SimulationSettings.models{model_idx},...
     %         SimulationSettings.loss_diff), 'fontsize', fontsz, 'interpreter','latex')
-    title(sprintf('Accuracy of Model with %s Topology',SimulationSettings.models{model_idx}), 'fontsize', fontsz, 'interpreter','latex')
+    title(sprintf('Accuracy of Model with %s Topology',model.topology), 'fontsize', fontsz, 'interpreter','latex')
     
-    
-    
-    savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_Loss=[%.3f-%.2f].fig', SimulationSettings.ONN_Setups{model_idx}, ...
+    savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_Loss=[%.3f-%.2f].fig', model.topology, ...
         min(SimulationSettings.loss_dB), max(SimulationSettings.loss_dB))])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/Model=%s_Loss=[%.3f-%.2f].png', SimulationSettings.ONN_Setups{model_idx}, ...
+    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/Model=%s_Loss=[%.3f-%.2f].png', model.topology, ...
         min(SimulationSettings.loss_dB), max(SimulationSettings.loss_dB))])
 end

@@ -21,12 +21,6 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
 
-# Set random seed to always get same data
-rng = 5 
-random.seed(rng)
-
-# MNIST DATASET CREATOR
-
 def download(filename, source='http://yann.lecun.com/exdb/mnist/'):
     print("Downloading %s" % filename)
     urlretrieve(source + filename, filename)
@@ -87,7 +81,7 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
     Xt = Xt[rand_ind]
     yt = yt[rand_ind]
 
-    return X, y, Xt, yt
+    return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 def iris_dataset(print_plots=False, divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
@@ -138,7 +132,7 @@ def iris_dataset(print_plots=False, divide_mean=1.25, save=False, nsamples=1):
     X = iris_new
 
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)          
-    return X, y, Xt, yt
+    return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 def plot_OG_iris():
     iris = datasets.load_iris()
@@ -191,8 +185,7 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
                       center_box=(0, 1), shuffle=False, random_state=rng)
     ohe_labels = pd.get_dummies(y).values
     X, Xt, y, yt = train_test_split(X, ohe_labels, test_size=0.2)
-    return X, y, Xt, yt
-
+    return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 if __name__ == '__main__':
     X, y, Xt, yt = iris_dataset() 

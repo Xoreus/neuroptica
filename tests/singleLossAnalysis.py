@@ -17,6 +17,7 @@ mpl.use('Agg')
 from sklearn.model_selection import train_test_split
 import time
 import os
+from copy import deepcopy
 
 import ONN_Setups
 import create_datasets as cd 
@@ -34,30 +35,40 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 800
+ONN.EPOCHS = 100
 ONN.STEP_SIZE = 0.001
 ONN.SAMPLES = 700
 ONN.DATASET_NUM = 1
-ONN.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
+ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0.5 # \sigma dB
-ONN.loss_dB = np.linspace(0, 2, 11)
-ONN.phase_uncert_theta = np.linspace(0, 1.5, 46)
-ONN.phase_uncert_phi = np.linspace(0, 1.5, 46)
-ONN.RNG_RANGE = [7]
+ONN.loss_dB = np.linspace(0, 2, 5)
+ONN.phase_uncert_theta = np.linspace(0.01, 1.5, 6)
+ONN.phase_uncert_phi = np.linspace(0.01, 1.5, 6)
+ONN.RNG_RANGE = []
+ONN.same_phase_uncert = True
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gaussian'
 # ONN.dataset_name = 'Iris'
-
 # ONN.ONN_setup = np.array(['R_I_P', 'C_Q_P', 'R_P', 'C_W_P', 'E_P', 'R_D_P', 'R_D_I_P'])
 ONN.ONN_setup = np.array(['C_Q_P', 'R_P'])
+
+ONN.FOLDER = '/home/simon/Desktop/'
+
+ONN_Classes = []
+for onn in ONN.ONN_setup:
+    ONN_Classes.append(deepcopy(ONN))
+    ONN_Classes[-1].ONN_setup = onn 
+    print(ONN_Classes[-1].ONN_setup)
+    print(ONN_Classes[-1].loss_dB)
+    ONN_Classes[-1].saveSelf()
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
     ROOT_FOLDER = r'/home/simon/Documents/neuroptica/tests/Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = f'3DAccMap_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}_retest'
+    FOLDER = f'samePhaseUncertTest_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
 
     # FOLDER = f'phaseUncertTest'
     ONN.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
@@ -103,6 +114,9 @@ for ONN.rng in ONN.RNG_RANGE:
         currentSimResults  = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
         currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert_theta[0], ONN.N, ONN.dataset_name
 
+        losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix = currentSimResults
+        FOLDER, ONN_Model, loss, phase_uncert, N, dataset_name = currentSimSettings
+
         sSD.saveSimData(currentSimSettings, currentSimResults, model)
         
         phases = currentSimResults[3]
@@ -115,7 +129,8 @@ for ONN.rng in ONN.RNG_RANGE:
 
     # Now test the same dataset using a Digital Neural Networks, 
     # just to see the difference between unitary and non-unitary matrix
-    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 500)
+    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 400)
+
 
     with open(ONN.FOLDER + '/ONN_Pickled_Class.P', 'wb') as f:
         pickle.dump(ONN, f)

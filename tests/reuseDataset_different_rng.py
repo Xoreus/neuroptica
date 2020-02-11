@@ -32,7 +32,7 @@ import neuroptica as neu
 
 # Get old ONN class using pickle load
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/'
-LOWER_FOLD = 'retest#6_AllTopologies_3DAccMap_Gaussian_N=4_loss-diff=0.5_rng7/'
+LOWER_FOLD = 'samePhaseUncertTest_Gaussian_N=4_loss-diff=0.5_rng9/'
 PKL_NAME = 'ONN_Pickled_Class.P'
 OG_FOLDER = FOLDER + LOWER_FOLD + PKL_NAME
 
@@ -42,7 +42,7 @@ with open(OG_FOLDER, 'rb') as f:
 ONN.loss_dB = np.linspace(0, 2, 5)
 ONN.phase_uncert_theta = np.linspace(0, 1.5, 21)
 ONN.phase_uncert_phi = np.linspace(0, 1.5, 21)
-ONN.RNG_RANGE = [7]
+ONN.RNG_RANGE = []
 ONN.STEP_SIZE = 0.001
 ONN.ITERATIONS = 20
 # ONN.ONN_setup = np.array(['C_Q_P', 'R_P', 'C_W_P'])

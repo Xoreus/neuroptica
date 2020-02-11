@@ -12,7 +12,7 @@ function accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, Simul
 fontsz = 44;
 colormaps = {'jet'}; % this is the one farhad likes % {'hot'}; % this is the one simon likes
 
-for model_idx = 1:length(SimulationSettings.ONN_Setups)
+for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     for kk = 1:length(colormaps)
         figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
         
@@ -21,10 +21,10 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
         else
             contourColor = 'k';
         end
-        
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.mat', ...
-            SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncert_theta(1), SimulationSettings.N)]);
-        accuracy = Model_acc.accuracy;
+        modelTopo = sprintf('%s',strrep(SimulationSettings.ONN_setup(model_idx, :), ' ', ''));
+        Model_acc = load([FOLDER, modelTopo, '.mat']);
+        model = Model_acc.(modelTopo);
+        accuracy = model.accuracy;
         
         if size(accuracy, 1) ~= 1
             for ii = 1:length(SimulationSettings.phase_uncert_phi)
@@ -33,7 +33,7 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
         else
             same_phaseUncert = squeeze(accuracy);
         end
-        h = pcolor(SimulationSettings.loss_dB, SimulationSettings.phase_uncert_phi, same_phaseUncert);
+        h = pcolor(SimulationSettings.loss_dB, SimulationSettings.phase_uncert_theta, same_phaseUncert);
         h.Annotation.LegendInformation.IconDisplayStyle = 'off';
         
         hold on
@@ -73,15 +73,14 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
         %             SimulationSettings.models{model_idx}, SimulationSettings.loss_diff, area_of_merit), ...
         %             'fontsize', fontsz, 'interpreter','latex')
         
-        title(sprintf(['Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI'],...
-            SimulationSettings.models{model_idx}, SimulationSettings.loss_diff), ...
+        title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.3f dB/MZI', model.topology, model.loss_diff), ...
             'fontsize', fontsz, 'interpreter','latex')
         
-        title(sprintf(['Accuracy of Model with %s Topology'],SimulationSettings.models{model_idx}), 'fontsize', fontsz, 'interpreter','latex')
+        title(sprintf('Accuracy of Model with %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
         
-        savefig([FOLDER, sprintf('Matlab_Figs/ColorMap-TotalPhaseUncert-FigureOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.fig', SimulationSettings.ONN_Setups{model_idx}, ...
+        savefig([FOLDER, sprintf('Matlab_Figs/ColorMap-TotalPhaseUncert-FigureOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.fig', model.onn_topo, ...
             fig_of_merit_value, colormaps{kk})])
-        saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/ColorMap-TotalPhaseUncert-FigureOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.png', SimulationSettings.ONN_Setups{model_idx}, ...
+        saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/ColorMap-TotalPhaseUncert-FigureOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.png', model.onn_topo, ...
             fig_of_merit_value, colormaps{kk})])
         close(gcf)
     end
