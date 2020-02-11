@@ -11,7 +11,7 @@
 function plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
 fontsz = 44;
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-step_sz = 1;
+step_sz = 5;
 SimulationSettings.loss_dB = SimulationSettings.loss_dB(1:step_sz:end);
 
 for model_idx = 1:length(SimulationSettings.ONN_Setups)
@@ -22,10 +22,11 @@ for model_idx = 1:length(SimulationSettings.ONN_Setups)
     
     same_phaseUncert = zeros(length(SimulationSettings.phase_uncert_phi), length(SimulationSettings.loss_dB));
     for ii = 1:length(SimulationSettings.phase_uncert_phi)
-        same_phaseUncert(ii, :) = accuracy(ii,ii,:);
+        same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
     end
+
     
-    plot(SimulationSettings.phase_uncert_phi, same_phaseUncert(:, 1:step_sz:end), 'linewidth', 3)
+    plot(SimulationSettings.phase_uncert_phi, same_phaseUncert(:, 1:end), 'linewidth', 3)
     
     legend_ = create_legend_single_model(SimulationSettings.loss_dB);
     legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');

@@ -3,7 +3,7 @@ singleLossAnalysis.py - trains topology and tests with diff losses/phase uncerts
 Saves all required files for plotting in matlab (matlab is way better an making nice graphs...)
 
 Author: Simon Geoffroy-Gagnon
-Edit: 10.02.2020
+Edit: 05.02.2020
 """
 import pandas as pd
 import sys
@@ -34,32 +34,31 @@ ONN = ONN_Cls.ONN_Simulation()
 
 ONN.N = 4
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 1200
+ONN.EPOCHS = 800
 ONN.STEP_SIZE = 0.001
-ONN.SAMPLES = 800
+ONN.SAMPLES = 700
 ONN.DATASET_NUM = 1
-ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
-ONN.loss_diff = 0.5 # $\sigma$ dB
-ONN.loss_dB = np.linspace(0, 1, 5)
-
-ONN.phase_uncert_theta = np.linspace(0, 1.5, 25)
-ONN.phase_uncert_phi = np.linspace(0, 1.5, 25)
+ONN.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
+ONN.loss_diff = 0.5 # \sigma dB
+ONN.loss_dB = np.linspace(0, 2, 11)
+ONN.phase_uncert_theta = np.linspace(0, 1.5, 46)
+ONN.phase_uncert_phi = np.linspace(0, 1.5, 46)
 ONN.RNG_RANGE = [7]
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gaussian'
 # ONN.dataset_name = 'Iris'
 
-# ONN.ONN_setup = np.array(['R_P', 'R_D_P', 'R_I_P', 'R_D_I_P', 'C_Q_P', 'C_W_P', 'E_P'])
-ONN.ONN_setup = np.array(['C_Q_P', 'R_P', 'C_W_P'])
-# ONN.ONN_setup = np.array(['R_I_P', 'R_P'])
+# ONN.ONN_setup = np.array(['R_I_P', 'C_Q_P', 'R_P', 'C_W_P', 'E_P', 'R_D_P', 'R_D_I_P'])
+ONN.ONN_setup = np.array(['C_Q_P', 'R_P'])
 
 for ONN.rng in ONN.RNG_RANGE:
     random.seed(ONN.rng)
 
     ROOT_FOLDER = r'/home/simon/Documents/neuroptica/tests/Analysis/'
     FUNCTION = r'SingleLossAnalysis/'
-    FOLDER = f'retest#7_AllTopologies_3DAccMap_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}'
+    FOLDER = f'3DAccMap_{ONN.dataset_name}_N={ONN.N}_loss-diff={ONN.loss_diff}_rng{ONN.rng}_retest'
+
     # FOLDER = f'phaseUncertTest'
     ONN.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
 
@@ -101,14 +100,13 @@ for ONN.rng in ONN.RNG_RANGE:
         # initialize the ADAM optimizer and fit the ONN to the training data
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
 
-        currentSimResults = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
+        currentSimResults  = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=ONN.EPOCHS, batch_size=ONN.BATCH_SIZE, show_progress=True)
         currentSimSettings = ONN.FOLDER, ONN_Model, ONN.loss_dB[0], ONN.phase_uncert_theta[0], ONN.N, ONN.dataset_name
 
         sSD.saveSimData(currentSimSettings, currentSimResults, model)
         
         phases = currentSimResults[3]
         ONN.Phases.append(phases)
-        ONN.loss_diff = 0.5 # \sigma dB
         accuracy = calc_acc.get_accuracy(ONN, model, Xt, yt)
 
         print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
@@ -117,7 +115,7 @@ for ONN.rng in ONN.RNG_RANGE:
 
     # Now test the same dataset using a Digital Neural Networks, 
     # just to see the difference between unitary and non-unitary matrix
-    # digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 200)
+    digital_NN_main.create_train_dnn(ONN.X, ONN.y, ONN.Xt, ONN.yt, ONN.FOLDER, EPOCHS = 500)
 
     with open(ONN.FOLDER + '/ONN_Pickled_Class.P', 'wb') as f:
         pickle.dump(ONN, f)
