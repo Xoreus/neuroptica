@@ -146,3 +146,6 @@ dmypy.json
 
 # .mat files are to be ignored
 *.mat
+
+# Ignore .zip files
+*.zip
