@@ -33,19 +33,25 @@ import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import saveSimulationData as sSD
 import digital_NN_main
-import onnClassRetrained as retrain
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
 def create_dataset(onn):
-        if onn.dataset_name == 'MNIST' and onn.N == 4:
-            onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset([1,3,6,7], nsamples=onn.SAMPLES)
-        elif onn.dataset_name == 'MNIST':
-            onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset(N=onn.N, nsamples=onn.SAMPLES)
-        elif ONN.dataset_name == 'Gaussian':
-            onn.X, onn.y, onn.Xt, onn.yt = cd.gaussian_dataset(targets=int(onn.N), features=int(onn.N), nsamples=onn.SAMPLES, rng=onn.rng)
-        elif onn.dataset_name == 'Iris':
-            onn.X, onn.y, onn.Xt, onn.yt = cd.iris_dataset(nsamples=int(onn.SAMPLES))
+    if onn.dataset_name == 'MNIST' and onn.N == 4:
+        onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset([1,3,6,7], nsamples=onn.SAMPLES)
+    elif onn.dataset_name == 'MNIST':
+        onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset(N=onn.N, nsamples=onn.SAMPLES)
+    elif ONN.dataset_name == 'Gaussian':
+        onn.X, onn.y, onn.Xt, onn.yt = cd.gaussian_dataset(targets=int(onn.N), features=int(onn.N), nsamples=onn.SAMPLES, rng=onn.rng)
+    elif onn.dataset_name == 'Iris':
+        onn.X, onn.y, onn.Xt, onn.yt = cd.iris_dataset(nsamples=int(onn.SAMPLES))
+
+def create_folder(onn):
+    ROOT_FOLDER = r'Analysis/'
+    FUNCTION = 'single_loss/'
+    FOLDER = f'{onn.dataset_name}_N={onn.N}_loss-diff={onn.loss_diff}_rng{onn.rng}'
+    onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
+    setSim.createFOLDER(onn.FOLDER)
 
 def retrain_ONN(ONN, rng_range):
     for ONN.rng in rng_range:
@@ -54,6 +60,7 @@ def retrain_ONN(ONN, rng_range):
 def ONN_Training(ONN, create_dataset_flag=True):
     ONN_Classes = []
     if create_dataset_flag: create_dataset(ONN)
+    create_folder(ONN)
     for onn in ONN.ONN_setup:
         ONN_Classes.append(deepcopy(ONN))
         ONN_Classes[-1].onn_topo = onn 
@@ -61,12 +68,7 @@ def ONN_Training(ONN, create_dataset_flag=True):
     for onn in ONN_Classes:
         random.seed(onn.rng)
 
-        ROOT_FOLDER = r'Analysis/'
-        FUNCTION = 'single_loss/'
-        FOLDER = f'{onn.dataset_name}_N={onn.N}_loss-diff={onn.loss_diff}_rng{onn.rng}'
-        onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
-
-        setSim.createFOLDER(onn.FOLDER)
+        create_folder(ONN)
 
         X, y, Xt, yt = onn.normalize_dataset()
         Xog, Xtog = X, Xt
@@ -118,11 +120,11 @@ if __name__ == '__main__':
     ONN.EPOCHS = 1000
     ONN.STEP_SIZE = 0.001
     ONN.SAMPLES = 400
-    ONN.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
+    ONN.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0.5 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 1, 5)
-    ONN.phase_uncert_theta = np.linspace(0.0, 1.5, 16)
-    ONN.phase_uncert_phi = np.linspace(0.0, 1.5, 16)
+    ONN.loss_dB = np.linspace(0, 2, 5)
+    ONN.phase_uncert_theta = np.linspace(0.0, 2.5, 26)
+    ONN.phase_uncert_phi = np.linspace(0.0, 2.5, 26)
     ONN.same_phase_uncert = False
     ONN.rng = 4
 

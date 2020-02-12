@@ -45,9 +45,9 @@ class ONN_Simulation:
         self.ONN_setup = np.array(['R_D_P', 'C_Q_P'])
         self.onn_topo = 'allTopologies'
 
-        self.ROOT_FOLDER = r'Analysis/'
-        self.FUNCTION = r'SingleLossAnalysis/'
-        self.FOLDER = '/home/simon/Documents/neuroptica/tests/' + self.ROOT_FOLDER + self.FUNCTION
+        self.ROOT_FOLDER = ''
+        self.FUNCTION = ''
+        self.FOLDER = ''
 
         self.X = []
         self.y = []
@@ -148,7 +148,6 @@ class ONN_Simulation:
 
         # save a txt file containing the loss, trn acc, val acc, in case i want to replot it using matlab
         df = pd.DataFrame({'Losses':self.losses, 'Training Accuracy':self.trn_accuracy, 'Validation Accuracy':self.val_accuracy})
-        print(self.onn_topo)
         df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.onn_topo}_loss-MZI={self.loss_dB[0]:.3f}dB_uncert={self.loss_diff:.3f}.txt')
 
         # Get losses of MZIs

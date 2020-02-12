@@ -10,7 +10,7 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 
-fig_of_merit_value = 0.7;
+fig_of_merit_value = 0.75;
 showContour = true;
 
 ActualFolder = ['MNIST_N=4_loss-diff=0.5_rng4'];
