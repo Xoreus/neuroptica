@@ -62,9 +62,9 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
             xlabel('Theta Phase Uncertainty $(\sigma_\theta)$', 'fontsize', fontsz, 'interpreter','latex')
             ylabel('Phi Phase Uncertainty $(\sigma_\phi)$', 'fontsize', fontsz, 'interpreter','latex')
             
-%             title(sprintf(['Accuracy of Model with %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.4f'],SimulationSettings.models{model_idx},...
-%                 SimulationSettings.loss_dB(loss_idx), str2double(SimulationSettings.loss_diff), area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
-            title(sprintf('Accuracy of Model with %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
+            title(sprintf(['Accuracy of Model with %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.4f'],model.topology,...
+                SimulationSettings.loss_dB(loss_idx), SimulationSettings.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
+%             title(sprintf('Accuracy of Model with %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
             
             %             title(sprintf(['Accuracy of Model with %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB'],SimulationSettings.models{model_idx},...
             %                 SimulationSettings.loss_dB(loss_idx), str2double(SimulationSettings.loss_diff)), 'fontsize', fontsz, 'interpreter','latex')

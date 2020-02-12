@@ -16,9 +16,15 @@ import matplotlib as mpl
 mpl.use('Agg')
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-## for Palatino and other serif fonts use:
-#rc('font',**{'family':'serif','serif':['Palatino']})
+import matplotlib
+matplotlib.rcParams['mathtext.fontset'] = 'stix'
+matplotlib.rcParams['font.family'] = 'STIXGeneral'
+matplotlib.rcParams['mathtext.fontset'] = 'custom'
+matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
+matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
+matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 rc('text', usetex=True)
+import create_datasets as cd
 
 rng = 4 
 random.seed(rng)
@@ -56,8 +62,8 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
 
     for item in axes:
         for idx, ax in enumerate(item):
-            ax.set_yticks([0, 0.5, 1])
-            ax.set_xticks([0, 0.5, 1])
+            # ax.set_yticks([0, 0.5, 1])
+            # ax.set_xticks([0, 0.5, 1])
 #            ax.set_yticklabels([0, 0.5, 1])
 #            ax.set_xticklabels([0, 0.5, 1])
             ax.set_yticklabels('')
@@ -78,11 +84,18 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
 
 if __name__ == "__main__":
     import os
-    SAMPLES = 100
-    X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
-    FOLDER = '/home/simon/Documents/Thesis/Figures'
-    if not os.path.isdir(FOLDER):
-        os.makedirs(FOLDER)
-    axes = plot_scatter_matrix(X, Y)
-    plt.savefig(f"{FOLDER}/Gauss-SampleDataset_{SAMPLES}.png")
+    SAMPLES = 300
+    # X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
+    # FOLDER = '/home/simon/Documents/Thesis/Figures'
+    # if not os.path.isdir(FOLDER):
+    #     os.makedirs(FOLDER)
+    # axes = plot_scatter_matrix(X, Y)
+    # plt.savefig(f"{FOLDER}/Gauss-SampleDataset_{SAMPLES}.png")
+
+    X, y, *_ =  cd.iris_dataset(nsamples=SAMPLES)
+    axes = plot_scatter_matrix(X, y)
+    
+    # plt.show()
+    # X = (X - np.min(X))/(np.max(X) - np.min(X))
+    plt.savefig(f"Figures/Iris-SampleDataset_{SAMPLES}.png")
 

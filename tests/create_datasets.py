@@ -9,6 +9,17 @@ Edit: 2020.01.13
 """
 import os
 from urllib.request import urlretrieve
+import matplotlib as mpl
+mpl.use('Agg')
+from matplotlib import rc
+import matplotlib
+matplotlib.rcParams['mathtext.fontset'] = 'stix'
+matplotlib.rcParams['font.family'] = 'STIXGeneral'
+matplotlib.rcParams['mathtext.fontset'] = 'custom'
+matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
+matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
+matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import random
@@ -20,6 +31,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
+
+# Set random seed to always get same data
+rng = 5 
+random.seed(rng)
 
 def download(filename, source='http://yann.lecun.com/exdb/mnist/'):
     print("Downloading %s" % filename)
@@ -83,7 +98,7 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
 
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
-def iris_dataset(print_plots=False, divide_mean=1.25, save=False, nsamples=1):
+def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
     iris = datasets.load_iris()
 
@@ -118,6 +133,8 @@ def iris_dataset(print_plots=False, divide_mean=1.25, save=False, nsamples=1):
     augment_flower3 = np.random.multivariate_normal(mean3, cov3, int(nsamples/4))
 
     iris_new = []
+
+
     target = []
     iris_new = np.vstack([iris.data[:50], augment_flower1,
                           iris.data[50:100], augment_flower2,
@@ -138,16 +155,11 @@ def plot_OG_iris():
     iris = datasets.load_iris()
     predictors = [i for i in iris.feature_names]
 
-    dataset = datasets.base.Bunch(data=iris.data, target=iris.target,
-                                  feature_names = iris.feature_names,
-                                  target_names = ['setosa', 'versicolor',
-                                                  'virginica'])
-
-    df_features = pd.DataFrame(dict(x_0=dataset.data[:,0],
-                                    x_1=dataset.data[:,1],
-                                    x_2=dataset.data[:,2],
-                                    x_3=dataset.data[:,3],
-                                    label=dataset.target))
+    df_features = pd.DataFrame(dict(x_0=iris.data[:,0],
+                                    x_1=iris.data[:,1],
+                                    x_2=iris.data[:,2],
+                                    x_3=iris.data[:,3],
+                                    label=iris.target))
 
     df_features.rename(columns = {'label':'Label'}, inplace = True)
 
@@ -164,19 +176,23 @@ def plot_OG_iris():
 
     fig = scatter_matrix(df_features[predictors], alpha=0.8,
                          figsize=(10, 8),
-                         diagonal='hist', color=colors)
+                          diagonal='kde',
+                          color=colors)
 
     for item in fig:
         for ax in item:
             # We change the fontsize of minor ticks label
-            ax.tick_params(axis='both', which='major', labelsize=10)
+            ax.tick_params(axis='both', which='major', labelsize=0)
             ax.tick_params(axis='both', which='minor', labelsize=0)
-#            ax.set_yticklabels([0, 0.5, 1])
-#            ax.set_xticklabels([0, 0.5, 1])
+            # ax.xlabel(fontsize=34)
+            # ax.ylabel(fontsize=34)
+            # ax.set_xlabel(fontsize=30)
+            ax.xaxis.label.set_size(15)
+            ax.yaxis.label.set_size(15)
+            # ax.set_ylabel(fontsize=30)
 
 
-
-    plt.suptitle('', fontname='Calibri', fontsize=20)
+    plt.suptitle('', fontname='Calibri', fontsize=34)
     plt.savefig('Figures/iris_scatter_matrix_OG.png')
 
 def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=1):
@@ -189,3 +205,5 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
 
 if __name__ == '__main__':
     X, y, Xt, yt = iris_dataset() 
+
+    plot_OG_iris()

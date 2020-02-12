@@ -14,6 +14,13 @@ import matplotlib.pyplot as plt
 import scipy.io
 import matplotlib as mpl
 mpl.use('Agg')
+import matplotlib
+matplotlib.rcParams['mathtext.fontset'] = 'stix'
+matplotlib.rcParams['font.family'] = 'STIXGeneral'
+matplotlib.rcParams['mathtext.fontset'] = 'custom'
+matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
+matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
+matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 from saveSimulationData import plot_scatter_matrix  
 
 class ONN_Simulation:
@@ -25,6 +32,7 @@ class ONN_Simulation:
         self.SAMPLES = 1000
         self.ITERATIONS = 200
         self.dataset_name = 'Gauss'
+        self.rng = 1
 
         self.loss_diff = 0.1
         self.loss_dB = np.linspace(0, 3, 31)
@@ -58,16 +66,8 @@ class ONN_Simulation:
         self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
         self.Xt = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
         return np.array(self.X), np.array(self.y), np.array(self.Xt), np.array(self.yt)
-    def create_dict(self):
-        " Creates a dict of the simulation variables"
-        simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
-                'DATASET_NUM':self.DATASET_NUM, 'ITERATIONS':self.ITERATIONS, 'dataset_name':self.dataset_name, 'loss_diff':self.loss_diff}
-
-        simSettings = pd.DataFrame.from_dict(simSettings, orient='index', columns=['Simulation Settings'])
-        return simSettings
     def get_topology_name(self):
         " Get list of actual topology names instead of C_Q_P"
-
         if self.onn_topo == 'R_D_P':
             Topo = 'Reck + DMM'
         if self.onn_topo == 'R_D_P':
@@ -119,43 +119,68 @@ class ONN_Simulation:
         simulationSettings = simSettings.to_string()
         with open(f'{self.FOLDER}/SimulationSettings.txt','w') as f:
             f.write(simulationSettings)
-
         np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
-
         np.savetxt(f'{self.FOLDER}/phase_uncert_theta.txt', self.phase_uncert_theta, fmt='%.4f')
         np.savetxt(f'{self.FOLDER}/phase_uncert_phi.txt', self.phase_uncert_phi, fmt='%.4f')
 
         np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
-    def saveSelf(self):
-        ''' save .mat strutcure of this class' variables '''
-        scipy.io.savemat(f"{self.FOLDER}/{self.onn_topo}.mat", mdict={f'{self.onn_topo}':self})
     def saveSimData(self, model):
         ''' Plot loss, training acc and val acc '''
         ax1 = plt.plot()
-        plt.plot(self.losses, color='b')
+        plt.plot(self.losses, color='b', linewidth=3)
         plt.xlabel('Epoch')
         plt.ylabel("$\mathcal{L}$", color='b')
         ax2 = plt.gca().twinx()
-        ax2.plot(self.trn_accuracy, color='r')
-        ax2.plot(self.val_accuracy, color='g')
+        ax2.plot(self.trn_accuracy, color='r', linewidth=3)
+        ax2.plot(self.val_accuracy, color='g', linewidth=3)
         plt.ylabel('Accuracy', color='r')
         plt.legend(['Training Accuracy', 'Validation Accuracy'])
-        plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.Topology}')
+        plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
         plt.ylim([0, 100])
-        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert:.3f}Rad_{self.N}Features.png')
+        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.png')
         plt.clf()
 
         # Get losses of MZIs
         losses_MZI = model.get_all_losses()
         losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
         df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert:.3f}Rad_{self.N}Features.txt')
+        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
+
+        # save a txt file containing the loss, trn acc, val acc, in case i want to replot it using matlab
+        df = pd.DataFrame({'Losses':self.losses, 'Training Accuracy':self.trn_accuracy, 'Validation Accuracy':self.val_accuracy})
+        print(self.onn_topo)
+        df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.onn_topo}_loss-MZI={self.loss_dB[0]:.3f}dB_uncert={self.loss_diff:.3f}.txt')
+
+        # Get losses of MZIs
+        losses_MZI = model.get_all_losses()
+        losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
+        df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
+        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
+
+        # Save best transformation matrix
+        best_trf_matrix = np.array(self.best_trf_matrix)
+        with open(f'{self.FOLDER}/TransformationMatrices/Best_TransformationMatrix_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt', "w") as myfile:
+            for trf in best_trf_matrix:
+                np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
+                myfile.write('\n')
 
         # Save final transformation matrix
-        onn.last_trf_matrix = np.array(model.get_transformation_matrix())
+        trf_matrix = np.array(model.get_transformation_matrix())
+        with open(f'{self.FOLDER}/TransformationMatrices/Last_TransformationMatrix_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt', "w") as myfile:
+            for trf in trf_matrix:
+                np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
+                myfile.write('\n')
 
         # Create phase array
-        onn.last_phases = model.get_all_phases()
+        last_phases = model.get_all_phases()
+        last_phases_flat = [item for sublist in last_phases for item in sublist]
+        df = pd.DataFrame(last_phases_flat, columns=['Theta','Phi'])
+        df.to_csv(f'{self.FOLDER}/Phases/last_phases_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
+
+        # Save best phases as well
+        best_phases_flat = [item for sublist in self.phases for item in sublist]
+        df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
+        df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
     def saveAccuracyData(self):
         ''' save the accuracy computed from calculate_accuracy '''
         scipy.io.savemat(f"{self.FOLDER}/acc_{self.onn_topo}_loss={self.loss_dB[0]:.3f}_uncert={self.phase_uncert_theta[0]:.3f}_{self.N}Feat.mat", mdict={'accuracy':self.accuracy})
@@ -168,6 +193,17 @@ class ONN_Simulation:
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_y_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.y, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_Xt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.Xt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_yt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.yt, delimiter=',',fmt='%.3f')
+    def create_dict(self):
+        " Creates a dict of the simulation variables"
+        simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
+                'DATASET_NUM':self.DATASET_NUM, 'ITERATIONS':self.ITERATIONS, 'dataset_name':self.dataset_name, 'loss_diff':self.loss_diff}
+
+        simSettings = pd.DataFrame.from_dict(simSettings, orient='index', columns=['Simulation Settings'])
+        return simSettings
+    def saveSelf(self):
+        ''' save .mat strutcure of this class' variables '''
+        scipy.io.savemat(f"{self.FOLDER}/{self.onn_topo}.mat", mdict={f'{self.onn_topo}':self})
+
 
 if __name__ == '__main__':
     ONN = ONN_Simulation()

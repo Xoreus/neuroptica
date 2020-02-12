@@ -12,29 +12,30 @@ import numpy as np
 np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
 
-def ONN_creation(layers='R', N=4, loss_dB=0, loss_diff=0, phase_uncert=0, Nonlinearity=neu.Sigmoid(4), phases=[(None, None)]):
-    """ 
-    Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond
-    """
-    layers = layers.replace('_', '') 
+def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4)):
+    """  Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond """
+    if len(onn.phases) == 0:
+        phases = [(None, None)]
+
+    layers = onn.onn_topo.replace('_', '') 
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
     layer_dict = {
-            'R':neu.ReckLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, loss_diff=loss_diff, phase_uncert=phase_uncert, phases=phases),
-            'I':neu.flipped_ReckLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, loss_diff=loss_diff, phase_uncert=phase_uncert, phases=phases), 
+            'R':neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
+            'I':neu.flipped_ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases), 
 
-            'A':neu.AddMask(2*N), 
-            'M':neu.DMM_layer(2*N, loss_dB=loss_dB, loss_diff=loss_diff, phase_uncert=phase_uncert, phases=phases),
-            'D':neu.DropMask(N=2*N, keep_ports=range(0, 2*N, 2)), 
+            'A':neu.AddMask(2*onn.N), 
+            'M':neu.DMM_layer(2*onn.N, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
+            'D':neu.DropMask(N=2*onn.N, keep_ports=range(0, 2*onn.N, 2)), 
 
             'N':neu.Activation(Nonlinearity), 
-            'P':neu.Activation(neu.AbsSquared(N)),
-            'B':neu.Activation(neu.Abs(N)),
+            'P':neu.Activation(neu.AbsSquared(onn.N)),
+            'B':neu.Activation(neu.Abs(onn.N)),
 
-            'C':neu.DiamondLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, loss_diff=loss_diff, phase_uncert=phase_uncert, phases=phases), # Diamond Mesh
-            'Q':neu.DropMask(2*N - 2, keep_ports=range(N - 2, 2*N - 2)), # Bottom Diamond Topology
-            'W':neu.DropMask(2*N - 2, drop_ports=[0, 5]), # Central Diamond Topology
+            'C':neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases), # Diamond Mesh
+            'Q':neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
+            'W':neu.DropMask(2*onn.N - 2, drop_ports=[0, onn.N+1]), # Central Diamond Topology
 
-            'E':neu.ClementsLayer(N, include_phase_shifter_layer=False, loss_dB=loss_dB, loss_diff=loss_diff, phase_uncert=phase_uncert, phases=phases),
+            'E':neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
             }
 
     Model = neu.Sequential([layer_dict[layer] for layer in layers])

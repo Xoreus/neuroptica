@@ -29,14 +29,13 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     plot(model.val_accuracy, '-', 'linewidth', 3)
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     xlabel('Epoch', 'fontsize', fontsz, 'interpreter','latex')
-    axis image
     ylim([0 100])
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     
-    legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
+    legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz, 'interpreter','latex', 'location', 'southeast');
     
     %     title(sprintf('Loss and Training/Validation Accuracy\n ONN model with %s topology\nDataset: %s\n Loss/MZI = %.3f dB with a standard deviation of %s dB\n Phase Uncertainty = %.3f Radians',...
     %         SimulationSettings.models{ii}, SimulationSettings.dataset_name, SimulationSettings.loss_dB(1),...
