@@ -13,7 +13,7 @@ import scipy.io
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
-def get_accuracy(ONN, model, Xt, yt):
+def get_accuracy(ONN, model, Xt, yt, loss_diff=0):
     pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB:
@@ -26,7 +26,7 @@ def get_accuracy(ONN, model, Xt, yt):
             for phase_uncert_phi in ONN.phase_uncert_phi:
                 acc = []    
                 for _ in range(ONN.ITERATIONS):
-                    model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, ONN.loss_diff)
+                    model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
                     gt = np.array([np.argmax(tru) for tru in yt])

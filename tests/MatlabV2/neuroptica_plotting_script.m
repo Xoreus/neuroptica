@@ -13,12 +13,13 @@ Folder = '/home/simon/Documents/neuroptica/tests/Analysis/single_loss/';
 fig_of_merit_value = 0.75;
 showContour = true;
 
-rng = [4, 5];
+rng = 30:31;
 for ii = 1:length(rng)
     
-    ActualFolder = ['Gaussian_N=4_loss-diff=0.5_rng' num2str(rng(ii))];
+    ActualFolder = ['Gaussian_N=4_loss-diff=0_rng' num2str(rng(ii))];
+    ActualFolder = ['MNIST_N=4_loss-diff=0_rng' num2str(rng(ii))];
     FOLDER = [Folder, ActualFolder, '/'];
-    
+     
     SimulationSettings = load_ONN_data(FOLDER);
     
     makeMatlabDirs(FOLDER)
@@ -26,12 +27,11 @@ for ii = 1:length(rng)
 %     if ~SimulationSettings.same_phase_uncert
 %         accuracy_colormap_phi_theta_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
 %     end
-    accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % plots colormap of acc with phase uncert vs loss/MZI
-    close all
-    ONN_Accuracy_Plot(FOLDER, SimulationSettings)
-    close all
-    plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
-    close all
+%     accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % plots colormap of acc with phase uncert vs loss/MZI
+
+%     ONN_Accuracy_Plot(FOLDER, SimulationSettings)
+%     plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
+    plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
     
     cd('../MatlabV2')
 end

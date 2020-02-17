@@ -1,8 +1,6 @@
 '''The components submodule contains functionality for simulating individual optical components, such as a single
-
 phase shifter, a beamsplitter, or an MZI. Components are combined in a :class:`~neuroptica.components.ComponentLayer`,
 which describes the arrangement of the components on-chip.
-
 Last Author: Simon Geoffroy-Gagnon
 Edit: 05.02.2020
 '''
@@ -41,7 +39,6 @@ class OpticalComponent:
     def get_transfer_matrix(self) -> np.ndarray:
         '''Logic for computing the transfer operator of the component'''
         raise NotImplementedError("get_transfer_matrix() must be extended for child classes!")
-
 
 _B = 1 / np.sqrt(2) * np.array([[1 + 0j, 0 + 1j], [0 + 1j, 1 + 0j]], dtype=NP_COMPLEX, order="C")
 
@@ -294,6 +291,6 @@ class MZI_H(OpticalComponent):
 def apply_loss(mzi, loss):
     return mzi * np.array([[loss, 1],[1, loss]])
 
-def get_loss(loss_dB, loss_diff=0.01):
+def get_loss(loss_dB, loss_diff=0):
     return np.abs(np.random.normal(loss_dB, loss_diff))
 

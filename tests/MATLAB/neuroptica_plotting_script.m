@@ -10,6 +10,7 @@ clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/SingleLossAnalysis/';
 % Folder = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/';
+Folder = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/goood-lossImbalance-plots/';
 
 fig_of_merit_value = 0.9;
 showContour = false;
@@ -19,7 +20,7 @@ rng = 1;
 % loss_diff = 0
 for ii = 1:length(rng)
    
-    ActualFolder = 'MNIST_N=4_loss-diff=0.5_rng4';
+    ActualFolder = 'goood-lossImbalance-plots';
     %     ActualFolder = 'phaseUncertTest';
     %     ActualFolder = ['AllTopologies_3DAccMap_MNIST_N=4_loss-diff=0.5_rng' num2str(rng(ii))];
     FOLDER = [Folder, ActualFolder, '/'];
@@ -33,7 +34,7 @@ for ii = 1:length(rng)
    accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % plots colormap of acc with phase uncert vs loss/MZI
 
    %    ONN_Accuracy_Plot(FOLDER, SimulationSettings)
-%    plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
+   plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
    
 cd('../MATLAB')
 end

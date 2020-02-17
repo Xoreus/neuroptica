@@ -6,9 +6,9 @@
 % Not also plots a line following some percentage (fig_of_merit_value) of the max accuracy
 %
 % Author: Simon Geoffroy-Gagnon
-% Edit: 06.02.2020
+% Edit: 15.02.2020
 
-function accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour)
+function accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour, print_fig_of_merit)
 fontsz = 44;
 colormaps = {'jet'}; % this is the one farhad likes % {'hot'}; % this is the one simon likes
 
@@ -67,22 +67,17 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
         set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
         
         xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-        ylabel('Phase Uncertainty $(\sigma_{\phi,\theta})$', 'fontsize', fontsz, 'interpreter','latex')
+        ylabel('$(\sigma_{\phi,\theta})$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         
-        %         title(sprintf(['Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI\nFigure of Merit: %.3f'],...
-        %             SimulationSettings.models{model_idx}, SimulationSettings.loss_diff, area_of_merit), ...
-        %             'fontsize', fontsz, 'interpreter','latex')
+        if print_fig_of_merit
+            title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.3f'],...
+                 model.topology, model.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
+        else            
+            title(sprintf('Accuracy of %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
+        end
         
-        title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.3f dB/MZI', model.topology, model.loss_diff), ...
-            'fontsize', fontsz, 'interpreter','latex')
-        
-        title(sprintf('Accuracy of Model with %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
-        
-        savefig([FOLDER, sprintf('Matlab_Figs/ColorMap-TotalPhaseUncert-FigureOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.fig', model.onn_topo, ...
-            fig_of_merit_value, colormaps{kk})])
-        saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/ColorMap-TotalPhaseUncert-FigureOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.png', model.onn_topo, ...
-            fig_of_merit_value, colormaps{kk})])
-        close(gcf)
+        savefig([FOLDER, sprintf('Matlab_Figs/%s_power-phaseUncert.fig', model.onn_topo)])
+        saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_power-phaseUncert.png', model.onn_topo)])
     end
 end
 end

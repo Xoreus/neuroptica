@@ -8,19 +8,27 @@
 
 
 function plotAcc_allModels_SinglePhaseUncert(FOLDER, SimulationSettings)
-fontsz = 28;
+fontsz = 44;
+step_sz = 1;
+legend_ = {};
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-for p_idx = 1:length(SimulationSettings.phase_uncerts)
-    
-    
-    for model_idx = 1:length(SimulationSettings.ONN_Setups)
-        legend_ = create_legend_single_loss(SimulationSettings.models);
+for p_idx = 1:length(SimulationSettings.phase_uncert_theta(1))
+    for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
         
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.txt', ...
-            SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), ...
-            SimulationSettings.phase_uncerts(1), SimulationSettings.N)]);
-        
-        plot(SimulationSettings.loss_dB, Model_acc(p_idx, :), 'linewidth', 3)
+        modelTopo = sprintf('%s',strrep(SimulationSettings.ONN_setup(model_idx, :), ' ', ''));
+        Model_acc = load([FOLDER, modelTopo, '.mat']);
+        model = Model_acc.(modelTopo);
+        accuracy = model.accuracy;
+        legend_{end+1} = model.topology;
+        if ~model.same_phase_uncert
+            for ii = 1:length(SimulationSettings.phase_uncert_phi)
+                same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
+            end
+        else
+            accuracy = squeeze(accuracy);
+            same_phaseUncert = accuracy(:, 1:step_sz:end);
+        end
+        plot(SimulationSettings.loss_dB, same_phaseUncert(p_idx, :), 'linewidth', 3)
         
         hold on
     end
@@ -29,22 +37,20 @@ for p_idx = 1:length(SimulationSettings.phase_uncerts)
     legend(legend_, 'fontsize', fontsz,  'interpreter','latex', 'location', 'best');
     
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
-    
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     
-    xlabel(sprintf('Loss (dB/MZI, $\\sigma_{Loss} = $ %s dB/MZI)', SimulationSettings.loss_diff), 'fontsize', fontsz, 'interpreter','latex')
+    xlabel(sprintf('Loss (dB/MZI)'), 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
-    title(sprintf('Accuracy of Models with Phase Uncertainty $\\sigma_{Phase\\; Uncert}$ = %.2f Rad', SimulationSettings.phase_uncerts(p_idx)),...
-        'fontsize', 1.5*fontsz, 'interpreter','latex')
+    title(sprintf('Accuracy vs Loss/MZIs'), 'fontsize', 1.5*fontsz, 'interpreter','latex')
     
     axis('tight')
     ylim([0, 100])
     
-    savefig([FOLDER, sprintf('Matlab_Figs/AllModels_PhaseUncert=%.3f.fig', SimulationSettings.phase_uncerts(p_idx))])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_PhaseUncert=%.3f.png', SimulationSettings.phase_uncerts(p_idx))])
+    savefig([FOLDER, sprintf('Matlab_Figs/AllModels_PhaseUncert=%.3f.fig', SimulationSettings.phase_uncert_theta(p_idx))])
+    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_PhaseUncert=%.3f.png', SimulationSettings.phase_uncert_theta(p_idx))])
 end
 
 end

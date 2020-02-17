@@ -1,4 +1,4 @@
-% Function to take inmax data from a Neuroptica simulation (created in python
+% Function to take inmax data from a Neuropstica simulation (created in python
 % with either ONN_Topologies_Analysis_Retrained.py or
 % plotAcc_singleModel_AllLoss.py
 % Plots the accuracy for all models and a single loss with varying phase
@@ -6,9 +6,9 @@
 % Not also plots a line following some percentage (fig_of_merit_value) of the max accuracy
 %
 % Author: Simon Geoffroy-Gagnon
-% Edit: 06.02.2020
+% Edit: 15.02.2020
 
-function accuracy_colormap_phi_theta_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour)
+function accuracy_colormap_phi_theta_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour, print_fig_of_merit)
 fontsz = 44;
 colormaps = {'jet'}; % this is the one farhad likes % {'hot'}; % this is the one simon likes
 
@@ -59,21 +59,19 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
             a = get(gca,'YTickLabel');
             set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
             
-            xlabel('Theta Phase Uncertainty $(\sigma_\theta)$', 'fontsize', fontsz, 'interpreter','latex')
-            ylabel('Phi Phase Uncertainty $(\sigma_\phi)$', 'fontsize', fontsz, 'interpreter','latex')
+            xlabel('$\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+            ylabel('$\sigma_\phi$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
             
-            title(sprintf(['Accuracy of Model with %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.4f'],model.topology,...
-                SimulationSettings.loss_dB(loss_idx), SimulationSettings.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
-%             title(sprintf('Accuracy of Model with %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
+            if print_fig_of_merit
+                title(sprintf(['Accuracy of %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.4f'],model.topology,...
+                    SimulationSettings.loss_dB(loss_idx), SimulationSettings.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
+            else
+                title(sprintf('Accuracy of %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
+            end
             
-            %             title(sprintf(['Accuracy of Model with %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB'],SimulationSettings.models{model_idx},...
-            %                 SimulationSettings.loss_dB(loss_idx), str2double(SimulationSettings.loss_diff)), 'fontsize', fontsz, 'interpreter','latex')
+            savefig([FOLDER, sprintf('Matlab_Figs/%s_phiThetaUncert.fig', model.onn_topo)])
+            saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_phiThetaUncert.png', model.onn_topo)])
             
-            savefig([FOLDER, sprintf('Matlab_Figs/ColorMap-AreaOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.fig', model.topology, ...
-                SimulationSettings.loss_dB(loss_idx), fig_of_merit_value, colormaps{kk})])
-            saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/ColorMap-AreaOfMerit-Model=%s_Loss=%.3f_FoM=%.3f_cmap=%s-totalMaxAcc.png', model.topology, ...
-                SimulationSettings.loss_dB(loss_idx), fig_of_merit_value, colormaps{kk})])
-            close(gcf)
         end
     end
 end

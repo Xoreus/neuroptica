@@ -75,7 +75,7 @@ def ONN_Training(ONN, create_dataset_flag=True):
         onn.saveSimDataset()
 
         t = time.time()
-        print(f'model: {onn.onn_topo}, Loss = {onn.loss_dB[0]:.3f} dB, Phase Uncert = {onn.phase_uncert_theta[0]:.3f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
+        print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.3f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.3f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
 
         model = ONN_Setups.ONN_creation(onn)
 
@@ -93,17 +93,16 @@ def ONN_Training(ONN, create_dataset_flag=True):
 
         # initialize the ADAM optimizer and fit the ONN to the training data
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
-
         onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
 
-        # onn.saveTrainingData()
-        onn.accuracy = calc_acc.get_accuracy(onn, model, Xt, yt)
+
+        onn.accuracy = calc_acc.get_accuracy(onn, model, Xt, yt, loss_diff=onn.loss_diff)
         onn.saveSimData(model)
         ONN.accuracy.append(onn.accuracy)
         onn.saveAccuracyData()
         print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
         onn.saveSelf()
-
+# 
     folder = os.path.split(onn.FOLDER)[-1] 
     print('\n' + folder + '\n')
     ONN.FOLDER = onn.FOLDER
@@ -118,22 +117,25 @@ if __name__ == '__main__':
     ONN.N = 4
     ONN.BATCH_SIZE = 2**6
     ONN.EPOCHS = 1000
-    ONN.STEP_SIZE = 0.001
-    ONN.SAMPLES = 400
-    ONN.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
-    ONN.loss_diff = 0.5 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 2, 5)
-    ONN.phase_uncert_theta = np.linspace(0.0, 2.5, 26)
-    ONN.phase_uncert_phi = np.linspace(0.0, 2.5, 26)
-    ONN.same_phase_uncert = False
-    ONN.rng = 4
+    ONN.STEP_SIZE = 0.0005
+    ONN.SAMPLES = 1000
+    ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
+    ONN.loss_diff = 0 # \sigma dB
+    ONN.loss_dB = np.linspace(0, 2, 11)
+    ONN.phase_uncert_theta = np.linspace(0., 2, 26)
+    ONN.phase_uncert_phi = np.linspace(0., 2, 26)
+    ONN.same_phase_uncert = True
+    ONN.rng = 1
 
-    # ONN.dataset_name = 'MNIST'
-    ONN.dataset_name = 'Gaussian'
+    ONN.dataset_name = 'MNIST'
+    # ONN.dataset_name = 'Gaussian'
     # ONN.dataset_name = 'Iris'
-    # ONN.ONN_setup = np.array(['R_I_P', 'C_Q_P', 'R_P', 'C_W_P', 'E_P', 'R_D_P', 'R_D_I_P'])
-    ONN.ONN_setup = np.array(['R_P', 'I_P', 'C_Q_P', 'C_W_P'])
 
-    ONN_Training(ONN)
+    ONN.ONN_setup = np.array(['R_I_P', 'R_P', 'E_P', 'R_D_I_P', 'R_D_P'])
+    # ONN.ONN_setup = np.array(['R_P', 'R_I_P', 'C_Q_P', 'C_W_P'])
+    for ONN.rng in range(30, 32):    
+        ONN_Training(ONN)
+
+
     print('Starting different rng simulations')
-    retrain_ONN(ONN, [5])
+    retrain_ONN(ONN, range(0))

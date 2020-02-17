@@ -10,12 +10,12 @@
 
 function plotAcc_singleModel_AllLoss(FOLDER, SimulationSettings)
 fontsz = 44;
-figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-step_sz = 1;
+step_sz = 2;
 % SimulationSettings.loss_dB = SimulationSettings.loss_dB;
 
 for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
-    
+    figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
+
     modelTopo = sprintf('%s',strrep(SimulationSettings.ONN_setup(model_idx, :), ' ', ''));
     Model_acc = load([FOLDER, modelTopo, '.mat']);
     model = Model_acc.(modelTopo);
@@ -31,7 +31,7 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     
     plot(SimulationSettings.phase_uncert_theta, same_phaseUncert, 'linewidth', 3)
     
-    legend_ = create_legend_single_model(SimulationSettings.loss_dB);
+    legend_ = create_legend_single_model(SimulationSettings.loss_dB( 1:step_sz:end));
     legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
     axis tight
     ylim([0, 100])

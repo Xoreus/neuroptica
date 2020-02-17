@@ -171,6 +171,7 @@ class ONN_Simulation:
                 myfile.write('\n')
 
         # Create phase array
+
         last_phases = model.get_all_phases()
         last_phases_flat = [item for sublist in last_phases for item in sublist]
         df = pd.DataFrame(last_phases_flat, columns=['Theta','Phi'])
@@ -187,7 +188,7 @@ class ONN_Simulation:
         ''' Save simulation's datasset, both in plot and txt form '''
         axes = plot_scatter_matrix(self.X, self.y)
         plt.savefig(f'{self.FOLDER}/Datasets/{self.dataset_name}_Samples={len(self.X)}_Dataset.png')
-        plt.clf()
+        plt.close()
         mpl.rcParams.update(mpl.rcParamsDefault)
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_y_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.y, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_Xt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.Xt, delimiter=',',fmt='%.3f')
