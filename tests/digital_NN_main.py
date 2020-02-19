@@ -31,8 +31,8 @@ def get_current_accuracy(xtst, ytst, net):
             correct_pred += 1
     return correct_pred/len(xtst)
 
-def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
-    h_num = 0
+def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, h_num = 0):
+    
     saving = True
     plotting = True
 
@@ -54,7 +54,6 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
 
     # Train model with Gradient Descent
     for epoch in range(EPOCHS):
-
         err = 0
         # Shuffle data at the start of each epoch
         instances, targets = shuffle(X, y)
@@ -109,11 +108,11 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
     return net, weights
 
 if __name__ == '__main__':
-    dataset_name = 'Gauss'
+    dataset_name = 'Iris'
     SAMPLES = 2000
-    rng = 7
-    EPOCHS = 400
-    FOLDER = f'Digital_Neural_Network_{SAMPLES}'
+    rng = 8
+    EPOCHS = 300
+    FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/DNN/Iris-0h-sig/'
     N = 4
     ii = 0
 
@@ -124,11 +123,19 @@ if __name__ == '__main__':
     elif dataset_name == 'Iris':
         X, y, Xt, yt = cd.iris_dataset(nsamples=int(SAMPLES))
 
+    # X = np.genfromtxt(f'{FOLDER}/Datasets/Gaussian_X_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    # y = np.genfromtxt(f'{FOLDER}/Datasets/Gaussian_y_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    # Xt = np.genfromtxt(f'{FOLDER}/Datasets/Gaussian_Xt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    # yt = np.genfromtxt(f'{FOLDER}/Datasets/Gaussian_yt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+
     X = (X - np.min(X))/(np.max(X) - np.min(X))
     Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
     Xog, Xtog = X, Xt
 
 
-    create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS)
+    create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS, h_num=0)
     ax = plot_scatter_matrix.plot_scatter_matrix(X, y)
-    plt.savefig(f'{FOLDER}/GaussianDataset{FOLDER}.png')
+    plt.savefig(f'{FOLDER}/Datasets/GaussianDataset.pdf')
+
+
+

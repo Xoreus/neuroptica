@@ -13,7 +13,7 @@ import scipy.io
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
-def get_accuracy(ONN, model, Xt, yt, loss_diff=0):
+def get_accuracy(ONN, model, Xt, yt, loss_diff=0, zeta=0):
     pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB:
@@ -29,22 +29,13 @@ def get_accuracy(ONN, model, Xt, yt, loss_diff=0):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+                    zeta_filter = np.array([sorted(yhat)[-1] - sorted(yhat)[-2] > zeta for yhat in Y_hat.T])
+
                     gt = np.array([np.argmax(tru) for tru in yt])
-                    acc.append(np.sum(pred == gt)/yt.shape[0]*100)
+                    acc.append(np.sum((pred == gt)*zeta_filter)/yt.shape[0]*100)
                 acc_phi.append(np.mean(acc)) 
             acc_theta.append(acc_phi)
             pbar.update(1)
         accuracy.append(acc_theta)
     pbar.close()
     return np.swapaxes(np.array(accuracy), 0, 2)
-
-
-if __name__ == '__main__':
-    iterator = tqdm(total=10)
-    for epoch in range(10):
-        iterator.set_description(f"ℒ = {epoch}", refresh=True)
-        iterator.update(1)
-        sleep(.1)
-        
-
-

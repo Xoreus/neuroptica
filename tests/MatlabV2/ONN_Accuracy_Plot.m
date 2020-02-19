@@ -7,22 +7,22 @@
 
 function ONN_Accuracy_Plot(FOLDER, SimulationSettings)
 fontsz = 44;
-epochs = 1000;
 
 for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-    modelTopo = sprintf('%s',strrep(SimulationSettings.ONN_setup(model_idx, :), '_', '\_'));
+    modelTopo = sprintf('%s',strrep(SimulationSettings.ONN_setup(model_idx, :), ' ', ''));
     Model_acc = load([FOLDER, modelTopo, '.mat']);
     model = Model_acc.(modelTopo);
+
     
     yyaxis left
-    plot(model.losses(:, 1:epochs), 'linewidth', 3)
+    plot(model.losses(:, 1:end), 'linewidth', 3)
     ylabel('Loss Function (MSE)', 'fontsize', fontsz, 'interpreter','latex')
     
     yyaxis right
-    plot(model.trn_accuracy(:, 1:epochs), '--', 'linewidth', 3)
+    plot(model.trn_accuracy(:, 1:end), '--', 'linewidth', 3)
     hold on
-    plot(model.val_accuracy(:, 1:epochs), '-', 'linewidth', 3)
+    plot(model.val_accuracy(:, 1:end), '-', 'linewidth', 3)
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     xlabel('Epoch', 'fontsize', fontsz, 'interpreter','latex')
     ylim([0 100])
@@ -30,7 +30,8 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     
     legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz, 'interpreter','latex', 'location', 'east');
-    
+    yyaxis left
+%         ylim([0.3, 0.6])
     title(sprintf('Accuracy of %s Topology', model.topology), 'fontsize', fontsz, 'interpreter','latex')
     drawnow;
     savefig([FOLDER, sprintf('Matlab_Figs/%s_loss&acc-plot.fig', model.topology)])

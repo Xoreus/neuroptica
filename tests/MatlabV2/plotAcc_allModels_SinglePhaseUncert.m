@@ -35,22 +35,22 @@ for p_idx = 1:length(SimulationSettings.phase_uncert_theta(1))
     
     hold off
     legend(legend_, 'fontsize', fontsz,  'interpreter','latex', 'location', 'best');
-    
-    a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
-    a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+
     
     xlabel(sprintf('Loss (dB/MZI)'), 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
-    title(sprintf('Accuracy vs Loss/MZIs'), 'fontsize', 1.5*fontsz, 'interpreter','latex')
-    
+    title(sprintf('Accuracy vs Loss/MZI'), 'fontsize', 1.5*fontsz, 'interpreter','latex')
     axis('tight')
     ylim([0, 100])
+        
+    a = get(gca,'XTickLabel');
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    a = get(gca,'YTickLabel');
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
     
-    savefig([FOLDER, sprintf('Matlab_Figs/AllModels_PhaseUncert=%.3f.fig', SimulationSettings.phase_uncert_theta(p_idx))])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_PhaseUncert=%.3f.png', SimulationSettings.phase_uncert_theta(p_idx))])
+    savefig([FOLDER, sprintf('Matlab_Figs/AllModels_loss.fig')])
+    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_loss.png')])
 end
 
 end

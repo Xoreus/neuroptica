@@ -51,9 +51,11 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
     color_wheel = {0: 'r', 1: 'b', 2: 'g', 3: 'k', 4: 'c', 5: 'm', 6: 'y', 7:'tab:blue', 8:'tab:orange',9:'tab:purple'}
     colors = df["Labels"].map(lambda x: color_wheel.get(x))
 
+    # features = ['I$_%d$' % x for x in range(1, len(X[1])+1)]
     features = ['$X_%d$' % x for x in range(len(X[1]))]
 
-    df = df.rename(columns={v:'$X_%d$' % v for v in range(len(X))})
+    # df = df.rename(columns={v:f'I$_{v+1}$' for v in range(len(X))})
+    df = df.rename(columns={v:f'$X_{v}$' for v in range(len(X))})
 
     axes = scatter_matrix(df[features], alpha=.8, figsize=figsize,
                           diagonal='kde',
@@ -97,5 +99,5 @@ if __name__ == "__main__":
     
     # plt.show()
     # X = (X - np.min(X))/(np.max(X) - np.min(X))
-    plt.savefig(f"Figures/Iris-SampleDataset_{SAMPLES}.png")
+    plt.savefig(f"Figures/Iris-SampleDataset_{SAMPLES}.pdf")
 

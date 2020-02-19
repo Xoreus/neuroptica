@@ -36,12 +36,12 @@ import digital_NN_main
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
-def create_dataset(onn):
+def create_dataset(onn, digits=[1,3,6,7]):
     if onn.dataset_name == 'MNIST' and onn.N == 4:
-        onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset([1,3,6,7], nsamples=onn.SAMPLES)
+        onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset(digits, nsamples=onn.SAMPLES)
     elif onn.dataset_name == 'MNIST':
         onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset(N=onn.N, nsamples=onn.SAMPLES)
-    elif ONN.dataset_name == 'Gaussian':
+    elif onn.dataset_name == 'Gaussian':
         onn.X, onn.y, onn.Xt, onn.yt = cd.gaussian_dataset(targets=int(onn.N), features=int(onn.N), nsamples=onn.SAMPLES, rng=onn.rng)
     elif onn.dataset_name == 'Iris':
         onn.X, onn.y, onn.Xt, onn.yt = cd.iris_dataset(nsamples=int(onn.SAMPLES))
@@ -54,12 +54,13 @@ def create_folder(onn):
     setSim.createFOLDER(onn.FOLDER)
 
 def retrain_ONN(ONN, rng_range):
+    if len(rng_range) != 0: print('Starting different rng simulations')
     for ONN.rng in rng_range:
         ONN_Training(ONN, create_dataset_flag=False)
 
-def ONN_Training(ONN, create_dataset_flag=True):
+def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
     ONN_Classes = []
-    if create_dataset_flag: create_dataset(ONN)
+    if create_dataset_flag: create_dataset(ONN, digits=digits)
     create_folder(ONN)
     for onn in ONN.ONN_setup:
         ONN_Classes.append(deepcopy(ONN))
@@ -68,14 +69,12 @@ def ONN_Training(ONN, create_dataset_flag=True):
     for onn in ONN_Classes:
         random.seed(onn.rng)
 
-        create_folder(ONN)
-
         X, y, Xt, yt = onn.normalize_dataset()
         Xog, Xtog = X, Xt
         onn.saveSimDataset()
 
         t = time.time()
-        print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.3f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.3f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
+        print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
 
         model = ONN_Setups.ONN_creation(onn)
 
@@ -96,13 +95,13 @@ def ONN_Training(ONN, create_dataset_flag=True):
         onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
 
 
-        onn.accuracy = calc_acc.get_accuracy(onn, model, Xt, yt, loss_diff=onn.loss_diff)
+        onn.accuracy = calc_acc.get_accuracy(onn, model, Xt, yt, loss_diff=onn.loss_diff, zeta=onn.zeta)
         onn.saveSimData(model)
         ONN.accuracy.append(onn.accuracy)
         onn.saveAccuracyData()
         print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
         onn.saveSelf()
-# 
+
     folder = os.path.split(onn.FOLDER)[-1] 
     print('\n' + folder + '\n')
     ONN.FOLDER = onn.FOLDER
@@ -116,26 +115,29 @@ if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
     ONN.N = 4
     ONN.BATCH_SIZE = 2**6
-    ONN.EPOCHS = 1000
+    ONN.EPOCHS = 1500
     ONN.STEP_SIZE = 0.0005
     ONN.SAMPLES = 1000
     ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0 # \sigma dB
     ONN.loss_dB = np.linspace(0, 2, 11)
-    ONN.phase_uncert_theta = np.linspace(0., 2, 26)
-    ONN.phase_uncert_phi = np.linspace(0., 2, 26)
-    ONN.same_phase_uncert = True
+    ONN.phase_uncert_theta = np.linspace(0., 2.5, 21)
+    ONN.phase_uncert_phi = np.linspace(0., 2.5, 21)
+    ONN.same_phase_uncert = False
     ONN.rng = 1
+    x = 32
+    reps = 0
 
     ONN.dataset_name = 'MNIST'
     # ONN.dataset_name = 'Gaussian'
     # ONN.dataset_name = 'Iris'
 
-    ONN.ONN_setup = np.array(['R_I_P', 'R_P', 'E_P', 'R_D_I_P', 'R_D_P'])
-    # ONN.ONN_setup = np.array(['R_P', 'R_I_P', 'C_Q_P', 'C_W_P'])
-    for ONN.rng in range(30, 32):    
-        ONN_Training(ONN)
+    # ONN.ONN_setup = np.array(['R_I_P', 'R_P', 'E_P', 'R_D_I_P', 'R_D_P'])
+    # ONN.ONN_setup = np.array(['R_I_P', 'R_D_I_P'])
+    ONN.ONN_setup = np.array(['R_D_P', 'R_D_I_P', 'R_I_P', 'C_Q_P', 'E_P'])
 
+    for ONN.rng in range(x, x + reps + 1):    
+        ONN_Training(ONN, digits=[2,4,5,6], zeta=0)
 
     print('Starting different rng simulations')
     retrain_ONN(ONN, range(0))

@@ -31,23 +31,23 @@ for model_idx = 1:size(SimulationSettings.ONN_setup, 1)
     
     plot(SimulationSettings.phase_uncert_theta, same_phaseUncert, 'linewidth', 3)
     
-    legend_ = create_legend_single_model(SimulationSettings.loss_dB( 1:step_sz:end));
+    legend_ = create_legend_single_model(SimulationSettings.loss_dB(1:step_sz:end));
     legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
     axis tight
     ylim([0, 100])
     
-    a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
-    a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    disp(max(max(max(accuracy))))
     
-    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
+    xlabel('$(\sigma_{\phi,\theta})$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
     %     title(sprintf('Accuracy of Model with %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %s dB/MZI',SimulationSettings.models{model_idx},...
     %         SimulationSettings.loss_diff), 'fontsize', fontsz, 'interpreter','latex')
-    title(sprintf('Accuracy of Model with %s Topology',model.topology), 'fontsize', fontsz, 'interpreter','latex')
-    
+    title(sprintf('Accuracy of %s Topology',model.topology), 'fontsize', fontsz, 'interpreter','latex')
+    a = get(gca,'XTickLabel');
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    a = get(gca,'YTickLabel');
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
     savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_Loss=[%.3f-%.2f].fig', model.topology, ...
         min(SimulationSettings.loss_dB), max(SimulationSettings.loss_dB))])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/Model=%s_Loss=[%.3f-%.2f].png', model.topology, ...

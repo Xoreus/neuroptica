@@ -186,10 +186,12 @@ class ONN_Simulation:
         scipy.io.savemat(f"{self.FOLDER}/acc_{self.onn_topo}_loss={self.loss_dB[0]:.3f}_uncert={self.phase_uncert_theta[0]:.3f}_{self.N}Feat.mat", mdict={'accuracy':self.accuracy})
     def saveSimDataset(self):
         ''' Save simulation's datasset, both in plot and txt form '''
-        axes = plot_scatter_matrix(self.X, self.y)
-        plt.savefig(f'{self.FOLDER}/Datasets/{self.dataset_name}_Samples={len(self.X)}_Dataset.png')
-        plt.close()
-        mpl.rcParams.update(mpl.rcParamsDefault)
+        if self.N < 9:
+            axes = plot_scatter_matrix(self.X, self.y)
+            plt.savefig(f'{self.FOLDER}/Datasets/{self.dataset_name}_Samples={len(self.X)}_Dataset.png')
+            plt.close()
+            mpl.rcParams.update(mpl.rcParamsDefault)
+
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_y_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.y, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_Xt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.Xt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_yt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.yt, delimiter=',',fmt='%.3f')
