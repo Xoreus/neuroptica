@@ -48,7 +48,7 @@ def create_dataset(onn, digits=[1,3,6,7]):
 
 def create_folder(onn):
     ROOT_FOLDER = r'Analysis/'
-    FUNCTION = 'single_loss/'
+    FUNCTION = 'single_loss_linsep/'
     FOLDER = f'{onn.dataset_name}_N={onn.N}_loss-diff={onn.loss_diff}_rng{onn.rng}'
     onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
     setSim.createFOLDER(onn.FOLDER)
@@ -58,49 +58,40 @@ def retrain_ONN(ONN, rng_range):
     for ONN.rng in rng_range:
         ONN_Training(ONN, create_dataset_flag=False)
 
+def train_single_onn(onn):
+    random.seed(onn.rng)
+    X, y, Xt, yt = onn.normalize_dataset()
+    t = time.time()
+    print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
+    model = ONN_Setups.ONN_creation(onn)
+
+    if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:
+        X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
+        Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
+    elif 'C' in onn.onn_topo and 'W' in onn.onn_topo:
+        X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) + 
+            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
+        Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) + 
+            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.Xt]))
+
+    # initialize the ADAM optimizer and fit the ONN to the training data
+    optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
+    onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
+    print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
+    return model, onn 
+
 def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
     ONN_Classes = []
     if create_dataset_flag: create_dataset(ONN, digits=digits)
-    create_folder(ONN)
     for onn in ONN.ONN_setup:
         ONN_Classes.append(deepcopy(ONN))
         ONN_Classes[-1].onn_topo = onn 
         ONN_Classes[-1].get_topology_name()
     for onn in ONN_Classes:
-        random.seed(onn.rng)
-
-        X, y, Xt, yt = onn.normalize_dataset()
-        Xog, Xtog = X, Xt
-        onn.saveSimDataset()
-
-        t = time.time()
-        print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
-
-        model = ONN_Setups.ONN_creation(onn)
-
-        X = Xog
-        Xt = Xtog
-
-        if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:
-            X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
-            Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
-        elif 'C' in onn.onn_topo and 'W' in onn.onn_topo:
-            X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) + 
-                list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
-            Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) + 
-                list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.Xt]))
-
-        # initialize the ADAM optimizer and fit the ONN to the training data
-        optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=ONN.STEP_SIZE)
-        onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
-
-
-        onn.accuracy = calc_acc.get_accuracy(onn, model, Xt, yt, loss_diff=onn.loss_diff, zeta=onn.zeta)
-        onn.saveSimData(model)
-        ONN.accuracy.append(onn.accuracy)
-        onn.saveAccuracyData()
-        print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
-        onn.saveSelf()
+        model, onn = train_single_onn(onn)
+        onn.accuracy = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff, zeta=onn.zeta)
+        create_folder(onn)
+        onn.saveAll(model)
 
     folder = os.path.split(onn.FOLDER)[-1] 
     print('\n' + folder + '\n')

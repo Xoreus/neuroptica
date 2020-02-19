@@ -14,6 +14,16 @@ sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
 def get_accuracy(ONN, model, Xt, yt, loss_diff=0, zeta=0):
+
+    if 'C' in ONN.onn_topo and 'Q' in ONN.onn_topo:
+        X = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.X])
+        Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
+    elif 'C' in ONN.onn_topo and 'W' in ONN.onn_topo:
+        X = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) + 
+            list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.X]))
+        Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) + 
+            list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
+
     pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB:

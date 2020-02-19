@@ -21,19 +21,18 @@ import onnClassTraining
 ONN = ONN_Cls.ONN_Simulation()
 ONN.N = 8
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 2500
+ONN.EPOCHS = 10
 ONN.STEP_SIZE = 0.0005
-ONN.SAMPLES = 3000
+
+ONN.SAMPLES = 300
 ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 2, 3)
+ONN.loss_dB = np.linspace(0, 0, 1)
 ONN.phase_uncert_theta = np.linspace(0., 2.5, 11)
 ONN.phase_uncert_phi = np.linspace(0., 2.5, 11)
 ONN.same_phase_uncert = False
 ONN.rng = 2
 ONN.zeta = 0
-x = 32
-reps = 0
 
 # ONN.dataset_name = 'MNIST'
 ONN.dataset_name = 'Gaussian'
@@ -46,7 +45,7 @@ ONN.ONN_setup = np.array(['R_P', 'C_Q_P'])
     # onnClassTraining.ONN_Training(ONN, digits=d)
 onnClassTraining.ONN_Training(ONN)
 
-onnClassTraining.retrain_ONN(ONN, range(0))
+onnClassTraining.retrain_ONN(ONN, range(1))
 
 '''
 For MNIST PCA, [2, 4, 5, 6] w/ R_I_P = 88%

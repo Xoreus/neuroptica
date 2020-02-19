@@ -205,7 +205,11 @@ class ONN_Simulation:
     def saveSelf(self):
         ''' save .mat strutcure of this class' variables '''
         scipy.io.savemat(f"{self.FOLDER}/{self.onn_topo}.mat", mdict={f'{self.onn_topo}':self})
-
+    def saveAll(self, model):
+        self.saveSimDataset()
+        self.saveSimData(model)
+        self.saveAccuracyData()
+        self.saveSelf()
 
 if __name__ == '__main__':
     ONN = ONN_Simulation()
