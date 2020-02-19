@@ -5,13 +5,10 @@ Saves all required files for plotting in matlab (matlab is way better an making 
 Author: Simon Geoffroy-Gagnon
 Edit: 11.02.2020
 """
-import pandas as pd
 import sys
 import random
-import csv
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib
@@ -21,18 +18,16 @@ matplotlib.rcParams['mathtext.fontset'] = 'custom'
 matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
-from sklearn.model_selection import train_test_split
 import time
 import os
 from copy import deepcopy
 
 import ONN_Setups
-import create_datasets as cd 
+import create_datasets as cd
 import setupSimulation as setSim
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
-import saveSimulationData as sSD
-import digital_NN_main
+sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica')
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
@@ -50,7 +45,7 @@ def create_folder(onn):
     ROOT_FOLDER = r'Analysis/'
     FUNCTION = 'single_loss_linsep/'
     FOLDER = f'{onn.dataset_name}_N={onn.N}_loss-diff={onn.loss_diff}_rng{onn.rng}'
-    onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER 
+    onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER
     setSim.createFOLDER(onn.FOLDER)
 
 def retrain_ONN(ONN, rng_range):
@@ -69,23 +64,23 @@ def train_single_onn(onn):
         X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
         Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
     elif 'C' in onn.onn_topo and 'W' in onn.onn_topo:
-        X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) + 
+        X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
-        Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) + 
+        Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.Xt]))
 
     # initialize the ADAM optimizer and fit the ONN to the training data
     optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
     onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
     print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
-    return model, onn 
+    return model, onn
 
 def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
     ONN_Classes = []
     if create_dataset_flag: create_dataset(ONN, digits=digits)
     for onn in ONN.ONN_setup:
         ONN_Classes.append(deepcopy(ONN))
-        ONN_Classes[-1].onn_topo = onn 
+        ONN_Classes[-1].onn_topo = onn
         ONN_Classes[-1].get_topology_name()
     for onn in ONN_Classes:
         model, onn = train_single_onn(onn)
@@ -93,7 +88,7 @@ def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
         create_folder(onn)
         onn.saveAll(model)
 
-    folder = os.path.split(onn.FOLDER)[-1] 
+    folder = os.path.split(onn.FOLDER)[-1]
     print('\n' + folder + '\n')
     ONN.FOLDER = onn.FOLDER
     ONN.get_all_topologies()
@@ -127,7 +122,7 @@ if __name__ == '__main__':
     # ONN.ONN_setup = np.array(['R_I_P', 'R_D_I_P'])
     ONN.ONN_setup = np.array(['R_D_P', 'R_D_I_P', 'R_I_P', 'C_Q_P', 'E_P'])
 
-    for ONN.rng in range(x, x + reps + 1):    
+    for ONN.rng in range(x, x + reps + 1):
         ONN_Training(ONN, digits=[2,4,5,6], zeta=0)
 
     print('Starting different rng simulations')

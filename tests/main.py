@@ -4,18 +4,8 @@ using Neuroptica
 Author: Simon Geoffroy-Gagnon
 Edit: 18.02.2020
 '''
-import sys
 import numpy as np
-import numpy
-import ONN_Setups
-import create_datasets as cd 
-import setupSimulation as setSim
-import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
-import saveSimulationData as sSD
-import digital_NN_main
-sys.path.append('/home/simon/Documents/neuroptica')
-import neuroptica as neu
 import onnClassTraining
 
 ONN = ONN_Cls.ONN_Simulation()
@@ -51,5 +41,4 @@ onnClassTraining.retrain_ONN(ONN, range(1))
 For MNIST PCA, [2, 4, 5, 6] w/ R_I_P = 88%
 For MNIST PCA, [0, 1, 2, 9] w/ R_I_P = 87%
 For MNIST PCA, [1, 3, 6, 7] w/ R_I_P = %
-
 '''

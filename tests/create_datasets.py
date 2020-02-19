@@ -1,4 +1,4 @@
-""" 
+"""
 This code creates different datasets to be used for training an Optical Neural Network (4x4).
 MNIST - takes 4 digits and normalizes them from 0 to 1
 IRIS - takes the iris dataset, adds a flower, and augments the remaining flowers using their respective distributions
@@ -11,7 +11,6 @@ import os
 from urllib.request import urlretrieve
 import matplotlib as mpl
 mpl.use('Agg')
-from matplotlib import rc
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -27,13 +26,12 @@ import gzip
 import numpy as np
 from sklearn import datasets
 from pandas.plotting import scatter_matrix
-from sklearn.model_selection import train_test_split    
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
 
 # Set random seed to always get same data
-rng = 5 
+rng = 5
 random.seed(rng)
 
 def download(filename, source='http://yann.lecun.com/exdb/mnist/'):
@@ -77,7 +75,6 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
     test_mask = np.isin(y_test, digits)
 
     X_train_4_digits, y_train_4_digits = X_train[train_mask], y_train[train_mask]
-    X_test_4_digits, y_test_4_digits = X_test[test_mask], y_test[test_mask]
 
     # Create dimensionality reducer (PCA with 4 dimensions) and fit it to dataset
     pca = PCA(n_components=len(digits))
@@ -87,8 +84,8 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
     X = pca.transform(X_train_4_digits)
     y = pd.get_dummies(y_train_4_digits, len(digits)).values
 
-    X, Xt, y, yt = train_test_split(X, y, test_size=0.2)          
-    
+    X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
+
     rand_ind = random.sample(list(range(len(X))), int(nsamples))
     X = X[rand_ind]
     y = y[rand_ind]
@@ -101,8 +98,6 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
 def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
     iris = datasets.load_iris()
-
-    predictors = [i for i in iris.feature_names]
 
     # Get first mean and covariance matrix
     mean1 = iris.data[0:50].mean(axis=0)
@@ -145,10 +140,10 @@ def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
                         np.ones(50+int(nsamples/4))*2, np.ones(50+int(nsamples/4))*3])
 
     y = pd.get_dummies(list(target)).values
-              
+
     X = iris_new
 
-    X, Xt, y, yt = train_test_split(X, y, test_size=0.2)          
+    X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 def plot_OG_iris():
@@ -204,6 +199,6 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 if __name__ == '__main__':
-    X, y, Xt, yt = iris_dataset() 
+    X, y, Xt, yt = iris_dataset()
 
     plot_OG_iris()
