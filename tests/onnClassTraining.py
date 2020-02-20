@@ -57,7 +57,7 @@ def train_single_onn(onn):
     random.seed(onn.rng)
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
-    print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}')
+    print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N={onn.N}')
     model = ONN_Setups.ONN_creation(onn)
 
     if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:

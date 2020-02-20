@@ -15,19 +15,17 @@ ONN.N = 8
 ONN.BATCH_SIZE = 2**6
 ONN.EPOCHS = 2500
 ONN.STEP_SIZE = 0.0005
-ONN.SAMPLES = 3000
-ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
+ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 2, 3)
-ONN.phase_uncert_theta = np.linspace(0., 2.5, 11)
-ONN.phase_uncert_phi = np.linspace(0., 2.5, 11)
+ONN.loss_dB = np.linspace(0, 2, 5)
+ONN.phase_uncert_theta = np.linspace(0., 2.5, 26)
+ONN.phase_uncert_phi = np.linspace(0., 2.5, 26)
 ONN.same_phase_uncert = False
 ONN.rng = 2
 ONN.zeta = 0
 
-for ONN.onn_topo in ['R_P']:# ,'C_Q_P','R_I_P','E_P']:
-    Ns = range(4, 5)
-    for N in Ns:
+for ONN.onn_topo in ['C_Q_P','R_I_P','E_P']:
+    for N in range(4, 20):
         folder = f'/home/simon/Documents/neuroptica/Linearly-Separable-Datasets/N={N}/'
         ONN.X = np.loadtxt(folder + 'X.txt', delimiter=',')
         ONN.y = np.loadtxt(folder + 'y.txt', delimiter=',')
@@ -37,7 +35,6 @@ for ONN.onn_topo in ['R_P']:# ,'C_Q_P','R_I_P','E_P']:
 
         for ONN.rng in range(20):
             ONN.phases = []
-            ONN.topo = ONN.ONN_setup[0]
             ONN.get_topology_name()
             model, *_ =  onnClassTraining.train_single_onn(ONN)
             if ONN.val_accuracy[-1] > 85:
