@@ -11,6 +11,7 @@ Edit: 05.02.2020
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 import scipy.io
 import matplotlib as mpl
 mpl.use('Agg')
@@ -42,11 +43,8 @@ class ONN_Simulation:
         self.phase_uncert_phi = np.linspace(0, 1.5, 16)
 
         self.BATCH_SIZE = 2**6
-        self.ONN_setup = np.array(['R_D_P', 'C_Q_P'])
-        self.onn_topo = 'allTopologies'
+        self.onn_topo = ''
 
-        self.ROOT_FOLDER = ''
-        self.FUNCTION = ''
         self.FOLDER = ''
 
         self.X = []
@@ -204,12 +202,29 @@ class ONN_Simulation:
         return simSettings
     def saveSelf(self):
         ''' save .mat strutcure of this class' variables '''
-        scipy.io.savemat(f"{self.FOLDER}/{self.onn_topo}.mat", mdict={f'{self.onn_topo}':self})
+        scipy.io.savemat(f"{self.FOLDER}/Topologies/{self.onn_topo}.mat", mdict={f'{self.onn_topo}':self})
     def saveAll(self, model):
         self.saveSimDataset()
         self.saveSimData(model)
         self.saveAccuracyData()
         self.saveSelf()
+    def createFOLDER(self):
+        if not os.path.isdir(self.FOLDER):
+            os.makedirs(self.FOLDER)
+        if not os.path.isdir(self.FOLDER + '/Figures_Fitting'):
+            os.makedirs(self.FOLDER + '/Figures_Fitting')
+        if not os.path.isdir(self.FOLDER + '/Data_Fitting'):
+            os.makedirs(self.FOLDER + '/Data_Fitting')
+        if not os.path.isdir(self.FOLDER + '/Phases'):
+            os.makedirs(self.FOLDER + '/Phases')
+        if not os.path.isdir(self.FOLDER + '/Datasets'):
+            os.makedirs(self.FOLDER + '/Datasets')
+        if not os.path.isdir(self.FOLDER + '/Losses_per_MZI'):
+            os.makedirs(self.FOLDER + '/Losses_per_MZI')
+        if not os.path.isdir(self.FOLDER + '/TransformationMatrices'):
+            os.makedirs(self.FOLDER + '/TransformationMatrices')
+        if not os.path.isdir(self.FOLDER + '/Topologies'):
+            os.makedirs(self.FOLDER + '/Topologies')
 
 if __name__ == '__main__':
     ONN = ONN_Simulation()

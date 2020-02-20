@@ -46,18 +46,19 @@ def create_folder(onn):
     FUNCTION = 'single_loss_linsep/'
     FOLDER = f'{onn.dataset_name}_N={onn.N}_loss-diff={onn.loss_diff}_rng{onn.rng}'
     onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER
-    setSim.createFOLDER(onn.FOLDER)
+    onn.createFOLDER()
 
 def retrain_ONN(ONN, rng_range):
     if len(rng_range) != 0: print('Starting different rng simulations')
     for ONN.rng in rng_range:
         ONN_Training(ONN, create_dataset_flag=False)
 
-def train_single_onn(onn):
+def train_single_onn(onn, create_dataset_flag=True):
     random.seed(onn.rng)
+    if create_dataset_flag: create_dataset(onn)
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
-    print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N={onn.N}')
+    print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
     model = ONN_Setups.ONN_creation(onn)
 
     if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:

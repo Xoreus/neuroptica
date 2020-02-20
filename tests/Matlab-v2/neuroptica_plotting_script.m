@@ -9,17 +9,18 @@
 clc; close all; clear;
 
 Folder = '/home/simon/Documents/neuroptica/tests/Analysis/single_loss/';
-% Folder = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/useless-DMM/';
+Folder = '/home/simon/Documents/neuroptica/tests/Analysis/linsep/';
 
 fig_of_merit_value = 0.75;
-print_fig_of_merit = false;
+print_fig_of_merit = true;
 showContour = true;
 
-rng = [32];
+rng = 4;
 for ii = 1:length(rng)
     
-    ActualFolder = ['Gaussian_N=4_loss-diff=0_rng' num2str(rng(ii))];
-%     ActualFolder = ['MNIST_N=4_loss-diff=0_rng' num2str(rng(ii))];
+%     ActualFolder = ['Gaussian_N=4_loss-diff=0_rng' num2str(rng(ii))];
+    ActualFolder = ['N=' num2str(rng(ii))];
+%     ActualFolder = ['test'];
 %     ActualFolder = ['MNIST_N=10_loss-diff=0_rng' num2str(rng(ii))];
     FOLDER = [Folder, ActualFolder, '/'];
      
@@ -29,7 +30,7 @@ for ii = 1:length(rng)
     warning( 'off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
     if ~SimulationSettings.same_phase_uncert
-        accuracy_colormap_phi_theta_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour) % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
+        accuracy_colormap_phi_theta_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour, print_fig_of_merit) % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
     accuracy_colormap_phaseUncert_plotAccuracyArea_FoM_maxAcc(FOLDER, SimulationSettings, fig_of_merit_value, showContour, print_fig_of_merit) % plots colormap of acc with phase uncert vs loss/MZI
 

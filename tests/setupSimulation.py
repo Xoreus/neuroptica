@@ -16,8 +16,6 @@ import random
 def createFOLDER(FOLDER):
     if not os.path.isdir(FOLDER):
         os.makedirs(FOLDER)
-    if not os.path.isdir(FOLDER + '/Figures'):
-        os.makedirs(FOLDER + '/Figures')
     if not os.path.isdir(FOLDER + '/Figures_Fitting'):
         os.makedirs(FOLDER + '/Figures_Fitting')
     if not os.path.isdir(FOLDER + '/Data_Fitting'):
@@ -30,3 +28,5 @@ def createFOLDER(FOLDER):
         os.makedirs(FOLDER + '/Losses_per_MZI')
     if not os.path.isdir(FOLDER + '/TransformationMatrices'):
         os.makedirs(FOLDER + '/TransformationMatrices')
+    if not os.path.isdir(FOLDER + '/Topologies'):
+        os.makedirs(FOLDER + '/Topologies')
