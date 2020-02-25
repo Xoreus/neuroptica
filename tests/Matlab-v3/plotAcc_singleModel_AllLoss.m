@@ -8,16 +8,16 @@
 % Edit: 25.01.2020
 
 
-function plotAcc_singleModel_AllLoss(FOLDER, sim, acc, topo)
+function plotAcc_singleModel_AllLoss(FOLDER, sim, acc, topo, printMe)
 fontsz = 44;
-step_sz = 1;
+step_sz = 6;
 
 for t = 1:length(topo)
     simulation = sim.(topo{t});
     accuracy = acc.(topo{t}).accuracy;
     
     figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-    
+    same_phaseUncert = [];
     if ~simulation.same_phase_uncert
         for ii = 1:length(simulation.phase_uncert_phi)
             same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
@@ -34,6 +34,10 @@ for t = 1:length(topo)
     axis tight
     ylim([0, 100])
     
+    h = gca;
+    ylim([0 100])
+    set(h, 'YTickLabelMode', 'auto')
+    
     disp(max(max(max(accuracy))))
     
     xlabel('$(\sigma_{\phi,\theta})$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
@@ -46,4 +50,7 @@ for t = 1:length(topo)
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
     savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_lineplot.fig', simulation.topology)])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/Model=%s_lineplot.png', simulation.topology)])
+    if printMe
+        pMe([FOLDER, simulation.topology, '-all-losses.pdf'])
+    end
 end

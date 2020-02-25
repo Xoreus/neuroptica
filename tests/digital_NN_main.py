@@ -13,6 +13,7 @@ import pandas as pd
 import create_datasets as cd
 sys.path.append('/home/simon/Documents/neuroptica/digital_neural_network')
 import Digital_Neural_Network as dnn
+import og_dnn
 import neural_network as nn
 import setupSimulation as setSim
 import matplotlib.pyplot as plt
@@ -26,20 +27,20 @@ def get_current_accuracy(xtst, ytst, net):
             correct_pred += 1
     return correct_pred/len(xtst)
 
-def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50):
-    h_num = 0
-
+def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50, h_num=0):
     beta = 1
     eta = .05
     alpha = 0.1
-
     val_accuracy = []
-
     trn_accuracy = []
     losses = []
 
     # Build network
-    net = dnn.build_network(X, y, h_num=h_num)
+    topology = []
+    topology.append(4)
+    topology.append(4)
+    topology.append(4)
+    net = og_dnn.Network(topology)
 
     # Train model with Gradient Descent
     for epoch in range(EPOCHS):
@@ -88,14 +89,13 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50):
     return net, weights
 
 if __name__ == '__main__':
-    dataset_name = 'Gauss'
+    dataset_name = 'Iris'
     SAMPLES = 250
     rng = 7
     EPOCHS = 300
 
-    Ns = range(19, 20)
-    for N in Ns:
-        for rng in range(20):
+    for N in [4]:
+        for rng in range(1):
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
             if dataset_name == 'MNIST':
@@ -110,7 +110,7 @@ if __name__ == '__main__':
             Xog, Xtog = X, Xt
 
 
-            net, weights = create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS)
+            net, weights = create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS, h_num=1)
             # plot_scatter_matrix.plot_scatter_matrix(X, y)
             # plt.savefig(f'{FOLDER}\\Datasets\\GaussianDataset.png')
 

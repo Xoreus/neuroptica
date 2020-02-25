@@ -30,7 +30,7 @@ np.random.seed(5)
 def build_network(xtrn, ytrn, h_num=0, biasing=False):
     topology = []
     topology.append(len(xtrn[0]))
-    for _ in range(h_num):
+    for _ in range(1, h_num+1):
         topology.append(len(xtrn[0]))
     topology.append(len(ytrn[0]))
     net = nn.Network(topology, biasing)
@@ -38,7 +38,6 @@ def build_network(xtrn, ytrn, h_num=0, biasing=False):
     nn.Neuron.alpha = 0.015
 
     return net
-
 
 def load_data():
     pickle_path = os.getcwd() + '/../Weights/'
@@ -54,7 +53,6 @@ def load_data():
         y = pickle.load(f)
     return weights, x, y
 
-
 def load_csv_data():
     pickle_path = os.getcwd() + '/../Weights/'
     pickle_features = pickle_path + 'x_q.csv'
@@ -62,7 +60,6 @@ def load_csv_data():
     x = genfromtxt(pickle_features, delimiter=',')
     y = genfromtxt(pickle_targets, delimiter=',')
     return x, y
-
 
 def get_current_accuracy(xtst, ytst, net):
     # Test set predictions
@@ -73,7 +70,6 @@ def get_current_accuracy(xtst, ytst, net):
         if all(ytst[idx] == net.getThResults()):
             correct_pred += 1
     return correct_pred/len(xtst)
-
 
 def main():
     Epochs = 500

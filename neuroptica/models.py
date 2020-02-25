@@ -100,5 +100,8 @@ class Sequential(BaseModel):
         phase_idx = 0
         for layer in self.layers:
             if hasattr(layer, 'mesh'):
+                # print(Phases[phase_idx])
+                # print((Phases[phase_idx], phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff))
                 layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
+                # layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert_theta, phase_uncert_phi, loss_dB)
                 phase_idx += 1

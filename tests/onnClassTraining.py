@@ -57,6 +57,7 @@ def train_single_onn(onn, create_dataset_flag=True):
     random.seed(onn.rng)
     if create_dataset_flag: create_dataset(onn)
     X, y, Xt, yt = onn.normalize_dataset()
+    print(len(X))
     t = time.time()
     print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
     model = ONN_Setups.ONN_creation(onn)
@@ -85,7 +86,7 @@ def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
         ONN_Classes[-1].get_topology_name()
     for onn in ONN_Classes:
         model, onn = train_single_onn(onn)
-        onn.accuracy = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff, zeta=onn.zeta)
+        onn.accuracy = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff)
         create_folder(onn)
         onn.saveAll(model)
 
@@ -102,9 +103,8 @@ if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
     ONN.N = 4
     ONN.BATCH_SIZE = 2**6
-    ONN.EPOCHS = 1500
+    ONN.EPOCHS = 600
     ONN.STEP_SIZE = 0.0005
-    ONN.SAMPLES = 1000
     ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0 # \sigma dB
     ONN.loss_dB = np.linspace(0, 2, 11)
@@ -115,16 +115,23 @@ if __name__ == '__main__':
     x = 32
     reps = 0
 
-    ONN.dataset_name = 'MNIST'
+    # ONN.dataset_name = 'MNIST'
     # ONN.dataset_name = 'Gaussian'
     # ONN.dataset_name = 'Iris'
 
     # ONN.ONN_setup = np.array(['R_I_P', 'R_P', 'E_P', 'R_D_I_P', 'R_D_P'])
     # ONN.ONN_setup = np.array(['R_I_P', 'R_D_I_P'])
-    ONN.ONN_setup = np.array(['R_D_P', 'R_D_I_P', 'R_I_P', 'C_Q_P', 'E_P'])
+    ONN.ONN_setup = np.array(['C_Q_P'])
+    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/retest-AllTopologies_3DAccMap_Gaussian_N=4_loss-diff=0.5_rng7'
 
-    for ONN.rng in range(x, x + reps + 1):
-        ONN_Training(ONN, digits=[2,4,5,6], zeta=0)
+    ONN.X = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_X_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    ONN.Xt = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_Xt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    ONN.y = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_y_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    ONN.yt = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_yt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    ONN.FOLDER = 'Analysis/test'
+    ONN.onn_topo = ONN.ONN_setup[0] 
+    ONN.get_topology_name()
+    model, ONN = train_single_onn(ONN, create_dataset_flag=False) 
+    setSim.createFOLDER(ONN.FOLDER)
+    ONN.saveAll(model)
 
-    print('Starting different rng simulations')
-    retrain_ONN(ONN, range(0))

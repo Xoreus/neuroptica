@@ -29,6 +29,7 @@ from pandas.plotting import scatter_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
+import plot_scatter_matrix 
 
 # Set random seed to always get same data
 rng = 5
@@ -146,6 +147,40 @@ def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
+def plot_agmented_iris(nsamples=300):
+    iris = datasets.load_iris()
+    predictors = [i for i in iris.feature_names]
+    X, y, *_ = iris_dataset(nsamples=nsamples)
+
+    #now plot using pandas
+    color_wheel = {0: 'red',  1: 'green', 2: 'blue', 3: 'black'}
+
+    colors = df_features["Label"].map(lambda x: color_wheel.get(x))
+
+    # Rename features
+    features = {'x_{}'.format(x):iris.feature_names[x] for x in range(4)}
+    df_features.rename(columns = features, inplace = True)
+
+    plt.rcParams.update({'font.size': 12})
+
+    fig = scatter_matrix(df_features[predictors], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
+
+    for item in fig:
+        for ax in item:
+            # We change the fontsize of minor ticks label
+            ax.tick_params(axis='both', which='major', labelsize=0)
+            ax.tick_params(axis='both', which='minor', labelsize=0)
+            # ax.xlabel(fontsize=34)
+            # ax.ylabel(fontsize=34)
+            # ax.set_xlabel(fontsize=30)
+            ax.xaxis.label.set_size(15)
+            ax.yaxis.label.set_size(15)
+            # ax.set_ylabel(fontsize=30)
+
+
+    plt.suptitle('', fontname='Calibri', fontsize=34)
+    plt.savefig('/home/simon/Documents/Thesis/Figures/iris_scatter_matrix_augment.pdf')
+
 def plot_OG_iris():
     iris = datasets.load_iris()
     predictors = [i for i in iris.feature_names]
@@ -169,10 +204,7 @@ def plot_OG_iris():
 
     plt.rcParams.update({'font.size': 12})
 
-    fig = scatter_matrix(df_features[predictors], alpha=0.8,
-                         figsize=(10, 8),
-                          diagonal='kde',
-                          color=colors)
+    fig = scatter_matrix(df_features[predictors], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
 
     for item in fig:
         for ax in item:
@@ -188,7 +220,7 @@ def plot_OG_iris():
 
 
     plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('Figures/iris_scatter_matrix_OG.png')
+    plt.savefig('/home/simon/Documents/Thesis/Figures/iris_scatter_matrix_OG.pdf')
 
 def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=1):
     " GAUSSIAN BLOB MAKER "

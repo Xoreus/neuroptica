@@ -164,7 +164,6 @@ class InSituAdam(Optimizer):
 
         best_phases = self.model.get_all_phases()
         best_trf_matrix = self.model.get_transformation_matrix()
-
         n_features, n_samples = data.shape
 
         iterator = range(epochs)

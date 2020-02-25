@@ -18,6 +18,8 @@ for t = 1:length(topo)
     for p_idx = 1:length(simulation.phase_uncert_theta(1))
         
         legend_{end+1} = simulation.topology;
+        same_phaseUncert = [];
+        
         if ~simulation.same_phase_uncert
             for ii = 1:length(simulation.phase_uncert_phi)
                 same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
@@ -26,7 +28,7 @@ for t = 1:length(topo)
             accuracy = squeeze(accuracy);
             same_phaseUncert = accuracy(:, 1:step_sz:end);
         end
-        plot(simulation.loss_dB, same_phaseUncert(p_idx, :), 'linewidth', 3)
+        plot(simulation.loss_dB(1:step_sz:end), same_phaseUncert(p_idx, :), 'linewidth', 3)
         
         hold on
     end
@@ -50,5 +52,8 @@ set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
 savefig([FOLDER, sprintf('Matlab_Figs/AllModels_loss.fig')])
 saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_loss.png')])
 
+if printMe
+    pMe([FOLDER, 'singlePhaseUncert.pdf'])
+end
 
 end

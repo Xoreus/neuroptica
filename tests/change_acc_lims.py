@@ -11,25 +11,41 @@ import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
 import ONN_Setups 
 
+def set_phases(onn, phases):
+    sep_phases = [[],[]]
+    for l in onn.onn_topo:
+        if l == '_':
+            continue
+        elif l == 'C' or l == 'E':
+            for phase in phases:
+                sep_phases[0].append(phase)
+        elif l == 'R' or l == 'I':
+            for idx, phase in enumerate(phases):
+                if idx < N*(N-1)/2:
+                    sep_phases[0].append((phase[0], phase[1]))
+                else:
+                    sep_phases[1].append((phase[0], phase[1]))
+    return sep_phases
+
 
 ONN = ONN_Cls.ONN_Simulation()
-ONN.N = 8
-ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 2500
-ONN.STEP_SIZE = 0.0005
-ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
+
+ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
 ONN.loss_dB = np.linspace(0, 1, 11)
-ONN.phase_uncert_theta = np.linspace(0., 2, 21)
-ONN.phase_uncert_phi = np.linspace(0., 2, 21)
+ONN.phase_uncert_theta = np.linspace(0., 0.3, 31)
+ONN.phase_uncert_phi = np.linspace(0., 0.3, 31)
 ONN.same_phase_uncert = False
-ONN.rng = 2
-ONN.zeta = 0
-topos = ['R_P', 'C_Q_P']
 
-for ONN.onn_topo in topos:
-    ONN.get_topology_name()
-    for N in range(4, 5):
+ONN.zeta = 0
+topos = ['R_P', 'R_I_P', 'E_P', 'C_Q_P']
+topos = ['C_Q_P']
+
+
+for N in range(10, 11):
+    for ONN.onn_topo in topos:
+        ONN.get_topology_name()
+        print(f'N={N}, topo={ONN.onn_topo}')
         folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}/'
         FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/linsep/N={N}'
         ONN.X = np.loadtxt(folder + 'X.txt', delimiter=',')
@@ -38,9 +54,12 @@ for ONN.onn_topo in topos:
         ONN.yt = np.loadtxt(folder + 'yt.txt', delimiter=',')
         ONN.N = N
         phases = np.loadtxt(f'{FOLDER}/Phases/Phases_Best_{ONN.onn_topo}_loss=0.000dB_uncert=0.000Rad_{N}Features.txt', skiprows=1, usecols=(1,2), delimiter=',')
-        ONN.phases = [[(t, p) for t, p in phases]]
+        phases = [(t, p) for t, p in phases]
+
+        sep_phases = set_phases(ONN, phases)
+        ONN.phases = sep_phases
         model = ONN_Setups.ONN_creation(ONN)
-        ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff, zeta=ONN.zeta)
+        ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
 
         # break
         ONN.FOLDER = f'Analysis/linsep/N={N}-newSimValues'
@@ -48,5 +67,5 @@ for ONN.onn_topo in topos:
         ONN.saveSelf()
         ONN.saveSimDataset()
         ONN.saveAccuracyData()
-        np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', topos, fmt='%s')
+        # np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', topos, fmt='%s')
 

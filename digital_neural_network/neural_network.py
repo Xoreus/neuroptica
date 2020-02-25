@@ -12,9 +12,8 @@ import numpy as np
 class Connection:
     def __init__(self, connectedNeuron):
         self.connectedNeuron = connectedNeuron
-        self.weight = np.random.uniform() - 0.5
+        self.weight = np.random.normal()
         self.dWeight = 0.0
-
 
 class Neuron:
     eta = 0.001
@@ -62,6 +61,13 @@ class Neuron:
     def deriv_non_linear_activation(self, x):
         return 1
 
+    # def sigmoid(self, x):
+    # def non_linear_activation(self, x):
+    #     return 1 / (1 + math.exp(-x * 1.0))
+
+    # # def dSigmoid(self, x):
+    # def deriv_non_linear_activation(self, x):
+    #     return x * (1.0 - x)
 ###############################################################################
 # End of the non-linear activation function
 ###############################################################################

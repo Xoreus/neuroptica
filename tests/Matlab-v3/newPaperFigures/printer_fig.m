@@ -37,27 +37,11 @@ uiopen('/home/simon/Documents/neuroptica/tests/MatlabV2/newPaperFigures/reck_Pow
 title('Classification Accuracy of Reck Topology')
 xlabel(xlbl_power)
 ylabel(ylbl_power)
+
+
+
 set(gcf,'Units','inches');
-screenposition = [12.4271  4.7917   18.8542   12.9583];
-set(gcf, 'PaperPosition',[0 0 screenposition(3:4)/1.25], 'PaperSize',[screenposition(3:4)/1.25]);
-print -dpdf -painters reck_power-phaseUncert.pdf
+screenposition = [12  5   18  15];
+set(gcf, 'PaperPosition',[0 0 screenposition(3:4)], 'PaperSize',[screenposition(3:4)]);
+print -dpdf -painters diamond-backprop-plot.pdf
 
-
-
-
-% 
-% xlabel()
-% ylabel()
-% 
-% screenposition = get(gcf,'Position');
-% set(gcf,'Units','inches');
-% screenposition = [12.4271  4.7917   18.8542   12.9583];
-% 
-% set(gcf, 'PaperPosition',[0 0 screenposition(3:4)/1.25], 'PaperSize',[screenposition(3:4)/1.25]);
-
-% print -dpdf -painters diamond_lossVphaseUncert.pdf
-% 
-% print -dpdf -painters reck_lossVphaseUncert.pdf
-
-% print -dpdf -painters diamond_phiTheta.pdf
-% print -dpdf -painters reck_phiTheta.pdf

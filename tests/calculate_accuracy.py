@@ -7,8 +7,11 @@ Edit: 29.01.2020
 """
 import numpy as np
 from tqdm import tqdm
+import time
 
-def get_accuracy(ONN, model, Xt, yt, loss_diff=0, zeta=0):
+
+def get_accuracy(ONN, model, Xt, yt, loss_diff=0):
+    t = time.time()
     if 'C' in ONN.onn_topo and 'Q' in ONN.onn_topo:
         Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
     elif 'C' in ONN.onn_topo and 'W' in ONN.onn_topo:
@@ -30,10 +33,11 @@ def get_accuracy(ONN, model, Xt, yt, loss_diff=0, zeta=0):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
-                    zeta_filter = np.array([sorted(yhat)[-1] - sorted(yhat)[-2] > zeta for yhat in Y_hat.T])
+                    # zeta_filter = np.array([sorted(yhat)[-1] - sorted(yhat)[-2] > ONN.zeta for yhat in Y_hat.T])
 
                     gt = np.array([np.argmax(tru) for tru in yt])
-                    acc.append(np.sum((pred == gt)*zeta_filter)/yt.shape[0]*100)
+                    # acc.append(np.sum((pred == gt)*zeta_filter)/yt.shape[0]*100)
+                    acc.append(np.sum((pred == gt))/yt.shape[0]*100)
                 acc_phi.append(np.mean(acc))
             acc_theta.append(acc_phi)
             pbar.update(1)

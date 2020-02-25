@@ -8,7 +8,7 @@
 % Author: Simon Geoffroy-Gagnon
 % Edit: 15.02.2020
 
-function loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit)
+function loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe)
 fontsz = 44;
 
 for t = 1:length(topo)
@@ -16,7 +16,7 @@ for t = 1:length(topo)
     simulation = sim.(topo{t});
     
     figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
-
+    same_phaseUncert = [];
     if size(accuracy, 1) ~= 1
         for ii = 1:length(simulation.phase_uncert_phi)
             same_phaseUncert(ii, :) = accuracy(ii,ii,:);
@@ -42,13 +42,15 @@ for t = 1:length(topo)
     area_of_merit = sum(sum(same_phaseUncert >= acc.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_phi(2) - ...
         simulation.phase_uncert_phi(1)) * (simulation.phase_uncert_theta(2) - simulation.phase_uncert_theta(1));
     
-    shading('interp');
+    %     shading('interp');
+    set(h, 'EdgeColor', 'none');
+    
     set(gca,'YDir','normal')
     c = colorbar;
     c.Label.Interpreter = 'latex';
     c.Label.String = 'Accuracy (\%)';
     c.Label.FontSize = fontsz;
-    caxis([20 100])
+    caxis([100/(simulation.N + 1) 100])
     colormap('jet');
     
     xticks(simulation.loss_dB)
@@ -58,10 +60,10 @@ for t = 1:length(topo)
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('$(\sigma_{\phi,\theta})$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\sigma_{\phi,\theta}$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     if print_fig_of_merit
-        title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.3f'],...
+        title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.5f'],...
             simulation.topology, simulation.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
     else
         title(sprintf('Accuracy of %s Topology', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
@@ -69,6 +71,10 @@ for t = 1:length(topo)
     
     savefig([FOLDER, sprintf('Matlab_Figs/%s_power-phaseUncert.fig', simulation.onn_topo)])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_power-phaseUncert.png', simulation.onn_topo)])
+    
+    if printMe        
+        pMe([FOLDER, simulation.topology, '-loss_phaseNoise.pdf'])
+    end
     
 end
 end

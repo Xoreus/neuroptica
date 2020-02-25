@@ -42,7 +42,7 @@ def blob_maker(targets=4, features=4, nsamples=10000,
 
     return x, y, xt, yt
 
-def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
+def plot_scatter_matrix(X, Y,  figsize=(15, 10), label='X', start_at=0):
     plt.rcParams.update({'font.size': 44})
     df = pd.DataFrame(X)
     df['Labels'] = [np.argmax(y) for y in Y]
@@ -51,11 +51,8 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
     color_wheel = {0: 'r', 1: 'b', 2: 'g', 3: 'k', 4: 'c', 5: 'm', 6: 'y', 7:'tab:blue', 8:'tab:orange',9:'tab:purple'}
     colors = df["Labels"].map(lambda x: color_wheel.get(x))
 
-    # features = ['I$_%d$' % x for x in range(1, len(X[1])+1)]
-    features = ['$X_%d$' % x for x in range(len(X[1]))]
-
-    # df = df.rename(columns={v:f'I$_{v+1}$' for v in range(len(X))})
-    df = df.rename(columns={v:f'$X_{v}$' for v in range(len(X))})
+    features = [f'${label}_%d$' % x for x in range(start_at, len(X[1])+start_at)]
+    df = df.rename(columns={v:f'${label}_{v+start_at}$' for v in range(len(X))})
 
     axes = scatter_matrix(df[features], alpha=.8, figsize=figsize,
                           diagonal='kde',
@@ -64,20 +61,18 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 15)):
 
     for item in axes:
         for idx, ax in enumerate(item):
-            # ax.set_yticks([0, 0.5, 1])
-            # ax.set_xticks([0, 0.5, 1])
-#            ax.set_yticklabels([0, 0.5, 1])
-#            ax.set_xticklabels([0, 0.5, 1])
+            ax.spines['top'].set_linewidth(1)
+            ax.spines['right'].set_linewidth(1)
+            ax.spines['left'].set_linewidth(1)
+            ax.spines['bottom'].set_linewidth(1)
+
+            # ax.spines['top'].set_color('#d3d3d3')
+            # ax.spines['right'].set_color('#d3d3d3')
+            # ax.spines['left'].set_color('#d3d3d3')
+            # ax.spines['bottom'].set_color('#d3d3d3')
             ax.set_yticklabels('')
             ax.set_xticklabels('')
-
-
-#            ax.subplots_adjust(hspace=3)
-
-            # We change the fontsize of minor ticks label
-#            ax.set_ylim([-0.2, 1.2])
-#            ax.set_xlim([-0.05, 1.1])
-            ax.tick_params(axis='both', which='major', labelsize=24)
+            ax.tick_params(axis='both', which='major', labelsize=26)
     #        ax.tick_params(axis='both', which='minor', labelsize=42)
             ax.tick_params(axis='both', pad=10)
 #            ax.tick_params(axis='x', pad=30)
@@ -88,16 +83,15 @@ if __name__ == "__main__":
     import os
     SAMPLES = 300
     # X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
-    # FOLDER = '/home/simon/Documents/Thesis/Figures'
-    # if not os.path.isdir(FOLDER):
-    #     os.makedirs(FOLDER)
-    # axes = plot_scatter_matrix(X, Y)
-    # plt.savefig(f"{FOLDER}/Gauss-SampleDataset_{SAMPLES}.png")
+    X = np.loadtxt('/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/retest-AllTopologies_3DAccMap_Gaussian_N=4_loss-diff=0.5_rng7/Datasets/Gaussian_X_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    y = np.loadtxt('/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/retest-AllTopologies_3DAccMap_Gaussian_N=4_loss-diff=0.5_rng7/Datasets/Gaussian_y_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
+    # X, y, *_ = cd.iris_dataset(nsamples=300)
+    FOLDER = '/home/simon/Documents/'
+    if not os.path.isdir(FOLDER):
+        os.makedirs(FOLDER)
+    axes = plot_scatter_matrix(X, y,  figsize=(15, 12), label='\mathrm{I}', start_at=1)
 
-    X, y, *_ =  cd.iris_dataset(nsamples=SAMPLES)
-    axes = plot_scatter_matrix(X, y)
-    
-    # plt.show()
-    # X = (X - np.min(X))/(np.max(X) - np.min(X))
-    plt.savefig(f"Figures/Iris-SampleDataset_{SAMPLES}.pdf")
 
+
+    plt.savefig(f"{FOLDER}/gaussDataset.pdf")
+    # cd.plot_OG_iris()

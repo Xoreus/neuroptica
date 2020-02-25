@@ -13,21 +13,21 @@ import onnClassTraining
 ONN = ONN_Cls.ONN_Simulation()
 ONN.N = 8
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 2500
+ONN.EPOCHS = 2800
 ONN.STEP_SIZE = 0.001
 ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 2, 11)
-ONN.phase_uncert_theta = np.linspace(0., 2.5, 16)
-ONN.phase_uncert_phi = np.linspace(0., 2.5, 16)
+ONN.loss_dB = np.linspace(0, 1.5, 11)
+ONN.phase_uncert_theta = np.linspace(0., 1, 26)
+ONN.phase_uncert_phi = np.linspace(0., 1, 26)
 ONN.same_phase_uncert = False
 ONN.rng = 2
 ONN.zeta = 0
 
-onn_topo = ['R_P','C_Q_P']
+onn_topo = ['R_I_P','E_P']
 for ONN.onn_topo in onn_topo:
     ONN.get_topology_name()
-    for N in range(5, 10):
+    for N in range(4, 15):
         folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}/'
         ONN.X = np.loadtxt(folder + 'X.txt', delimiter=',')
         ONN.y = np.loadtxt(folder + 'y.txt', delimiter=',')
@@ -43,6 +43,8 @@ for ONN.onn_topo in onn_topo:
                 ONN.FOLDER = f'Analysis/linsep/N={N}'
                 setSim.createFOLDER(ONN.FOLDER)
                 ONN.saveAll(model)
-                np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
+                # np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
+                with open(f'{ONN.FOLDER}/all_topologies.txt', 'a') as f:
+                    f.write(ONN.onn_topo)
                 break
 
