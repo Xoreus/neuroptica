@@ -24,12 +24,25 @@ from copy import deepcopy
 
 import ONN_Setups
 import create_datasets as cd
-import setupSimulation as setSim
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica')
 sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
+
+def change_dataset_shape(onn):
+    if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:
+        X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
+        Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
+    elif 'C' in onn.onn_topo and 'W' in onn.onn_topo:
+        X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
+            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
+        Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
+            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.Xt]))
+    else:
+        X, Xt = onn.X, onn.Xt
+
+    return X, onn.y, Xt, onn.yt
 
 def create_dataset(onn, digits=[1,3,6,7]):
     if onn.dataset_name == 'MNIST' and onn.N == 4:
@@ -54,22 +67,14 @@ def retrain_ONN(ONN, rng_range):
         ONN_Training(ONN, create_dataset_flag=False)
 
 def train_single_onn(onn, create_dataset_flag=True):
-    random.seed(onn.rng)
     if create_dataset_flag: create_dataset(onn)
     X, y, Xt, yt = onn.normalize_dataset()
-    print(len(X))
     t = time.time()
     print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
+
     model = ONN_Setups.ONN_creation(onn)
 
-    if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:
-        X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
-        Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
-    elif 'C' in onn.onn_topo and 'W' in onn.onn_topo:
-        X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
-            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
-        Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
-            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.Xt]))
+    X, y, Xt, yt = change_dataset_shape(onn)
 
     # initialize the ADAM optimizer and fit the ONN to the training data
     optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
@@ -132,6 +137,6 @@ if __name__ == '__main__':
     ONN.onn_topo = ONN.ONN_setup[0] 
     ONN.get_topology_name()
     model, ONN = train_single_onn(ONN, create_dataset_flag=False) 
-    setSim.createFOLDER(ONN.FOLDER)
+    ONN.createFOLDER()
     ONN.saveAll(model)
 

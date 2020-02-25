@@ -27,20 +27,22 @@ from saveSimulationData import plot_scatter_matrix
 class ONN_Simulation:
     def __init__(self):
         " Initialize the ONN simulation class with all the default sim variables"
-        self.N = 4
-        self.EPOCHS = 500
-        self.STEP_SIZE = 0.005
         self.SAMPLES = 1000
-        self.ITERATIONS = 200
         self.dataset_name = 'Gauss'
+        self.N = 4
+        self.BATCH_SIZE = 2**6
+        self.EPOCHS = 600
+        self.STEP_SIZE = 0.0005
+        self.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
+        self.loss_diff = 0 # \sigma dB
+        self.loss_dB = np.linspace(0, 2, 11)
+        self.phase_uncert_theta = np.linspace(0., 2.5, 21)
+        self.phase_uncert_phi = np.linspace(0., 2.5, 21)
+        self.same_phase_uncert = False
         self.rng = 1
 
-        self.loss_diff = 0.1
         self.loss_dB = np.linspace(0, 3, 31)
         self.loss_dB_test = [0]
-
-        self.phase_uncert_theta = np.linspace(0, 1.5, 16)
-        self.phase_uncert_phi = np.linspace(0, 1.5, 16)
 
         self.BATCH_SIZE = 2**6
         self.onn_topo = ''
@@ -125,12 +127,12 @@ class ONN_Simulation:
     def saveSimData(self, model):
         ''' Plot loss, training acc and val acc '''
         ax1 = plt.plot()
-        plt.plot(self.losses, color='b', linewidth=3)
+        plt.plot(self.losses, color='b', linewidth=1)
         plt.xlabel('Epoch')
         plt.ylabel("$\mathcal{L}$", color='b')
         ax2 = plt.gca().twinx()
-        ax2.plot(self.trn_accuracy, color='r', linewidth=3)
-        ax2.plot(self.val_accuracy, color='g', linewidth=3)
+        ax2.plot(self.trn_accuracy, color='r', linewidth=1)
+        ax2.plot(self.val_accuracy, color='g', linewidth=1)
         plt.ylabel('Accuracy', color='r')
         plt.legend(['Training Accuracy', 'Validation Accuracy'])
         plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
