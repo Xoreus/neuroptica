@@ -39,8 +39,8 @@ for t = 1:length(topo)
         legend(lgd, 'fontsize', fontsz, 'interpreter','latex');
     end
     % Calculate "area" of contour map as a figure of merit
-    area_of_merit = sum(sum(same_phaseUncert >= acc.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_phi(2) - ...
-        simulation.phase_uncert_phi(1)) * (simulation.phase_uncert_theta(2) - simulation.phase_uncert_theta(1));
+    area_of_merit = sum(sum(same_phaseUncert >= acc.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_theta(2) - ...
+        simulation.phase_uncert_theta(1)) * (simulation.phase_uncert_theta(2) - simulation.phase_uncert_theta(1));
     
     %     shading('interp');
     set(h, 'EdgeColor', 'none');
@@ -53,14 +53,14 @@ for t = 1:length(topo)
     caxis([100/(simulation.N + 1) 100])
     colormap('jet');
     
-    xticks(simulation.loss_dB)
+%     xticks(simulation.loss_dB)
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('$\sigma_{\phi,\theta}$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     if print_fig_of_merit
         title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.5f'],...

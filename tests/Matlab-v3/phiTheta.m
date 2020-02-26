@@ -66,7 +66,7 @@ for t = 1:length(topo)
         saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_phiThetaUncert_loss=%.2fdB.png', simulation.onn_topo, simulation.loss_dB(loss_idx))])
 
         if printMe        
-            pMe([FOLDER, sprintf('%s_phiThetaUncert_loss=%.2fdB.png', simulation.onn_topo, simulation.loss_dB(loss_idx)))])
+            pMe([FOLDER, sprintf('%s_phiThetaUncert_loss=%.2fdB.png', simulation.onn_topo, simulation.loss_dB(loss_idx))])
         end
         if area_of_merit == 0
             break

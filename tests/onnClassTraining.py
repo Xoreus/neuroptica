@@ -127,7 +127,7 @@ if __name__ == '__main__':
     # ONN.ONN_setup = np.array(['R_I_P', 'R_P', 'E_P', 'R_D_I_P', 'R_D_P'])
     # ONN.ONN_setup = np.array(['R_I_P', 'R_D_I_P'])
     ONN.ONN_setup = np.array(['C_Q_P'])
-    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/retest-AllTopologies_3DAccMap_Gaussian_N=4_loss-diff=0.5_rng7'
+    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/new-paper-dataset'
 
     ONN.X = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_X_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
     ONN.Xt = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_Xt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')

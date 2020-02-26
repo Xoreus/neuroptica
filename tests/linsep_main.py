@@ -5,7 +5,6 @@ Author: Simon Geoffroy-Gagnon
 Edit: 19.02.2020
 '''
 import numpy as np
-import setupSimulation as setSim
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
@@ -13,7 +12,7 @@ import onnClassTraining
 ONN = ONN_Cls.ONN_Simulation()
 ONN.N = 8
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 2800
+ONN.EPOCHS = 1300
 ONN.STEP_SIZE = 0.001
 ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
@@ -24,10 +23,11 @@ ONN.same_phase_uncert = False
 ONN.rng = 2
 ONN.zeta = 0
 
-onn_topo = ['R_I_P','E_P']
+onn_topo = ['C_Q_P']
+onn_topo = ['R_P']
 for ONN.onn_topo in onn_topo:
     ONN.get_topology_name()
-    for N in range(4, 15):
+    for N in [16]:
         folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}/'
         ONN.X = np.loadtxt(folder + 'X.txt', delimiter=',')
         ONN.y = np.loadtxt(folder + 'y.txt', delimiter=',')
@@ -38,10 +38,10 @@ for ONN.onn_topo in onn_topo:
         for ONN.rng in range(20):
             ONN.phases = []
             model, *_ =  onnClassTraining.train_single_onn(ONN)
-            if max(ONN.val_accuracy) > 95:
-                ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff, zeta=ONN.zeta)
+            if max(ONN.val_accuracy) > 98:
+                # ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
                 ONN.FOLDER = f'Analysis/linsep/N={N}'
-                setSim.createFOLDER(ONN.FOLDER)
+                ONN.createFOLDER(ONN.FOLDER)
                 ONN.saveAll(model)
                 # np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
                 with open(f'{ONN.FOLDER}/all_topologies.txt', 'a') as f:

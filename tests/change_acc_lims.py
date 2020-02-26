@@ -31,17 +31,18 @@ if __name__ == '__main__':
 
     ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 1, 11)
-    ONN.phase_uncert_theta = np.linspace(0., 0.3, 31)
-    ONN.phase_uncert_phi = np.linspace(0., 0.3, 31)
-    ONN.same_phase_uncert = False
+    ONN.loss_dB = np.linspace(0., 1, 21)
+    ONN.loss_dB = [0]
+    ONN.phase_uncert_theta = np.linspace(0., 0.5, 31)
+    ONN.phase_uncert_phi = np.linspace(0., 0.5, 31)
+    ONN.same_phase_uncert = True
 
     ONN.zeta = 0
     topos = ['R_P', 'R_I_P', 'E_P', 'C_Q_P']
-    topos = ['C_Q_P']
+    topos = [ 'R_P', 'C_Q_P']
 
 
-    for N in range(10, 11):
+    for N in [8]:
         for ONN.onn_topo in topos:
             ONN.get_topology_name()
             print(f'N={N}, topo={ONN.onn_topo}')
