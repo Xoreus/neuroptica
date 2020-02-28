@@ -9,7 +9,7 @@
 % Edit: 15.02.2020
 
 function loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe)
-fontsz = 44;
+fontsz = 54;
 
 for t = 1:length(topo)
     accuracy = acc.(topo{t}).accuracy;
@@ -42,7 +42,6 @@ for t = 1:length(topo)
     area_of_merit = sum(sum(same_phaseUncert >= acc.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_theta(2) - ...
         simulation.phase_uncert_theta(1)) * (simulation.phase_uncert_theta(2) - simulation.phase_uncert_theta(1));
     
-    %     shading('interp');
     set(h, 'EdgeColor', 'none');
     
     set(gca,'YDir','normal')
@@ -53,26 +52,29 @@ for t = 1:length(topo)
     caxis([100/(simulation.N + 1) 100])
     colormap('jet');
     
-%     xticks(simulation.loss_dB)
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    h = gca;
+    set(h, 'YTickLabelMode','auto')
+    set(h, 'XTickLabelMode','auto')
     
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+%     ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     if print_fig_of_merit
         title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.5f'],...
             simulation.topology, simulation.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
     else
-        title(sprintf('Accuracy of %s Topology', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+        title(sprintf('%s', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     end
     
     savefig([FOLDER, sprintf('Matlab_Figs/%s_power-phaseUncert.fig', simulation.onn_topo)])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_power-phaseUncert.png', simulation.onn_topo)])
     
-    if printMe        
+    if printMe
         pMe([FOLDER, simulation.topology, '-loss_phaseNoise.pdf'])
     end
     

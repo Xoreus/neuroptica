@@ -15,7 +15,6 @@ sys.path.append('/home/simon/Documents/neuroptica/digital_neural_network')
 import Digital_Neural_Network as dnn
 import og_dnn
 import neural_network as nn
-import setupSimulation as setSim
 import matplotlib.pyplot as plt
 
 def get_current_accuracy(xtst, ytst, net):
@@ -89,13 +88,13 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50, h_num=0):
     return net, weights
 
 if __name__ == '__main__':
-    dataset_name = 'Iris'
-    SAMPLES = 250
+    dataset_name = 'Gauss'
+    SAMPLES = 150
     rng = 7
     EPOCHS = 300
 
     for N in [4]:
-        for rng in range(1):
+        for rng in range(2):
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
             if dataset_name == 'MNIST':
@@ -123,9 +122,8 @@ if __name__ == '__main__':
                     X, y, net)*100))
 
             if get_current_accuracy(Xt, yt, net)*100 > 98:
-                setSim.createFOLDER(FOLDER)
-                np.savetxt(f'{FOLDER}/Datasets/X.txt', X, delimiter=',', fmt='%.6f')
-                np.savetxt(f'{FOLDER}/Datasets/Xt.txt', Xt, delimiter=',', fmt='%.6f')
-                np.savetxt(f'{FOLDER}/Datasets/y.txt', y, delimiter=',', fmt='%.6f')
-                np.savetxt(f'{FOLDER}/Datasets/yt.txt', yt, delimiter=',', fmt='%.6f')
+                np.savetxt(f'../linsep-datasets/X.txt', X, delimiter=',', fmt='%.6f')
+                np.savetxt(f'../linsep-datasets/Xt.txt', Xt, delimiter=',', fmt='%.6f')
+                np.savetxt(f'../linsep-datasets/y.txt', y, delimiter=',', fmt='%.6f')
+                np.savetxt(f'../linsep-datasets/yt.txt', yt, delimiter=',', fmt='%.6f')
                 break

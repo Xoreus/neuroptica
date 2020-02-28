@@ -192,9 +192,10 @@ class ONN_Simulation:
             plt.close()
             mpl.rcParams.update(mpl.rcParamsDefault)
 
-        np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_y_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.y, delimiter=',',fmt='%.3f')
-        np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_Xt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.Xt, delimiter=',',fmt='%.3f')
-        np.savetxt(f'{self.FOLDER}/Datasets/{self.dataset_name}_yt_{self.N}Features_{len(self.y[0])}Classes_Samples={len(self.X)}_Dataset.txt', self.yt, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/y.txt', self.y, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt.txt', self.Xt, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/X.txt', self.X, delimiter=',',fmt='%.3f')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,

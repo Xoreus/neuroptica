@@ -31,18 +31,19 @@ if __name__ == '__main__':
 
     ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0 # \sigma dB
-    ONN.loss_dB = np.linspace(0., 1, 21)
-    ONN.loss_dB = [0]
-    ONN.phase_uncert_theta = np.linspace(0., 0.5, 31)
-    ONN.phase_uncert_phi = np.linspace(0., 0.5, 31)
+    ONN.loss_dB = np.linspace(0, 2, 31)
+    ONN.phase_uncert_theta = np.linspace(0., 1.5, 31)
+    ONN.phase_uncert_phi = np.linspace(0., 1.5, 31)
     ONN.same_phase_uncert = True
+    # ONN.same_phase_uncert = False
+    # ONN.loss_dB = [0]
 
     ONN.zeta = 0
-    topos = ['R_P', 'R_I_P', 'E_P', 'C_Q_P']
-    topos = [ 'R_P', 'C_Q_P']
+    topos = ['R_P', 'C_Q_P']
+    # topos = ['E_P']
 
 
-    for N in [8]:
+    for N in [4]:
         for ONN.onn_topo in topos:
             ONN.get_topology_name()
             print(f'N={N}, topo={ONN.onn_topo}')
@@ -62,7 +63,7 @@ if __name__ == '__main__':
             ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
 
             # break
-            ONN.FOLDER = f'Analysis/linsep/N={N}-newSimValues'
+            ONN.FOLDER = f'Analysis/linsep/N={N}-newSimValues2'
             ONN.createFOLDER()
             ONN.saveSelf()
             ONN.saveSimDataset()

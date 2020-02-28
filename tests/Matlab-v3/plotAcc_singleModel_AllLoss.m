@@ -37,10 +37,11 @@ for t = 1:length(topo)
     h = gca;
     ylim([0 100])
     set(h, 'YTickLabelMode', 'auto')
+    set(h, 'XTickLabelMode','auto')
     
     disp(max(max(max(accuracy))))
     
-    xlabel('$(\sigma_{\phi,\theta})$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    xlabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
     title(sprintf('Accuracy of %s Topology',simulation.topology), 'fontsize', fontsz, 'interpreter','latex')

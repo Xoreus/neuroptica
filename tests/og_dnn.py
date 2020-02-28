@@ -133,35 +133,38 @@ def main():
     topology = []
     topology.append(4)
     topology.append(4)
-    topology.append(4)
     # topology.append(4)
 
     net = Network(topology)
     Neuron.eta = 0.09
     Neuron.alpha = 0.015
-    X, y, Xt, yt = create_datasets.iris_dataset(nsamples=300)
+    # X, y, Xt, yt = create_datasets.iris_dataset(nsamples=300)
+    X, y, Xt, yt = create_datasets.gaussian_dataset(nsamples=500)
 
     losses = []
     val_accuracy = []
     trn_accuracy = []
+    for _ in range(20):
+        for ii in range(300):
+            err = 0
+            inputs = X
+            outputs = y
+            for i in range(len(inputs)):
+                net.setInput(inputs[i])
+                net.feedForward()
+                net.backPropagate(outputs[i])
+                err = err + net.getError(outputs[i])
+            losses.append(err/len(X))
+            val_accuracy.append(get_current_accuracy(Xt, yt, net))
+            trn_accuracy.append(get_current_accuracy(X, y, net))
+            print(err)
 
-    for ii in range(200):
-        err = 0
-        inputs = X
-        outputs = y
-        for i in range(len(inputs)):
-            net.setInput(inputs[i])
-            net.feedForward()
-            net.backPropagate(outputs[i])
-            err = err + net.getError(outputs[i])
-        losses.append(err/len(X))
-        val_accuracy.append(get_current_accuracy(Xt, yt, net))
-        trn_accuracy.append(get_current_accuracy(X, y, net))
-        print(err)
-
-    np.savetxt('trn_acc.txt',trn_accuracy, fmt='%.4f')
-    np.savetxt('val_acc.txt',val_accuracy, fmt='%.4f')
-    np.savetxt('losses.txt',losses, fmt='%.4f')
+        if get_current_accuracy(Xt, yt, net) > 98:
+            np.savetxt('X.txt',X,delimiter=',',fmt='.3f')
+            np.savetxt('Xt.txt',Xt,delimiter=',',fmt='.3f')
+            np.savetxt('y.txt',y,delimiter=',',fmt='.3f')
+            np.savetxt('yt.txt',yt,delimiter=',',fmt='.3f')
+            break
 
     print(get_current_accuracy(Xt, yt, net))
 

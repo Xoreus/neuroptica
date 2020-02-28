@@ -32,13 +32,15 @@ for t = 1:length(topo)
     h = gca;
     ylim([0 100])
     set(h, 'YTickLabelMode', 'auto')
+    set(h, 'XTickLabelMode','auto')
+    
     legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz, 'interpreter','latex', 'location', 'east');
     
     title(sprintf('Accuracy of %s Topology', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     savefig([FOLDER, sprintf('Matlab_Figs/%s_loss+acc-plot.fig', simulation.topology)])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_loss+acc-plot.png',  simulation.topology)])
     
-    if printMe        
+    if printMe
         pMe([FOLDER, simulation.topology, '-backprop-plot.pdf'])
     end
 end
