@@ -9,7 +9,7 @@
 % Edit: 15.02.2020
 
 function loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe)
-fontsz = 54;
+fontsz = 64;
 
 for t = 1:length(topo)
     accuracy = acc.(topo{t}).accuracy;
@@ -53,16 +53,16 @@ for t = 1:length(topo)
     colormap('jet');
     
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
     h = gca;
     set(h, 'YTickLabelMode','auto')
     set(h, 'XTickLabelMode','auto')
     
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-%     ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+%     ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     if print_fig_of_merit
         title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.5f'],...
@@ -71,11 +71,11 @@ for t = 1:length(topo)
         title(sprintf('%s', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     end
     
-    savefig([FOLDER, sprintf('Matlab_Figs/%s_power-phaseUncert.fig', simulation.onn_topo)])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_power-phaseUncert.png', simulation.onn_topo)])
+    savefig([FOLDER, sprintf('Matlab_Figs/%s_power-phaseUncert_N=%d.fig', simulation.topology, simulation.N)])
+    saveas(gcf, [FOLDER, sprintf('%s_power-phaseUncert_N=%d.png', simulation.topology, simulation.N)])
     
     if printMe
-        pMe([FOLDER, simulation.topology, '-loss_phaseNoise.pdf'])
+        pMe([FOLDER, simulation.topology, sprintf('-loss_phaseNoise_N=%d.pdf', simulation.N)])
     end
     
 end

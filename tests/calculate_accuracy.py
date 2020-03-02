@@ -26,8 +26,10 @@ def get_accuracy(ONN, model, Xt, yt, loss_diff=0):
         for phase_uncert_theta in ONN.phase_uncert_theta:
             acc_phi = []
             if ONN.same_phase_uncert:
-                ONN.phase_uncert_phi = [phase_uncert_theta]
-            for phase_uncert_phi in ONN.phase_uncert_phi:
+                ONN.phase_uncert_phi_curr = [phase_uncert_theta]
+            else:
+                ONN.phase_uncert_phi_curr = ONN.phase_uncert_phi
+            for phase_uncert_phi in ONN.phase_uncert_phi_curr:
                 acc = []
                 for _ in range(ONN.ITERATIONS):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)

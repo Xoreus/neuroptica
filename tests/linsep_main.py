@@ -8,43 +8,53 @@ import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
+import acc_colormap
+
 
 ONN = ONN_Cls.ONN_Simulation()
 ONN.N = 8
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 1300
-ONN.STEP_SIZE = 0.001
-ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
+ONN.EPOCHS = 100
+ONN.STEP_SIZE = 0.01
+ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 2, 21)
-ONN.phase_uncert_theta = np.linspace(0., 1.5, 31)
-ONN.phase_uncert_phi = np.linspace(0., 1.5, 31)
-ONN.same_phase_uncert = True
+ONN.loss_dB = np.linspace(0, 1.5, 21)
+ONN.phase_uncert_theta = np.linspace(0., 0.5, 19)
+ONN.phase_uncert_phi = np.linspace(0., 0.5, 19)
+
+# ONN.same_phase_uncert = True
+
+ONN.same_phase_uncert = False
+# ONN.loss_dB = [0]
+
 ONN.rng = 2
 ONN.zeta = 0
 
 onn_topo = ['R_P', 'C_Q_P', 'E_P']
-for ONN.onn_topo in onn_topo:
-    ONN.get_topology_name()
-    for N in [4]:
-        folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}/'
-        folder = f'/home/simon/Documents/neuroptica/tests/Analysis/test/Datasets/'
-        folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N=4-NotLinSep/'
-        ONN.X = np.loadtxt(folder + 'X.txt', delimiter=',')
-        ONN.y = np.loadtxt(folder + 'y.txt', delimiter=',')
-        ONN.Xt = np.loadtxt(folder + 'Xt.txt', delimiter=',')
-        ONN.yt = np.loadtxt(folder + 'yt.txt', delimiter=',')
-        ONN.N = N
+for ii in range(1):
+    for N in [64]:
+        for ONN.onn_topo in onn_topo:
+            ONN.get_topology_name()
+            folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}/'
+            ONN.X = np.loadtxt(folder + f'X_{ii}.txt', delimiter=',')
+            ONN.y = np.loadtxt(folder + f'y_{ii}.txt', delimiter=',')
+            ONN.Xt = np.loadtxt(folder + f'Xt_{ii}.txt', delimiter=',')
+            ONN.yt = np.loadtxt(folder + f'yt_{ii}.txt', delimiter=',')
+            ONN.N = N
+            for ONN.rng in range(20):
+                ONN.phases = []
+                model, *_ =  onnClassTraining.train_single_onn(ONN)
+                if max(ONN.val_accuracy) > 85:
+                    ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+                    ONN.FOLDER = f'Analysis/linsep/N={N}/N={N}_{ii}'
+                    ONN.createFOLDER()
+                    ONN.saveAll(model)
+                    if ONN.same_phase_uncert:
+                        acc_colormap.PU(ONN)
+                    elif len(ONN.loss_dB) == 1:
+                        acc_colormap.PhiTheta(ONN)
+                    else:
+                        acc_colormap.cube_plotting(ONN)
 
-        for ONN.rng in range(1):
-            ONN.phases = []
-            model, *_ =  onnClassTraining.train_single_onn(ONN)
-            ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
-            ONN.FOLDER = f'Analysis/test/N={N}'
-            ONN.createFOLDER()
-            ONN.saveAll(model)
-            np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
-            with open(f'{ONN.FOLDER}/all_topologies.txt', 'a') as f:
-                f.write(ONN.onn_topo)
-            break
-
+                    np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
+                    break

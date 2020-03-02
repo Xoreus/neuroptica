@@ -9,7 +9,7 @@
 % Edit: 15.02.2020
 
 function fom = phiTheta(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe)
-fontsz = 44;
+fontsz = 64;
 fom = zeros(1, length(topo));
 
 for t = 1:length(topo)
@@ -37,7 +37,7 @@ for t = 1:length(topo)
         area_of_merit = sum(sum(curr_acc >= acc.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_phi(2) - ...
             simulation.phase_uncert_phi(1)) * (simulation.phase_uncert_theta(2) - simulation.phase_uncert_theta(1));
         
-%         shading('interp');
+        %         shading('interp');
         set(h, 'EdgeColor', 'none');
         set(gca,'YDir','normal')
         c = colorbar;
@@ -49,8 +49,11 @@ for t = 1:length(topo)
         
         a = get(gca,'XTickLabel');
         set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
-%         a = get(gca,'YTickLabel');
-%         set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+        a = get(gca,'YTickLabel');
+        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+        h = gca;
+        set(h, 'YTickLabelMode','auto')
+        set(h, 'XTickLabelMode','auto')
         
         xlabel('$\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         ylabel('$\sigma_\phi$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
@@ -59,14 +62,14 @@ for t = 1:length(topo)
             title(sprintf(['Accuracy of %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.6f'],simulation.topology,...
                 simulation.loss_dB(loss_idx), simulation.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
         else
-            title(sprintf('Accuracy of %s Topology', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+            title(sprintf('%s', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
         end
         
-        savefig([FOLDER, sprintf('Matlab_Figs/%s_phiThetaUncert_loss=%.2fdB.fig', simulation.onn_topo, simulation.loss_dB(loss_idx))])
-        saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_phiThetaUncert_loss=%.2fdB.png', simulation.onn_topo, simulation.loss_dB(loss_idx))])
-
-        if printMe        
-            pMe([FOLDER, sprintf('%s_phiThetaUncert_loss=%.2fdB.png', simulation.onn_topo, simulation.loss_dB(loss_idx))])
+        savefig([FOLDER, sprintf('Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topology, simulation.N)])
+        saveas(gcf, [FOLDER, sprintf('%s_phiThetaUncert_N=%d.png', simulation.topology, simulation.N)])
+        
+        if printMe
+            pMe([FOLDER, sprintf('%s_phiThetaUncert_N=%d.pdf', simulation.topology, simulation.N)])
         end
         if area_of_merit == 0
             break

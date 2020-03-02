@@ -9,8 +9,8 @@
 
 
 function plotAcc_singleModel_AllLoss(FOLDER, sim, acc, topo, printMe)
-fontsz = 44;
-step_sz = 6;
+fontsz = 64;
+step_sz = 1;
 
 for t = 1:length(topo)
     simulation = sim.(topo{t});
@@ -25,13 +25,15 @@ for t = 1:length(topo)
     else
         accuracy = squeeze(accuracy);
         same_phaseUncert = accuracy(:, 1:step_sz:end);
+        same_phaseUncert = accuracy(:, [1, 6, 11, 16, 21]);
     end
     
     plot(simulation.phase_uncert_theta, same_phaseUncert, 'linewidth', 3)
+    axis square
     
-    legend_ = create_legend_single_model(simulation.loss_dB(1:step_sz:end));
-    legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
-    axis tight
+    legend_ = create_legend_single_model(simulation.loss_dB([1, 6, 11, 16, 21]));
+    legend(legend_, 'fontsize', fontsz*.7, 'interpreter','latex', 'location', 'northeast');
+    
     ylim([0, 100])
     
     h = gca;
@@ -44,13 +46,13 @@ for t = 1:length(topo)
     xlabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
-    title(sprintf('Accuracy of %s Topology',simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+    title(sprintf('%s',simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     a = get(gca,'XTickLabel');
     set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
     savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_lineplot.fig', simulation.topology)])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/Model=%s_lineplot.png', simulation.topology)])
+    saveas(gcf, [FOLDER, sprintf('Model=%s_lineplot.png', simulation.topology)])
     if printMe
         pMe([FOLDER, simulation.topology, '-all-losses.pdf'])
     end

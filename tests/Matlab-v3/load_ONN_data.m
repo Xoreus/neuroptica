@@ -3,12 +3,12 @@
 % Author: Simon Geoffroy-Gagnon
 % Edit: 25.01.2020
 
-function [acc, sim, topo] = load_ONN_data(FOLDER, N, loss_dB)
+function [acc, sim, topo] = load_ONN_data(FOLDER, N, ~)
 fid = fopen([FOLDER, 'all_topologies.txt']);
 topo = textscan(fid, '%s');
 accuracy = {};
 for ii = 1:length(topo{1})
-    acc.(topo{1}{ii}) = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=0.000_%dFeat.mat', topo{1}{ii}, loss_dB, N)]);
+    acc.(topo{1}{ii}) = load([FOLDER, sprintf('acc_%s_N=%d.mat', topo{1}{ii}, N)]);
     simulation = load([FOLDER, '/Topologies/', topo{1}{ii}]);
     sim.(topo{1}{ii}) = simulation.(topo{1}{ii});
     accuracy{end + 1} = acc.(topo{1}{ii}).accuracy;

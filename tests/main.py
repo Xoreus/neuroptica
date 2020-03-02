@@ -10,12 +10,12 @@ import onnClassTraining
 import calculate_accuracy as calc_acc
 
 ONN = ONN_Cls.ONN_Simulation()
-ONN.N = 4
+ONN.N = 64
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 10
+ONN.EPOCHS = 100
 ONN.STEP_SIZE = 0.0005
 
-ONN.SAMPLES = 300
+ONN.SAMPLES = 6400
 ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
 ONN.loss_dB = np.linspace(0, 0, 1)

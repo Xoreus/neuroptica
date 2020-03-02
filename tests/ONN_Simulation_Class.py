@@ -137,53 +137,39 @@ class ONN_Simulation:
         plt.legend(['Training Accuracy', 'Validation Accuracy'])
         plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
         plt.ylim([0, 100])
-        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.png')
+        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.onn_topo}_N={self.N}.png')
         plt.clf()
 
         # Get losses of MZIs
         losses_MZI = model.get_all_losses()
         losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
         df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
+        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_N={self.N}.txt')
 
         # save a txt file containing the loss, trn acc, val acc, in case i want to replot it using matlab
         df = pd.DataFrame({'Losses':self.losses, 'Training Accuracy':self.trn_accuracy, 'Validation Accuracy':self.val_accuracy})
-        df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.onn_topo}_loss-MZI={self.loss_dB[0]:.3f}dB_uncert={self.loss_diff:.3f}.txt')
+        df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.onn_topo}.txt')
 
         # Get losses of MZIs
         losses_MZI = model.get_all_losses()
         losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
         df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
+        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}.txt')
 
         # Save best transformation matrix
         best_trf_matrix = np.array(self.best_trf_matrix)
-        with open(f'{self.FOLDER}/TransformationMatrices/Best_TransformationMatrix_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt', "w") as myfile:
+        with open(f'{self.FOLDER}/TransformationMatrices/Best_TransformationMatrix_{self.onn_topo}_.txt', "w") as myfile:
             for trf in best_trf_matrix:
                 np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
                 myfile.write('\n')
 
-        # Save final transformation matrix
-        trf_matrix = np.array(model.get_transformation_matrix())
-        with open(f'{self.FOLDER}/TransformationMatrices/Last_TransformationMatrix_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt', "w") as myfile:
-            for trf in trf_matrix:
-                np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
-                myfile.write('\n')
-
-        # Create phase array
-
-        last_phases = model.get_all_phases()
-        last_phases_flat = [item for sublist in last_phases for item in sublist]
-        df = pd.DataFrame(last_phases_flat, columns=['Theta','Phi'])
-        df.to_csv(f'{self.FOLDER}/Phases/last_phases_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
-
         # Save best phases as well
         best_phases_flat = [item for sublist in self.phases for item in sublist]
         df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
-        df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.onn_topo}_loss={self.loss_dB[0]:.3f}dB_uncert={self.phase_uncert_theta[0]:.3f}Rad_{self.N}Features.txt')
+        df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.onn_topo}.txt')
     def saveAccuracyData(self):
         ''' save the accuracy computed from calculate_accuracy '''
-        scipy.io.savemat(f"{self.FOLDER}/acc_{self.onn_topo}_loss={self.loss_dB[0]:.3f}_uncert={self.phase_uncert_theta[0]:.3f}_{self.N}Feat.mat", mdict={'accuracy':self.accuracy})
+        scipy.io.savemat(f"{self.FOLDER}/acc_{self.onn_topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
     def saveSimDataset(self):
         ''' Save simulation's datasset, both in plot and txt form '''
         if self.N < 9:

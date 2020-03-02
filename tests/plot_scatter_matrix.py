@@ -43,7 +43,7 @@ def blob_maker(targets=4, features=4, nsamples=10000,
     return x, y, xt, yt
 
 def plot_scatter_matrix(X, Y,  figsize=(15, 10), label='X', start_at=0):
-    plt.rcParams.update({'font.size': 46})
+    plt.rcParams.update({'font.size': 64})
     df = pd.DataFrame(X)
     df['Labels'] = [np.argmax(y) for y in Y]
 
@@ -73,7 +73,7 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 10), label='X', start_at=0):
             # ax.spines['bottom'].set_color('#d3d3d3')
             ax.set_yticklabels('')
             ax.set_xticklabels('')
-            ax.tick_params(axis='both', which='major', labelsize=44)
+            ax.tick_params(axis='both', which='major', labelsize=64)
     #        ax.tick_params(axis='both', which='minor', labelsize=42)
             ax.tick_params(axis='both', pad=10)
 #            ax.tick_params(axis='x', pad=30)
@@ -84,13 +84,12 @@ if __name__ == "__main__":
     import os
     SAMPLES = 300
     # X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
-    X = np.loadtxt('/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/new-paper-dataset/Datasets/Gaussian_X_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
-    y = np.loadtxt('/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/new-paper-dataset/Datasets/Gaussian_y_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
-    # X, y, *_ = cd.iris_dataset(nsamples=300)
+    X = np.loadtxt('/home/simon/Documents/neuroptica/linsep-datasets/N=4/X.txt', delimiter=',')
+    y = np.loadtxt('/home/simon/Documents/neuroptica/linsep-datasets/N=4/y.txt', delimiter=',')
     FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis'
     if not os.path.isdir(FOLDER):
         os.makedirs(FOLDER)
-    axes = plot_scatter_matrix(X, y,  figsize=(15, 12), label='\mathrm{I}', start_at=1)
+    axes = plot_scatter_matrix(X, y,  figsize=(14, 14), label='\mathrm{I}', start_at=1)
 
 
 

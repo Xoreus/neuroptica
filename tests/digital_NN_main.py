@@ -13,9 +13,10 @@ import pandas as pd
 import create_datasets as cd
 sys.path.append('/home/simon/Documents/neuroptica/digital_neural_network')
 import Digital_Neural_Network as dnn
-import og_dnn
 import neural_network as nn
 import matplotlib.pyplot as plt
+import random
+from plot_scatter_matrix import plot_scatter_matrix
 
 def get_current_accuracy(xtst, ytst, net):
     correct_pred = 0
@@ -26,23 +27,24 @@ def get_current_accuracy(xtst, ytst, net):
             correct_pred += 1
     return correct_pred/len(xtst)
 
-def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50, h_num=0):
+def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
+    h_num = 0
+
     beta = 1
     eta = .05
     alpha = 0.1
+
     val_accuracy = []
+
     trn_accuracy = []
     losses = []
 
     # Build network
-    topology = []
-    topology.append(4)
-    topology.append(4)
-    topology.append(4)
-    net = og_dnn.Network(topology)
+    net = dnn.build_network(X, y, h_num=h_num)
 
     # Train model with Gradient Descent
     for epoch in range(EPOCHS):
+
         err = 0
         # Shuffle data at the start of each epoch
         instances, targets = shuffle(X, y)
@@ -59,8 +61,8 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50, h_num=0):
         val_accuracy.append(get_current_accuracy(Xt, yt, net)*100)
         trn_accuracy.append(get_current_accuracy(X, y, net)*100)
 
-        if not np.mod(epoch, update_time):
-            print(f"error: {err:.2f}, validation accuracy = {val_accuracy[-1]:.2f}% ")
+        if not np.mod(epoch, 10):
+            print("error: ", err)
 
     print('Done Epochs')
 
@@ -88,42 +90,40 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300, update_time=50, h_num=0):
     return net, weights
 
 if __name__ == '__main__':
-    dataset_name = 'Gauss'
+    import os
     SAMPLES = 150
     rng = 7
-    EPOCHS = 300
-
-    for N in [4]:
-        for rng in range(2):
+    EPOCHS = 40
+    ii = 20
+    for N in [64]:
+        for rng in range(1):
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
-            if dataset_name == 'MNIST':
-                X, y, Xt, yt = cd.get_data([1,3,6,7], N=N, nsamples=SAMPLES)
-            elif dataset_name == 'Gauss':
-                X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES*N, rng=rng)
-            elif dataset_name == 'Iris':
-                X, y, Xt, yt = cd.iris_dataset(nsamples=int(SAMPLES))
+            X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES*N, rng=rng)
 
             X = (X - np.min(X))/(np.max(X) - np.min(X))
             Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
             Xog, Xtog = X, Xt
 
+            net, weights = create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS)
 
-            net, weights = create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS, h_num=1)
-            # plot_scatter_matrix.plot_scatter_matrix(X, y)
-            # plt.savefig(f'{FOLDER}\\Datasets\\GaussianDataset.png')
-
-            # Val Accuracy
+                    # Val Accuracy
             print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(
                     Xt, yt, net)*100))
 
-            # Test Accuracy
-            print('Training Accuracy: {:.1f}%'.format(get_current_accuracy(
-                    X, y, net)*100))
-
             if get_current_accuracy(Xt, yt, net)*100 > 98:
-                np.savetxt(f'../linsep-datasets/X.txt', X, delimiter=',', fmt='%.6f')
-                np.savetxt(f'../linsep-datasets/Xt.txt', Xt, delimiter=',', fmt='%.6f')
-                np.savetxt(f'../linsep-datasets/y.txt', y, delimiter=',', fmt='%.6f')
-                np.savetxt(f'../linsep-datasets/yt.txt', yt, delimiter=',', fmt='%.6f')
-                break
+                datasetFolder = f'../linsep-datasets/N={N}'
+                if not os.path.isdir(datasetFolder):
+                    os.makedirs(datasetFolder)
+
+                np.savetxt(f'{datasetFolder}/X.txt', X, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/Xt.txt', Xt, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/y.txt', y, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/yt.txt', yt, delimiter=',', fmt='%.6f')
+
+                # axes = plot_scatter_matrix(X, y, figsize=(15, 12), label='\mathrm{X}', start_at=0)
+                # plt.savefig(f"{datasetFolder}/gaussDataset_{ii}.pdf")
+                ii += 1
+                print('This dataset works!\n')
+
+
