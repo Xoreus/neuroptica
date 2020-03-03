@@ -62,13 +62,13 @@ for t = 1:length(topo)
     
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
-%     ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    %     ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     if print_fig_of_merit
         title(sprintf(['Accuracy of %s Topology\n Loss Standard Deviation $\\sigma_{Loss} = $ %.2f dB\nFigure of Merit: %.5f'],...
             simulation.topology, simulation.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
     else
-        title(sprintf('%s', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+            title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     end
     
     savefig([FOLDER, sprintf('Matlab_Figs/%s_power-phaseUncert_N=%d.fig', simulation.topology, simulation.N)])
@@ -77,6 +77,6 @@ for t = 1:length(topo)
     if printMe
         pMe([FOLDER, simulation.topology, sprintf('-loss_phaseNoise_N=%d.pdf', simulation.N)])
     end
-    
+    disp(area_of_merit)
 end
 end

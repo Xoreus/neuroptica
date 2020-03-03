@@ -92,11 +92,11 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
 if __name__ == '__main__':
     import os
     SAMPLES = 150
-    rng = 7
+    rng = 8
     EPOCHS = 40
     ii = 20
-    for N in [64]:
-        for rng in range(1):
+    for N in [10]:
+        for rng in range(10, 15):
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
             X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES*N, rng=rng)
@@ -125,5 +125,6 @@ if __name__ == '__main__':
                 # plt.savefig(f"{datasetFolder}/gaussDataset_{ii}.pdf")
                 ii += 1
                 print('This dataset works!\n')
+                break
 
 

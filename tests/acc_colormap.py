@@ -11,7 +11,7 @@ matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 
 def PU(onn):
-    plt.pcolor(onn.loss_dB, onn.phase_uncert_phi, np.squeeze(onn.accuracy), cmap='viridis')
+    plt.pcolor(onn.loss_dB, onn.phase_uncert_phi, np.squeeze(onn.accuracy), cmap='inferno')
     plt.title(onn.topology)
     plt.xlabel('Loss/MZI (dB)')
     plt.ylabel(r'$\sigma_\phi = \sigma_\theta$ (Rad)')

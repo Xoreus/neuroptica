@@ -14,39 +14,40 @@ import acc_colormap
 ONN = ONN_Cls.ONN_Simulation()
 ONN.N = 8
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 100
+ONN.EPOCHS = 300
 ONN.STEP_SIZE = 0.01
 ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 1.5, 21)
-ONN.phase_uncert_theta = np.linspace(0., 0.5, 19)
-ONN.phase_uncert_phi = np.linspace(0., 0.5, 19)
+ONN.loss_dB = np.linspace(0, 1.5, 31)
+ONN.phase_uncert_theta = np.linspace(0., 0.5, 31)
+ONN.phase_uncert_phi = np.linspace(0., 0.5, 31)
 
-# ONN.same_phase_uncert = True
+ONN.same_phase_uncert = True
 
-ONN.same_phase_uncert = False
+# ONN.same_phase_uncert = False
 # ONN.loss_dB = [0]
 
 ONN.rng = 2
 ONN.zeta = 0
 
 onn_topo = ['R_P', 'C_Q_P', 'E_P']
+onn_topo = ['R_P', 'C_Q_P']
 for ii in range(1):
-    for N in [64]:
+    for N in [14]:
         for ONN.onn_topo in onn_topo:
             ONN.get_topology_name()
             folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}/'
-            ONN.X = np.loadtxt(folder + f'X_{ii}.txt', delimiter=',')
-            ONN.y = np.loadtxt(folder + f'y_{ii}.txt', delimiter=',')
-            ONN.Xt = np.loadtxt(folder + f'Xt_{ii}.txt', delimiter=',')
-            ONN.yt = np.loadtxt(folder + f'yt_{ii}.txt', delimiter=',')
+            ONN.X = np.loadtxt(folder + f'X.txt', delimiter=',')
+            ONN.y = np.loadtxt(folder + f'y.txt', delimiter=',')
+            ONN.Xt = np.loadtxt(folder + f'Xt.txt', delimiter=',')
+            ONN.yt = np.loadtxt(folder + f'yt.txt', delimiter=',')
             ONN.N = N
             for ONN.rng in range(20):
                 ONN.phases = []
                 model, *_ =  onnClassTraining.train_single_onn(ONN)
-                if max(ONN.val_accuracy) > 85:
+                if max(ONN.val_accuracy) > 92:
                     ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
-                    ONN.FOLDER = f'Analysis/linsep/N={N}/N={N}_{ii}'
+                    ONN.FOLDER = f'Analysis/linsep/N={N}'
                     ONN.createFOLDER()
                     ONN.saveAll(model)
                     if ONN.same_phase_uncert:

@@ -8,7 +8,7 @@
 % Edit: 25.01.2020
 
 
-function plotAcc_singleModel_AllLoss(FOLDER, sim, acc, topo, printMe)
+function plotAcc_singleModel_AllLoss_lineplot(FOLDER, sim, acc, topo, printMe)
 fontsz = 64;
 step_sz = 1;
 
@@ -54,6 +54,6 @@ for t = 1:length(topo)
     savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_lineplot.fig', simulation.topology)])
     saveas(gcf, [FOLDER, sprintf('Model=%s_lineplot.png', simulation.topology)])
     if printMe
-        pMe([FOLDER, simulation.topology, '-all-losses.pdf'])
+        pMe([FOLDER, simulation.topology, '-all-losses_lineplot.pdf'])
     end
 end

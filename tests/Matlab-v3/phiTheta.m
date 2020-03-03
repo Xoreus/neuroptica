@@ -47,8 +47,7 @@ for t = 1:length(topo)
         caxis([100/(simulation.N+1) 100])
         colormap('jet');
         
-        a = get(gca,'XTickLabel');
-        set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+
         a = get(gca,'YTickLabel');
         set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
         h = gca;
@@ -57,12 +56,12 @@ for t = 1:length(topo)
         
         xlabel('$\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         ylabel('$\sigma_\phi$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
-        
+        axis square
         if print_fig_of_merit
             title(sprintf(['Accuracy of %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.6f'],simulation.topology,...
                 simulation.loss_dB(loss_idx), simulation.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
         else
-            title(sprintf('%s', simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+            title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
         end
         
         savefig([FOLDER, sprintf('Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topology, simulation.N)])

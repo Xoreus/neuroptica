@@ -7,6 +7,7 @@
 
 function ONN_Backprop_Plot(FOLDER, sim, topo, printMe)
 fontsz = 62;
+fontsz_title = 64;
 
 for t = 1:length(topo)
     simulation = sim.(topo{t});
@@ -37,7 +38,7 @@ for t = 1:length(topo)
     
     legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz*0.8, 'interpreter','latex', 'location', 'east');
     
-    title(sprintf('%s Backpropagation', simulation.topology), 'fontsize', 58, 'interpreter','latex')
+    title(sprintf('%s Backpropagation', simulation.topology), 'fontsize', fontsz_title, 'interpreter','latex')
     savefig([FOLDER, sprintf('Matlab_Figs/%s_loss+acc-plot.fig', simulation.topology)])
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_loss+acc-plot.png',  simulation.topology)])
     
