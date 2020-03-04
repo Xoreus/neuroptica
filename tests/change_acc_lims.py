@@ -9,6 +9,7 @@ import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
 import ONN_Setups 
+import acc_colormap
 
 def set_phases(onn, phases):
     sep_phases = [[],[]]
@@ -29,28 +30,24 @@ def set_phases(onn, phases):
 if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
 
-    ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
-    ONN.loss_diff = 0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 1, 41)
-    # ONN.loss_dB = [0]
-    ONN.phase_uncert_theta = np.linspace(0.,0.5, 41)
+    ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
+    ONN.loss_diff = 0.0 # \sigma dB
+    ONN.loss_dB = np.linspace(0, 1.5, 41)
+    ONN.phase_uncert_theta = np.linspace(0., 0.5, 41)
     ONN.phase_uncert_phi = np.linspace(0., 0.5, 41)
 
-    # ONN.same_phase_uncert = True
-    ONN.same_phase_uncert = False
-    ONN.loss_dB = [0]
-
     ONN.zeta = 0
-    topos = ['R_P', 'C_Q_P']
-    # topos = ['E_P']
+    topos = ['R_P', 'C_Q_P', 'E_P']
+    # topos = ['C_Q_P']
 
-    for N in [8*2*2]:
+    for N in [8]:
         for ONN.onn_topo in topos:
             ONN.get_topology_name()
             print(f'N={N}, topo={ONN.onn_topo}')
-            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=32_0'
-            ONN.FOLDER = f'Analysis/linsep/N={N}_0-Loss+PU_FINAL'
-            ONN.FOLDER = f'Analysis/linsep/N={N}_0-PhiTheta_FINAL'
+            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/MNIST/N={N}'
+            FOLDER = f'/storage/Research/02.2020-NewPaper/N={N}/N={N}-OG/'
+
+            ONN.FOLDER = f'/storage/Research/02.2020-NewPaper/N={N}/N={N}-NEW-RANGE'
             ONN.X = np.loadtxt(FOLDER + '/Datasets/X.txt', delimiter=',')
             ONN.y = np.loadtxt(FOLDER + '/Datasets/y.txt', delimiter=',')
             ONN.Xt = np.loadtxt(FOLDER + '/Datasets/Xt.txt', delimiter=',')
@@ -62,12 +59,20 @@ if __name__ == '__main__':
             sep_phases = set_phases(ONN, phases)
             ONN.phases = sep_phases
             model = ONN_Setups.ONN_creation(ONN)
-            ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+
+            ONN.same_phase_uncert = False
+            print('Different Phase Uncert')
+            ONN.accuracy_PT = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+
+            ONN.same_phase_uncert = True
+            print('Same Phase Uncert')
+            ONN.accuracy_LPU = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
 
             # break
             ONN.createFOLDER()
             ONN.saveSelf()
+            acc_colormap.colormap_me(ONN)
             ONN.saveSimDataset()
             ONN.saveAccuracyData()
-    np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', topos, fmt='%s')
+        np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', topos, fmt='%s')
 

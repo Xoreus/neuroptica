@@ -1,46 +1,53 @@
 ''' Main function for simulating Optical Neural Network
-using Neuroptica
+using Neuroptica and the MNIST dataset
 
 Author: Simon Geoffroy-Gagnon
-Edit: 18.02.2020
+Edit: 19.02.2020
 '''
 import numpy as np
+import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
-import calculate_accuracy as calc_acc
+import acc_colormap
 
-ONN = ONN_Cls.ONN_Simulation()
-ONN.N = 64
-ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 100
-ONN.STEP_SIZE = 0.0005
+onn = ONN_Cls.ONN_Simulation()
+onn.BATCH_SIZE = 2**6
+onn.EPOCHS = 400
+onn.STEP_SIZE = 0.005
+onn.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
+onn.loss_diff = 0 # \sigma dB
+onn.loss_dB = np.linspace(0, 1.5, 41)
+onn.phase_uncert_theta = np.linspace(0., 1.5, 41)
+onn.phase_uncert_phi = np.linspace(0., 1.5, 41)
+onn.dataset_name = 'MNIST'
 
-ONN.SAMPLES = 6400
-ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
-ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 0, 1)
-ONN.phase_uncert_theta = np.linspace(0., 2.5, 1)
-ONN.phase_uncert_phi = np.linspace(0., 2.5, 1)
-ONN.same_phase_uncert = False
-ONN.rng = 2
-ONN.zeta = 0
+onn.rng = 2
+onn.zeta = 0
 
-# ONN.dataset_name = 'MNIST'
-ONN.dataset_name = 'Gaussian'
-# ONN.dataset_name = 'Iris'
+onn_topo = ['R_P', 'C_Q_P', 'E_P']
+for N in [8, 10]:
+    for onn.onn_topo in onn_topo:
+        onn.get_topology_name()
+        onn.N = N
+        onnClassTraining.create_dataset(onn) 
+        for onn.rng in range(20):
+            onn.phases = []
+            model, *_ =  onnClassTraining.train_single_onn(onn)
+            if max(onn.val_accuracy) > 10:
+                onn.accuracy = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff)
+                onn.FOLDER = f'Analysis/MNIST/N={N}'
+                onn.createFOLDER()
+                onn.saveAll(model)
 
-ONN_setup = np.array(['R_P'])
-for setup in ONN_setup: 
-    ONN.onn_topo = setup
-    ONN.get_topology_name()
-    model, ONN = onnClassTraining.train_single_onn(ONN)
-    ONN.accuracy = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff, zeta=ONN.zeta)
-    onnClassTraining.create_folder(ONN)
-    ONN.saveAll(model)
-    # onnClassTraining.retrain_ONN(ONN, range(1))
+                onn.same_phase_uncert = False
+                print('Different Phase Uncert')
+                onn.accuracy_PT = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff)
 
-'''
-For MNIST PCA, [2, 4, 5, 6] w/ R_I_P = 88%
-For MNIST PCA, [0, 1, 2, 9] w/ R_I_P = 87%
-For MNIST PCA, [1, 3, 6, 7] w/ R_I_P = %
-'''
+                onn.same_phase_uncert = True
+                print('Same Phase Uncert')
+                onn.accuracy_LPU = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff)
+
+                acc_colormap.colormap_me(onn)
+
+                np.savetxt(f'{onn.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
+                break

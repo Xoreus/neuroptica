@@ -70,7 +70,7 @@ def train_single_onn(onn, create_dataset_flag=True):
     if create_dataset_flag: create_dataset(onn)
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
-    print(f'model: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
+    print(f'\nmodel: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
 
     model = ONN_Setups.ONN_creation(onn)
 

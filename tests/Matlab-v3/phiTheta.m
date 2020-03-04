@@ -44,12 +44,12 @@ for t = 1:length(topo)
         c.Label.Interpreter = 'latex';
         c.Label.String = 'Accuracy (\%)';
         c.Label.FontSize = fontsz;
-        caxis([100/(simulation.N+1) 100])
+        caxis([100/(simulation.N) 100])
         colormap('jet');
         
 
         a = get(gca,'YTickLabel');
-        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
         h = gca;
         set(h, 'YTickLabelMode','auto')
         set(h, 'XTickLabelMode','auto')

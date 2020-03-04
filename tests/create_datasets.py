@@ -149,21 +149,25 @@ def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
 
 def plot_agmented_iris(nsamples=300):
     iris = datasets.load_iris()
-    predictors = [i for i in iris.feature_names]
+    predictors = [i[:-5] for i in iris.feature_names]
     X, y, *_ = iris_dataset(nsamples=nsamples)
-
+    y = [np.argmax(yy) for yy in y]
+    X = {iris.feature_names[x][:-5]:X[:,x] for x in range(4)} 
+    df = pd.DataFrame(X)
+    df.loc[:,'Label'] = y
+    print(df)
     #now plot using pandas
-    color_wheel = {0: 'red',  1: 'green', 2: 'blue', 3: 'black'}
+    color_wheel = {0: 'red',  2: 'green', 1: 'blue', 3: 'black'}
 
-    colors = df_features["Label"].map(lambda x: color_wheel.get(x))
+    colors = df["Label"].map(lambda x: color_wheel.get(x))
 
     # Rename features
     features = {'x_{}'.format(x):iris.feature_names[x] for x in range(4)}
-    df_features.rename(columns = features, inplace = True)
+    df.rename(columns = features, inplace = True)
 
     plt.rcParams.update({'font.size': 12})
 
-    fig = scatter_matrix(df_features[predictors], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
+    fig = scatter_matrix(df[predictors], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
 
     for item in fig:
         for ax in item:
@@ -173,38 +177,40 @@ def plot_agmented_iris(nsamples=300):
             # ax.xlabel(fontsize=34)
             # ax.ylabel(fontsize=34)
             # ax.set_xlabel(fontsize=30)
-            ax.xaxis.label.set_size(15)
-            ax.yaxis.label.set_size(15)
+            ax.xaxis.label.set_size(20)
+            ax.yaxis.label.set_size(20)
             # ax.set_ylabel(fontsize=30)
 
 
     plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('/home/simon/Documents/Thesis/Figures/iris_scatter_matrix_augment.pdf')
+    plt.savefig('/home/simon/Documents/Thesis/Figures/Iris-Augmented-300Samples.pdf')
 
 def plot_OG_iris():
     iris = datasets.load_iris()
     predictors = [i for i in iris.feature_names]
+    predictor = [pred[:-5] for pred in predictors]
 
-    df_features = pd.DataFrame(dict(x_0=iris.data[:,0],
+    df = pd.DataFrame(dict(x_0=iris.data[:,0],
                                     x_1=iris.data[:,1],
                                     x_2=iris.data[:,2],
                                     x_3=iris.data[:,3],
                                     label=iris.target))
 
-    df_features.rename(columns = {'label':'Label'}, inplace = True)
+    df.rename(columns = {'label':'Label'}, inplace = True)
 
     #now plot using pandas
     color_wheel = {0: 'red',  1: 'green', 2: 'blue', 3: 'black'}
 
-    colors = df_features["Label"].map(lambda x: color_wheel.get(x))
+    colors = df["Label"].map(lambda x: color_wheel.get(x))
 
     # Rename features
     features = {'x_{}'.format(x):iris.feature_names[x] for x in range(4)}
-    df_features.rename(columns = features, inplace = True)
-
+    df.rename(columns = features, inplace = True)
+     # df.rename(columns = predictors,  inplace = True)
+    df2 = df.set_axis(predictor + ['Label'], axis=1, inplace=False)
     plt.rcParams.update({'font.size': 12})
 
-    fig = scatter_matrix(df_features[predictors], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
+    fig = scatter_matrix(df2[predictor], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
 
     for item in fig:
         for ax in item:
@@ -213,9 +219,9 @@ def plot_OG_iris():
             ax.tick_params(axis='both', which='minor', labelsize=0)
             # ax.xlabel(fontsize=34)
             # ax.ylabel(fontsize=34)
-            # ax.set_xlabel(fontsize=30)
-            ax.xaxis.label.set_size(15)
-            ax.yaxis.label.set_size(15)
+            # ax.set_xlabel(fontsize=)
+            ax.xaxis.label.set_size(20)
+            ax.yaxis.label.set_size(20)
             # ax.set_ylabel(fontsize=30)
 
 
@@ -231,6 +237,6 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 if __name__ == '__main__':
-    X, y, Xt, yt = iris_dataset()
+    # plot_OG_iris()
+    plot_agmented_iris()
 
-    plot_OG_iris()

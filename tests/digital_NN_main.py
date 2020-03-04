@@ -11,7 +11,7 @@ from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
 import create_datasets as cd
-sys.path.append('/home/simon/Documents/neuroptica/digital_neural_network')
+sys.path.append('/home/simon/Documents/neuroptica/tests/neural_network_digital')
 import Digital_Neural_Network as dnn
 import neural_network as nn
 import matplotlib.pyplot as plt
@@ -44,7 +44,6 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
 
     # Train model with Gradient Descent
     for epoch in range(EPOCHS):
-
         err = 0
         # Shuffle data at the start of each epoch
         instances, targets = shuffle(X, y)
@@ -93,10 +92,10 @@ if __name__ == '__main__':
     import os
     SAMPLES = 150
     rng = 8
-    EPOCHS = 40
-    ii = 20
-    for N in [10]:
-        for rng in range(10, 15):
+    EPOCHS = 80
+    ii = 0
+    for N in [16]:
+        for rng in range(100, 200):
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
             X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES*N, rng=rng)
@@ -112,19 +111,17 @@ if __name__ == '__main__':
                     Xt, yt, net)*100))
 
             if get_current_accuracy(Xt, yt, net)*100 > 98:
-                datasetFolder = f'../linsep-datasets/N={N}'
+                datasetFolder = f'../linsep-datasets/N={N}_new'
                 if not os.path.isdir(datasetFolder):
                     os.makedirs(datasetFolder)
 
-                np.savetxt(f'{datasetFolder}/X.txt', X, delimiter=',', fmt='%.6f')
-                np.savetxt(f'{datasetFolder}/Xt.txt', Xt, delimiter=',', fmt='%.6f')
-                np.savetxt(f'{datasetFolder}/y.txt', y, delimiter=',', fmt='%.6f')
-                np.savetxt(f'{datasetFolder}/yt.txt', yt, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/X_{ii}.txt', X, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/Xt_{ii}.txt', Xt, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/y_{ii}.txt', y, delimiter=',', fmt='%.6f')
+                np.savetxt(f'{datasetFolder}/yt_{ii}.txt', yt, delimiter=',', fmt='%.6f')
 
-                # axes = plot_scatter_matrix(X, y, figsize=(15, 12), label='\mathrm{X}', start_at=0)
-                # plt.savefig(f"{datasetFolder}/gaussDataset_{ii}.pdf")
                 ii += 1
                 print('This dataset works!\n')
-                break
+                # break
 
 

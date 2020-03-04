@@ -7,24 +7,26 @@
 % SINGLE TRAINING ANALYSIS
 
 clc; close all; clear;
-% 
-Folder = '/home/simon/Documents/neuroptica/tests/Analysis/linsep/';
-Folder = '/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=16';
+
 fig_of_merit_value = 0.75;
-print_fig_of_merit = true;
+print_fig_of_merit = false; 
 showContour = false;
 printMe  = false;
 loss_dB = 0;
 
-N = [14]; % 8, 16, 32];
+N = [4]; % 8, 16, 32];
 % N = [8*2]; % 8, 16, 32];
-for ii = 1:length(N)
+ii = '';
+% ii = '-PT-F';
+for jj = 1:length(N)
     
 %     ActualFolder = ['N=' num2str(N(ii))];
 %     ActualFolder = ['N=' num2str(N(ii)), '-newSimValues#3'];
 %     ActualFolder = 'N=16_16';
 %     FOLDER = [Folder, ActualFolder, '/'];
-   FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d/', N(1));
+   FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/MNIST/N=%d%s/', N, ii);
+%    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-PT_FINAL/', N(1));
+%    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-LPU_FINAL/', N(1));
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=32/N=32-Loss+PU/';
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=32/N=32-PhiTheta/';
 
@@ -38,20 +40,22 @@ for ii = 1:length(N)
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=4/N=4-Loss+PU/';
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=4/N=4-PhiTheta/';
     
-    [acc, sim, topo] = load_ONN_data(FOLDER, N(ii), loss_dB);
+    [acc, sim, topo] = load_ONN_data(FOLDER, N(jj), loss_dB);
     makeMatlabDirs(FOLDER)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
     if ~sim.(topo{1}).same_phase_uncert && 1
         phiTheta(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
-    if sim.(topo{1}).same_phase_uncert
+    if sim.(topo{1}).same_phase_uncert  && 1
         loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
     end
     if ~isempty(sim.(topo{1}).losses) && 0
         ONN_Backprop_Plot(FOLDER, sim, topo, printMe)
     end    
-%     plotAcc_singleModel_AllLoss_lineplot(FOLDER, sim, acc, topo, printMe)
+    if 1 && 1
+        plotAcc_singleModel_AllLoss_lineplot(FOLDER, sim, acc, topo, printMe)
+    end
     %     plotAcc_allModels_SinglePhaseUncert(FOLDER, sim, acc, topo)
     %     close all
     cd('../Matlab-v3')

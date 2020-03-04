@@ -61,6 +61,9 @@ class ONN_Simulation:
         self.val_accuracy = []
         self.trn_accuracy = []
         self.accuracy = []
+        self.accuracy_LPU = []
+        self.accuracy_PT = []
+
     def normalize_dataset(self):
         " Normalize the dataset to be in range [0, 1]"
         self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))

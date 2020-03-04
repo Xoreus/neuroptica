@@ -42,20 +42,19 @@ def blob_maker(targets=4, features=4, nsamples=10000,
 
     return x, y, xt, yt
 
-def plot_scatter_matrix(X, Y,  figsize=(15, 10), label='X', start_at=0):
+def plot_scatter_matrix(X, Y,  figsize=(15, 12), label='X', start_at=0):
     plt.rcParams.update({'font.size': 64})
     df = pd.DataFrame(X)
     df['Labels'] = [np.argmax(y) for y in Y]
 
     #now plot using pandas
-    color_wheel = {0: 'r', 1: 'b', 2: 'g', 3: 'k', 4: 'c', 5: 'm', 6: 'y', 7:'tab:blue', 8:'tab:orange',9:'tab:purple'}
+    color_wheel = {0:'r', 2:'b', 1:'g', 3:'k', 4:'c', 5:'m', 6:'y', 7:'tab:blue', 8:'tab:orange', 9:'tab:purple'}
     colors = df["Labels"].map(lambda x: color_wheel.get(x))
 
     features = [f'${label}_%d$' % x for x in range(start_at, len(X[1])+start_at)]
     df = df.rename(columns={v:f'${label}_{v+start_at}$' for v in range(len(X))})
 
-    axes = scatter_matrix(df[features], alpha=.8, figsize=figsize,
-                          diagonal='kde',
+    axes = scatter_matrix(df[features], alpha=.8, figsize=figsize, diagonal='kde',
                           color=colors, s=100, range_padding=0.1)
     plt.title('')
 
@@ -73,7 +72,7 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 10), label='X', start_at=0):
             # ax.spines['bottom'].set_color('#d3d3d3')
             ax.set_yticklabels('')
             ax.set_xticklabels('')
-            ax.tick_params(axis='both', which='major', labelsize=64)
+            ax.tick_params(axis='both', which='major', labelsize=54)
     #        ax.tick_params(axis='both', which='minor', labelsize=42)
             ax.tick_params(axis='both', pad=10)
 #            ax.tick_params(axis='x', pad=30)
@@ -95,3 +94,11 @@ if __name__ == "__main__":
 
     plt.savefig(f"{FOLDER}/gaussDataset.pdf")
     # cd.plot_OG_iris()
+    X, y, *_ =  cd.iris_dataset(nsamples=SAMPLES)
+    axes = plot_scatter_matrix(X, y, figsize=(15, 12))
+
+    # plt.show()
+    # X = (X - np.min(X))/(np.max(X) - np.min(X))
+    plt.suptitle('', fontname='Calibri', fontsize=34)
+    plt.savefig('/home/simon/Documents/Thesis/Figures/Iris-SampleDataset_300.pdf')
+

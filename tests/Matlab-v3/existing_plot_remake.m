@@ -15,9 +15,9 @@ showContour = false;
 printMe  = true;
 loss_dB = 0;
 
-N = 4;
-for N = [4]
-FOLDER  = sprintf('/storage/Research/02.2020-NewPaper/N=%d/N=%d-PhiTheta/', N, N);
+% N = 64;
+for N = [64]
+FOLDER  = sprintf('/storage/Research/02.2020-NewPaper/N=%d/N=%d-PT/', N, N);
 [acc, sim, topo] = load_ONN_data(FOLDER, N, loss_dB);
 makeMatlabDirs(FOLDER)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
@@ -25,7 +25,7 @@ if ~sim.(topo{1}).same_phase_uncert
     phiTheta(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
 end
 
-FOLDER  = sprintf('/storage/Research/02.2020-NewPaper/N=%d/N=%d-Loss+PU/', N, N);
+FOLDER  = sprintf('/storage/Research/02.2020-NewPaper/N=%d/N=%d-LPU/', N, N);
 [acc, sim, topo] = load_ONN_data(FOLDER, N, loss_dB);
 if 1
     loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
