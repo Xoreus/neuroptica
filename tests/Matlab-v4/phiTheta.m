@@ -53,7 +53,8 @@ for t = 1:length(topo)
         h = gca;
         set(h, 'YTickLabelMode','auto')
         set(h, 'XTickLabelMode','auto')
-%         xticks([0, 0.25, 0.5])
+        ytickformat('%.1f')
+        xtickformat('%.1f')
         xlabel('$\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         ylabel('$\sigma_\phi$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         axis square
@@ -73,6 +74,7 @@ for t = 1:length(topo)
         if area_of_merit == 0
             break
         end
+        disp(area_of_merit)
         
     end
     fom(t) = sum(a_of_m);

@@ -52,7 +52,9 @@ for t = 1:length(topo)
     h = gca;
     set(h, 'YTickLabelMode','auto')
     set(h, 'XTickLabelMode','auto')
-    
+    axis square
+    ytickformat('%.1f')
+    xtickformat('%.1f')
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     %     ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')

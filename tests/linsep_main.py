@@ -14,18 +14,13 @@ import acc_colormap
 ONN = ONN_Cls.ONN_Simulation()
 ONN.N = 8
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 100
+ONN.EPOCHS = 200
 ONN.STEP_SIZE = 0.005
 ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 1.5, 3)
-ONN.phase_uncert_theta = np.linspace(0., 0.4, 3)
-ONN.phase_uncert_phi = np.linspace(0., 0.4, 3)
-
-# ONN.same_phase_uncert = True
-
-ONN.same_phase_uncert = False
-ONN.loss_dB = [0]
+ONN.loss_dB = np.linspace(0, 1.5, 5)
+ONN.phase_uncert_theta = np.linspace(0., 0.4, 5)
+ONN.phase_uncert_phi = np.linspace(0., 0.4, 5)
 
 ONN.rng = 2
 ONN.zeta = 0
@@ -34,8 +29,8 @@ onn_topo = ['R_P', 'C_Q_P', 'E_P']
 # onn_topo = ['R_P', 'C_Q_P']
 # onn_topo = ['R_P']
 # onn_topo = [ 'C_Q_P']
-for ii in [12]:
-    for N in [16]:
+for ii in [1]:
+    for N in [12]:
         for ONN.onn_topo in onn_topo:
             ONN.get_topology_name()
             folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={N}_new/'
@@ -52,12 +47,15 @@ for ii in [12]:
                     ONN.FOLDER = f'Analysis/linsep/N={N}_{ii}_NoLoss'
                     ONN.createFOLDER()
                     ONN.saveAll(model)
-                    if ONN.same_phase_uncert:
-                        acc_colormap.PU(ONN)
-                    elif len(ONN.loss_dB) == 1:
-                        acc_colormap.PhiTheta(ONN)
-                    else:
-                        acc_colormap.cube_plotting(ONN)
+
+                    ONN.same_phase_uncert = False
+                    print('Different Phase Uncert')
+                    ONN.accuracy_PT = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+
+                    ONN.same_phase_uncert = True
+                    print('Same Phase Uncert')
+                    ONN.accuracy_LPU = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+                    acc_colormap.colormap_me(ONN)
 
                     np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
                     break

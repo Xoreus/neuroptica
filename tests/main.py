@@ -12,20 +12,20 @@ import acc_colormap
 
 onn = ONN_Cls.ONN_Simulation()
 onn.BATCH_SIZE = 2**6
-onn.EPOCHS = 400
+onn.EPOCHS = 600
 onn.STEP_SIZE = 0.005
 onn.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
 onn.loss_diff = 0 # \sigma dB
-onn.loss_dB = np.linspace(0, 1.5, 41)
-onn.phase_uncert_theta = np.linspace(0., 1.5, 41)
-onn.phase_uncert_phi = np.linspace(0., 1.5, 41)
+onn.loss_dB = np.linspace(0, 1.5, 4)
+onn.phase_uncert_theta = np.linspace(0.05, 1.5, 4)
+onn.phase_uncert_phi = np.linspace(0., 1.5, 4)
 onn.dataset_name = 'MNIST'
 
-onn.rng = 2
+onn.rng = 4
 onn.zeta = 0
 
-onn_topo = ['R_P', 'C_Q_P', 'E_P']
-for N in [8, 10]:
+onn_topo = ['R_P']
+for N in [4]:
     for onn.onn_topo in onn_topo:
         onn.get_topology_name()
         onn.N = N
@@ -35,9 +35,8 @@ for N in [8, 10]:
             model, *_ =  onnClassTraining.train_single_onn(onn)
             if max(onn.val_accuracy) > 10:
                 onn.accuracy = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff)
-                onn.FOLDER = f'Analysis/MNIST/N={N}'
+                onn.FOLDER = f'Analysis/MNIST_AddedPhaseNoise/N={N}_{onn.phase_uncert_theta[0]}'
                 onn.createFOLDER()
-                onn.saveAll(model)
 
                 onn.same_phase_uncert = False
                 print('Different Phase Uncert')
@@ -49,5 +48,6 @@ for N in [8, 10]:
 
                 acc_colormap.colormap_me(onn)
 
+                onn.saveAll(model)
                 np.savetxt(f'{onn.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
                 break

@@ -11,7 +11,7 @@ clc; close all; clear;
 fig_of_merit_value = 0.75;
 print_fig_of_merit = false; 
 showContour = false;
-printMe  = false;
+printMe  = true;
 loss_dB = 0;
 
 N = [4]; % 8, 16, 32];
@@ -24,8 +24,8 @@ for jj = 1:length(N)
 %     ActualFolder = ['N=' num2str(N(ii)), '-newSimValues#3'];
 %     ActualFolder = 'N=16_16';
 %     FOLDER = [Folder, ActualFolder, '/'];
-   FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/MNIST/N=%d%s/', N, ii);
-%    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-PT_FINAL/', N(1));
+   FOLDER = sprintf('/storage/Research/02.2020-NewPaper/N=64/N=64/');
+s%    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-PT_FINAL/', N(1));
 %    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-LPU_FINAL/', N(1));
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=32/N=32-Loss+PU/';
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=32/N=32-PhiTheta/';
@@ -44,16 +44,16 @@ for jj = 1:length(N)
     makeMatlabDirs(FOLDER)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
-    if ~sim.(topo{1}).same_phase_uncert && 1
+    if ~sim.(topo{1}).same_phase_uncert && 0
         phiTheta(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
-    if sim.(topo{1}).same_phase_uncert  && 1
+    if sim.(topo{1}).same_phase_uncert  && 0
         loss_phaseUncert(FOLDER, sim, acc, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
     end
-    if ~isempty(sim.(topo{1}).losses) && 0
+    if ~isempty(sim.(topo{1}).losses) && 1
         ONN_Backprop_Plot(FOLDER, sim, topo, printMe)
     end    
-    if 1 && 1
+    if 1 && 0
         plotAcc_singleModel_AllLoss_lineplot(FOLDER, sim, acc, topo, printMe)
     end
     %     plotAcc_allModels_SinglePhaseUncert(FOLDER, sim, acc, topo)

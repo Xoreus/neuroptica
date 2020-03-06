@@ -42,8 +42,8 @@ def blob_maker(targets=4, features=4, nsamples=10000,
 
     return x, y, xt, yt
 
-def plot_scatter_matrix(X, Y,  figsize=(15, 12), label='X', start_at=0):
-    plt.rcParams.update({'font.size': 64})
+def plot_scatter_matrix(X, Y,  figsize=(15, 12), label='X', start_at=0, fontsz=64):
+    plt.rcParams.update({'font.size': fontsz})
     df = pd.DataFrame(X)
     df['Labels'] = [np.argmax(y) for y in Y]
 
@@ -82,23 +82,31 @@ def plot_scatter_matrix(X, Y,  figsize=(15, 12), label='X', start_at=0):
 if __name__ == "__main__":
     import os
     SAMPLES = 300
-    # X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
-    X = np.loadtxt('/home/simon/Documents/neuroptica/linsep-datasets/N=4/X.txt', delimiter=',')
-    y = np.loadtxt('/home/simon/Documents/neuroptica/linsep-datasets/N=4/y.txt', delimiter=',')
-    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis'
-    if not os.path.isdir(FOLDER):
-        os.makedirs(FOLDER)
-    axes = plot_scatter_matrix(X, y,  figsize=(14, 14), label='\mathrm{I}', start_at=1)
-
-
-
-    plt.savefig(f"{FOLDER}/gaussDataset.pdf")
+    # # X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES)
+    # X = np.loadtxt('/home/simon/Documents/neuroptica/linsep-datasets/N=4/X.txt', delimiter=',')
+    # y = np.loadtxt('/home/simon/Documents/neuroptica/linsep-datasets/N=4/y.txt', delimiter=',')
+    # FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis'
+    # if not os.path.isdir(FOLDER):
+    #     os.makedirs(FOLDER)
+    # axes = plot_scatter_matrix(X, y,  figsize=(14, 14), label='\mathrm{I}', start_at=1)
+    # plt.savefig(f"{FOLDER}/gaussDataset.pdf")
     # cd.plot_OG_iris()
-    X, y, *_ =  cd.iris_dataset(nsamples=SAMPLES)
-    axes = plot_scatter_matrix(X, y, figsize=(15, 12))
 
-    # plt.show()
-    # X = (X - np.min(X))/(np.max(X) - np.min(X))
+    # X, y, *_ =  cd.iris_dataset(nsamples=SAMPLES)
+    # axes = plot_scatter_matrix(X, y, figsize=(15, 12))
+
+    # plt.suptitle('', fontname='Calibri', fontsize=34)
+    # plt.savefig('/home/simon/Documents/Thesis/Figures/Iris-SampleDataset_300.pdf')
+    
+
+    X, y, *_ =  cd.MNIST_dataset(nsamples=SAMPLES, N=4)
+    axes = plot_scatter_matrix(X, y, figsize=(15, 12), fontsz=40)
+
     plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('/home/simon/Documents/Thesis/Figures/Iris-SampleDataset_300.pdf')
+    plt.savefig('/home/simon/Documents/Thesis/Figures/MNIST-SampleDataset_N=4.pdf')
 
+    X, y, *_ =  cd.MNIST_dataset(nsamples=600, N=10)
+    axes = plot_scatter_matrix(X, y, figsize=(15, 12), fontsz=40)
+
+    # plt.suptitle('', fontname='Calibri', fontsize=30)
+    plt.savefig('/home/simon/Documents/Thesis/Figures/MNIST-SampleDataset_N=10.pdf')

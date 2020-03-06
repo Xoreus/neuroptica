@@ -92,9 +92,9 @@ if __name__ == '__main__':
     import os
     SAMPLES = 150
     rng = 8
-    EPOCHS = 80
+    EPOCHS = 40
     ii = 0
-    for N in [16]:
+    for N in [12]:
         for rng in range(100, 200):
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')

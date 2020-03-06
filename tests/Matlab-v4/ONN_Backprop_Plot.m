@@ -6,7 +6,7 @@
 
 
 function ONN_Backprop_Plot(FOLDER, sim, topo, printMe)
-fontsz = 62;
+fontsz = 64;
 fontsz_title = 64;
 
 for t = 1:length(topo)
@@ -40,10 +40,12 @@ for t = 1:length(topo)
         'location', 'east');
     
     title(sprintf('%s Backpropagation', simulation.topology), 'fontsize', fontsz_title, 'interpreter','latex')
-    savefig([FOLDER, sprintf('Matlab_Figs/%s_loss+acc-plot.fig', simulation.topology)])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_loss+acc-plot.png',  simulation.topology)])
+    savefig([FOLDER, sprintf('/Matlab_Figs/%s_loss+acc-plot.fig', simulation.topology)])
+    saveas(gcf, [FOLDER, sprintf('/Matlab_Pngs/%s_loss+acc-plot.png',  simulation.topology)])
     
     if printMe
-        pMe([FOLDER, simulation.topology, '-backprop-plot.pdf'])
+        pMe([FOLDER,  '/backprop-plot-', simulation.topology, sprintf('-N=%d.pdf', simulation.N)])
     end
+    fprintf('Min MSE Loss = %.5f\n', min(simulation.losses))
+    fprintf('Max Val Acc = %.2f%%\n', max(simulation.val_accuracy))
 end

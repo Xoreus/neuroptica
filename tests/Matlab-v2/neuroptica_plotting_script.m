@@ -23,7 +23,8 @@ for ii = 1:length(rng)
 %     ActualFolder = ['test'];
 %     ActualFolder = ['MNIST_N=10_loss-diff=0_rng' num2str(rng(ii))];
     FOLDER = [Folder, ActualFolder, '/'];
-     
+    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/noiseToIncreaseAccuracy/MNIST_phaseUncert=0.000/';
+
     SimulationSettings = load_ONN_data(FOLDER);
     
     makeMatlabDirs(FOLDER)
