@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import os
 import scipy.io
 import matplotlib as mpl
+import pickle
 mpl.use('Agg')
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
@@ -63,7 +64,6 @@ class ONN_Simulation:
         self.accuracy = []
         self.accuracy_LPU = []
         self.accuracy_PT = []
-
     def normalize_dataset(self):
         " Normalize the dataset to be in range [0, 1]"
         self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
@@ -217,7 +217,13 @@ class ONN_Simulation:
             os.makedirs(self.FOLDER + '/TransformationMatrices')
         if not os.path.isdir(self.FOLDER + '/Topologies'):
             os.makedirs(self.FOLDER + '/Topologies')
-
+    def pickle_save(self):
+        with open(f'{self.FOLDER}/{self.topo}.pkl', 'wb') as p:
+            pickle.dump(self, p)
+    def pickle_load(self):
+        with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:
+            self = pickle.load(p)
+            
 if __name__ == '__main__':
     ONN = ONN_Simulation()
     ONN.FOLDER = '/home/simon/Desktop/'

@@ -99,14 +99,17 @@ if __name__ == "__main__":
     # plt.savefig('/home/simon/Documents/Thesis/Figures/Iris-SampleDataset_300.pdf')
     
 
-    X, y, *_ =  cd.MNIST_dataset(nsamples=SAMPLES, N=4)
-    axes = plot_scatter_matrix(X, y, figsize=(15, 12), fontsz=40)
+    # X, y, *_ =  cd.MNIST_dataset(nsamples=SAMPLES, N=4)
+    # axes = plot_scatter_matrix(X, y, figsize=(15, 12), fontsz=40)
 
-    plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('/home/simon/Documents/Thesis/Figures/MNIST-SampleDataset_N=4.pdf')
+    # plt.suptitle('', fontname='Calibri', fontsize=34)
+    # plt.savefig('/home/simon/Documents/Thesis/Figures/MNIST-SampleDataset_N=4.pdf')
 
-    X, y, *_ =  cd.MNIST_dataset(nsamples=600, N=10)
-    axes = plot_scatter_matrix(X, y, figsize=(15, 12), fontsz=40)
+    # X, y, *_ =  cd.MNIST_dataset(nsamples=600, N=10)
+    # axes = plot_scatter_matrix(X, y, figsize=(15, 12), fontsz=40)
 
-    # plt.suptitle('', fontname='Calibri', fontsize=30)
-    plt.savefig('/home/simon/Documents/Thesis/Figures/MNIST-SampleDataset_N=10.pdf')
+    # # plt.suptitle('', fontname='Calibri', fontsize=30)
+    # plt.savefig('/home/simon/Documents/Thesis/Figures/MNIST-SampleDataset_N=10.pdf')
+
+    X, y, *_ = cd.gaussian_dataset(nsamples=300, targets=2, features=2)
+

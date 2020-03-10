@@ -13,21 +13,22 @@ for ii = 1:length(topo{1})
     acc = [sim.(topo{1}{ii}).accuracy_LPU, sim.(topo{1}{ii}).accuracy_PT];
     accuracy{ii} = acc;
 end
+
 for ii = 1:length(topo{1})
     filename = [FOLDER, '/Data_Fitting/', topo{1}{ii}, '.txt'];
     delimiterIn = ',';
     headerlinesIn = 1;
     bp = importdata(filename,delimiterIn,headerlinesIn);
-    
     sim.(topo{1}{ii}).losses = bp.data(:,2);
     sim.(topo{1}{ii}).trn_accuracy = bp.data(:,3);
     sim.(topo{1}{ii}).val_accuracy = bp.data(:,4);
-
 end
 
 for ii = 1:length(accuracy)
     maxAcc(ii) = max(max(max(accuracy{ii})));
 end
+
 sim.max_accuracy = max(maxAcc);
+sim.topo = topo;
 topo = topo{1};
 end

@@ -17,7 +17,7 @@ for t = 1:length(topo)
     
     yyaxis left
     plot(simulation.losses(:, 1:end), 'linewidth', 3)
-    ylabel('Loss Function (MSE)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\mathcal{L}_{(MSE)}$', 'fontsize', fontsz, 'interpreter','latex')
 %     ylim([0, 2])
     yyaxis('right');
     plot(simulation.trn_accuracy(:, 1:end), '--', 'linewidth', 3)

@@ -17,7 +17,11 @@ N = [4];
 for jj = 1:length(N)
 
     FOLDER = sprintf('/storage/Research/02.2020-NewPaper/N=%d/N=%d-OG',N(jj), N(jj));
-    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/MNIST_AddedPhaseNoise/N=%d_0.2', N(jj));
+    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N=%d_0',N(jj));
+%     FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/MNIST_AddedPhaseNoise/N=%d_0.2', N(jj));
+%     FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/DNN/iris-0h-og';
+%     FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/MNIST/N=10';
+%     FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep-Thesis/N=%d_1', N(jj));
     
     [sim, topo] = load_ONN_data(FOLDER);
     makeMatlabDirs(FOLDER)

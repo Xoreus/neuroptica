@@ -14,7 +14,7 @@ showContour = false;
 printMe  = true;
 loss_dB = 0;
 
-N = [4]; % 8, 16, 32];
+N = [16]; % 8, 16, 32];
 % N = [8*2]; % 8, 16, 32];
 ii = '';
 % ii = '-PT-F';
@@ -25,7 +25,8 @@ for jj = 1:length(N)
 %     ActualFolder = 'N=16_16';
 %     FOLDER = [Folder, ActualFolder, '/'];
    FOLDER = sprintf('/storage/Research/02.2020-NewPaper/N=64/N=64/');
-s%    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-PT_FINAL/', N(1));
+   FOLDER = sprintf('/storage/Research/02.2020-NewPaper/N=16/N=16-OG/');
+%    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-PT_FINAL/', N(1));
 %    FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep/N=%d-LPU_FINAL/', N(1));
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=32/N=32-Loss+PU/';
 %     FOLDER = '/storage/Research/02.2020-NewPaper/N=32/N=32-PhiTheta/';

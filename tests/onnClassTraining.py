@@ -79,7 +79,7 @@ def train_single_onn(onn, create_dataset_flag=True):
     # initialize the ADAM optimizer and fit the ONN to the training data
     optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
     onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
-    print(f'time spent for current training and testing all loss/phase uncert: {(time.time() - t)/60:.2f} minutes')
+    print(f'time spent for current training: {(time.time() - t)/60:.2f} minutes')
     return model, onn
 
 def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):

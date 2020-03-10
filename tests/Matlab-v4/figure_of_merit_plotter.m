@@ -39,9 +39,10 @@ clements_bp = [0.1784, 0.2572, 0.3388, 0.6363, 1.1830, 2.3933];
 N =           [4,      8,      12,     16,     32,     64];
 figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
 
-plot(N, reck_bp, 'r-*', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3','linewidth', 3)
+plot(N, reck_bp, 'r-v', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3','linewidth', 3)
 hold on
-plot(N, diamond_bp, 'b-*', 'markersize', 20, 'MarkerFaceColor', 'k', 'linewidth', 3)
+plot(N, diamond_bp, 'b-d', 'markersize', 20, 'MarkerFaceColor', 'k', 'linewidth', 3)
+
 % plot(N, clements_bp, 'b-*', 'markersize', 20, 'MarkerFaceColor', 'k', 'linewidth', 3)
 fontsz = 64;
 
@@ -56,7 +57,7 @@ set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
 xticks(N)
 xlabel('Structure Size ($N$)', 'fontsize', fontsz*0.8, 'interpreter','latex')
-ylabel('MSE', 'fontsize', fontsz*0.8, 'interpreter','latex')
+ylabel('Final $\mathcal{L}_{\mathrm{(MSE)}}$', 'fontsize', fontsz*0.8, 'interpreter','latex')
 
 % axis square
 grid('on')

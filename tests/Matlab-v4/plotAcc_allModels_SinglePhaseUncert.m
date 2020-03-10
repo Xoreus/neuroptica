@@ -49,6 +49,10 @@ set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
 a = get(gca,'YTickLabel');
 set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
 
+h = gca;
+set(h, 'YTickLabelMode','auto')
+set(h, 'XTickLabelMode','auto')
+
 savefig([FOLDER, sprintf('Matlab_Figs/AllModels_loss.fig')])
 saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_loss.png')])
 

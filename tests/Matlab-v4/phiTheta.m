@@ -49,7 +49,9 @@ for t = 1:length(topo)
         
 
         a = get(gca,'YTickLabel');
-        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
+        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+        a = get(gca,'XTickLabel');
+        set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
         h = gca;
         set(h, 'YTickLabelMode','auto')
         set(h, 'XTickLabelMode','auto')
@@ -65,11 +67,11 @@ for t = 1:length(topo)
             title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
         end
         
-        savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topology, simulation.N)])
-        saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.topology, simulation.N)])
+        savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.onn_topo, simulation.N)])
+        saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.onn_topo, simulation.N)])
         
         if printMe
-            pMe([FOLDER, sprintf('/%s_phiThetaUncert_N=%d.pdf', simulation.topology, simulation.N)])
+            pMe([FOLDER, sprintf('/%s_phiThetaUncert_N=%d.pdf', simulation.onn_topo, simulation.N)])
         end
         if area_of_merit == 0
             break

@@ -24,15 +24,15 @@ for t = 1:length(topo)
     else
         accuracy = squeeze(accuracy);
         same_phaseUncert = accuracy(:, 1:step_sz:end);
-%         same_phaseUncert = accuracy(:, [1, 6, 11, 16, 21]);
+        %         same_phaseUncert = accuracy(:, [1, 6, 11, 16, 21]);
     end
     
     plot(simulation.phase_uncert_theta, same_phaseUncert, 'linewidth', 3)
     axis square
     
-%     legend_ = create_legend_single_model(simulation.loss_dB([1, 6, 11, 16, 21]));
+    %     legend_ = create_legend_single_model(simulation.loss_dB([1, 6, 11, 16, 21]));
     legend_ = create_legend_single_model(simulation.loss_dB(1:step_sz:end));
-    legend(legend_, 'fontsize', fontsz*.7, 'interpreter','latex', 'location', 'northeast');
+    legend(legend_, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northeast');
     
     ylim([0, 100])
     
@@ -48,12 +48,16 @@ for t = 1:length(topo)
     
     title(sprintf('%s',simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
-    savefig([FOLDER, sprintf('Matlab_Figs/Model=%s_lineplot.fig', simulation.topology)])
-    saveas(gcf, [FOLDER, sprintf('Model=%s_lineplot.png', simulation.topology)])
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+    h = gca;
+    set(h, 'YTickLabelMode','auto')
+    set(h, 'XTickLabelMode','auto')
+    axis square
+    savefig([FOLDER, sprintf('/Matlab_Figs/Model=%s_lineplot.fig', simulation.topology)])
+    saveas(gcf, [FOLDER, sprintf('/Model=%s_lineplot.png', simulation.topology)])
     if printMe
-        pMe([FOLDER, simulation.topology, '-all-losses_lineplot.pdf'])
+        pMe([FOLDER, '/' simulation.topology, '-all-losses_lineplot.pdf'])
     end
 end

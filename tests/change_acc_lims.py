@@ -30,24 +30,23 @@ def set_phases(onn, phases):
 if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
 
-    ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
+    ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0.0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 1.5, 4)
-    ONN.phase_uncert_theta = np.linspace(0., 0.4, 41)
-    ONN.phase_uncert_phi = np.linspace(0., 0.4, 41)
+    ONN.loss_dB = np.linspace(0, 1, 21)
+    ONN.phase_uncert_theta = np.linspace(0., 0.5, 21)
+    ONN.phase_uncert_phi = np.linspace(0., 0.5, 21)
 
     ONN.zeta = 0
     topos = ['R_P', 'C_Q_P', 'E_P']
-    # topos = ['C_Q_P']
+    # topos = ['R_I_P', 'R_D_I_P', 'R_P']
 
-    for N in [16]:
+    for N in [32]:
         for ONN.onn_topo in topos:
             ONN.get_topology_name()
             print(f'N={N}, topo={ONN.onn_topo}')
-            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/MNIST/N={N}'
-            FOLDER = f'/storage/Research/02.2020-NewPaper/N={N}/N={N}-OG/'
+            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N=32_0/'
+            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N={N}_0'
 
-            ONN.FOLDER = f'/storage/Research/02.2020-NewPaper/N={N}/N={N}-NEW-RANGE_MORE'
             ONN.X = np.loadtxt(FOLDER + '/Datasets/X.txt', delimiter=',')
             ONN.y = np.loadtxt(FOLDER + '/Datasets/y.txt', delimiter=',')
             ONN.Xt = np.loadtxt(FOLDER + '/Datasets/Xt.txt', delimiter=',')
