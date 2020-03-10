@@ -67,16 +67,16 @@ for t = 1:length(topo)
             title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
         end
         
-        savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.onn_topo, simulation.N)])
-        saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.onn_topo, simulation.N)])
+        savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topo, simulation.N)])
+        saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.topo, simulation.N)])
         
         if printMe
-            pMe([FOLDER, sprintf('/%s_phiThetaUncert_N=%d.pdf', simulation.onn_topo, simulation.N)])
+            pMe([FOLDER, sprintf('/%s_phiThetaUncert_N=%d.pdf', simulation.topo, simulation.N)])
         end
         if area_of_merit == 0
             break
         end
-        disp(area_of_merit)
+        fprintf('%s FoM: %.4f\n', simulation.topology, area_of_merit)
         
     end
     fom(t) = sum(a_of_m);

@@ -31,10 +31,10 @@ sys.path.append('/home/simon/Documents/neuroptica')
 import neuroptica as neu
 
 def change_dataset_shape(onn):
-    if 'C' in onn.onn_topo and 'Q' in onn.onn_topo:
+    if 'C' in onn.topo and 'Q' in onn.topo:
         X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
         Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
-    elif 'C' in onn.onn_topo and 'W' in onn.onn_topo:
+    elif 'C' in onn.topo and 'W' in onn.topo:
         X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
         Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
@@ -70,7 +70,7 @@ def train_single_onn(onn, create_dataset_flag=True):
     if create_dataset_flag: create_dataset(onn)
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
-    print(f'\nmodel: {onn.onn_topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
+    print(f'\nmodel: {onn.topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
 
     model = ONN_Setups.ONN_creation(onn)
 
@@ -87,7 +87,7 @@ def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
     if create_dataset_flag: create_dataset(ONN, digits=digits)
     for onn in ONN.ONN_setup:
         ONN_Classes.append(deepcopy(ONN))
-        ONN_Classes[-1].onn_topo = onn
+        ONN_Classes[-1].topo = onn
         ONN_Classes[-1].get_topology_name()
     for onn in ONN_Classes:
         model, onn = train_single_onn(onn)
@@ -134,7 +134,7 @@ if __name__ == '__main__':
     ONN.y = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_y_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
     ONN.yt = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_yt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
     ONN.FOLDER = 'Analysis/test'
-    ONN.onn_topo = ONN.ONN_setup[0] 
+    ONN.topo = ONN.ONN_setup[0] 
     ONN.get_topology_name()
     model, ONN = train_single_onn(ONN, create_dataset_flag=False) 
     ONN.createFOLDER()

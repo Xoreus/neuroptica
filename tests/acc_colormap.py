@@ -1,14 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
-from matplotlib import rc
-rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
-matplotlib.rcParams['mathtext.fontset'] = 'stix'
-matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams['mathtext.fontset'] = 'custom'
-matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
-matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
-matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 
 def Loss_PhaseUncert(onn):
     plt.pcolor(onn.loss_dB, onn.phase_uncert_phi, np.squeeze(onn.accuracy_LPU), cmap='inferno', clim=[100/(onn.N+1),100])

@@ -31,7 +31,7 @@ onn_topo = ['R_P','I_P']
 onn_topo = ['R_P','R_I_P','R_D_I_P', 'R_D_P', 'C_Q_P','E_P']
 # onn_topo = ['R_P']
 for N in [10]:
-    for onn.onn_topo in onn_topo:
+    for onn.topo in onn_topo:
         onn.get_topology_name()
         onn.N = N
         onnClassTraining.create_dataset(onn) 

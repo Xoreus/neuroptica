@@ -11,9 +11,9 @@ import time
 
 def get_accuracy_singleLoss(ONN, model, Xt, yt, loss_diff=0):
     t = time.time()
-    if 'C' in ONN.onn_topo and 'Q' in ONN.onn_topo:
+    if 'C' in ONN.topo and 'Q' in ONN.topo:
         Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
-    elif 'C' in ONN.onn_topo and 'W' in ONN.onn_topo:
+    elif 'C' in ONN.topo and 'W' in ONN.topo:
         Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
@@ -41,9 +41,9 @@ def get_accuracy_singleLoss(ONN, model, Xt, yt, loss_diff=0):
 
 def get_accuracy_samePU(ONN, model, Xt, yt, loss_diff=0):
     t = time.time()
-    if 'C' in ONN.onn_topo and 'Q' in ONN.onn_topo:
+    if 'C' in ONN.topo and 'Q' in ONN.topo:
         Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
-    elif 'C' in ONN.onn_topo and 'W' in ONN.onn_topo:
+    elif 'C' in ONN.topo and 'W' in ONN.topo:
         Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 

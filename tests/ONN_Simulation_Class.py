@@ -46,7 +46,7 @@ class ONN_Simulation:
         self.loss_dB_test = [0]
 
         self.BATCH_SIZE = 2**6
-        self.onn_topo = ''
+        self.topo = ''
 
         self.FOLDER = ''
 
@@ -71,23 +71,23 @@ class ONN_Simulation:
         return np.array(self.X), np.array(self.y), np.array(self.Xt), np.array(self.yt)
     def get_topology_name(self):
         " Get list of actual topology names instead of C_Q_P"
-        if self.onn_topo == 'R_D_P':
+        if self.topo == 'R_D_P':
             Topo = 'Reck + DMM'
-        if self.onn_topo == 'R_D_P':
+        if self.topo == 'R_D_P':
             Topo = 'Reck + DMM'
-        elif self.onn_topo == 'I_P':
+        elif self.topo == 'I_P':
             Topo = 'Inverted Reck'
-        elif self.onn_topo == 'R_I_P':
+        elif self.topo == 'R_I_P':
             Topo = 'Reck + Inverted Reck'
-        elif self.onn_topo == 'R_D_I_P':
+        elif self.topo == 'R_D_I_P':
             Topo = 'Reck + DMM + Inverted Reck'
-        elif self.onn_topo == 'C_Q_P':
+        elif self.topo == 'C_Q_P':
             Topo = 'Diamond'
-        elif self.onn_topo == 'C_W_P':
+        elif self.topo == 'C_W_P':
             Topo = 'Central Diamond'
-        elif self.onn_topo == 'E_P':
+        elif self.topo == 'E_P':
             Topo = 'Clements'
-        elif self.onn_topo == 'R_P':
+        elif self.topo == 'R_P':
             Topo = 'Reck'
         self.topology = Topo
     def get_all_topologies(self):
@@ -113,7 +113,7 @@ class ONN_Simulation:
             elif model == 'E_P':
                 Topo = 'Clements'
             else:
-                Topo = self.onn_topo
+                Topo = self.topo
             models.append(Topo)
         self.models = models
     def saveSimSettings(self):
@@ -140,28 +140,28 @@ class ONN_Simulation:
         plt.legend(['Training Accuracy', 'Validation Accuracy'])
         plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
         plt.ylim([0, 100])
-        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.onn_topo}_N={self.N}.png')
+        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.topo}_N={self.N}.png')
         plt.clf()
 
         # Get losses of MZIs
         losses_MZI = model.get_all_losses()
         losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
         df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}_N={self.N}.txt')
+        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.topo}_N={self.N}.txt')
 
         # save a txt file containing the loss, trn acc, val acc, in case i want to replot it using matlab
         df = pd.DataFrame({'Losses':self.losses, 'Training Accuracy':self.trn_accuracy, 'Validation Accuracy':self.val_accuracy})
-        df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.onn_topo}.txt')
+        df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.topo}.txt')
 
         # Get losses of MZIs
         losses_MZI = model.get_all_losses()
         losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
         df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.onn_topo}.txt')
+        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.topo}.txt')
 
         # Save best transformation matrix
         best_trf_matrix = np.array(self.best_trf_matrix)
-        with open(f'{self.FOLDER}/TransformationMatrices/Best_TransformationMatrix_{self.onn_topo}_.txt', "w") as myfile:
+        with open(f'{self.FOLDER}/TransformationMatrices/Best_TransformationMatrix_{self.topo}_.txt', "w") as myfile:
             for trf in best_trf_matrix:
                 np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
                 myfile.write('\n')
@@ -169,10 +169,10 @@ class ONN_Simulation:
         # Save best phases as well
         best_phases_flat = [item for sublist in self.phases for item in sublist]
         df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
-        df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.onn_topo}.txt')
+        df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.topo}.txt')
     def saveAccuracyData(self):
         ''' save the accuracy computed from calculate_accuracy '''
-        scipy.io.savemat(f"{self.FOLDER}/acc_{self.onn_topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
+        scipy.io.savemat(f"{self.FOLDER}/acc_{self.topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
     def saveSimDataset(self):
         ''' Save simulation's datasset, both in plot and txt form '''
         if self.N < 9:
@@ -194,7 +194,7 @@ class ONN_Simulation:
         return simSettings
     def saveSelf(self):
         ''' save .mat strutcure of this class' variables '''
-        scipy.io.savemat(f"{self.FOLDER}/Topologies/{self.onn_topo}.mat", mdict={f'{self.onn_topo}':self})
+        scipy.io.savemat(f"{self.FOLDER}/Topologies/{self.topo}.mat", mdict={f'{self.topo}':self})
     def saveAll(self, model):
         self.saveSimDataset()
         self.saveSimData(model)

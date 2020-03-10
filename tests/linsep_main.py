@@ -30,7 +30,7 @@ onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P', 'R_D_I_P', 'R_D_P']
 # onn_topo = ['C_Q_P']
 for ii in [0]:
     for N in [4]:
-        for ONN.onn_topo in onn_topo:
+        for ONN.topo in onn_topo:
             ONN.get_topology_name()
             folder = f'/home/simon/Documents/neuroptica/linsep-datasets/LinSepFinal/N={N}/'
 

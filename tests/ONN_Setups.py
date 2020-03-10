@@ -14,7 +14,7 @@ np.set_printoptions(suppress=True)
 
 def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None, None)]):
     """  Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond """
-    layers = onn.onn_topo.replace('_', '') 
+    layers = onn.topo.replace('_', '') 
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
     layer_dict = {
             'R':neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
