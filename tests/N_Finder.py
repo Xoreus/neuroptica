@@ -15,7 +15,6 @@ import digital_NN_main as dnn
 import create_datasets as cd
 import random
 import os
-import shutil
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -34,7 +33,6 @@ def get_dataset(folder, N, rng, lim=94):
 
         X = (X - np.min(X))/(np.max(X) - np.min(X))
         Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
-        Xog, Xtog = X, Xt
 
         net, weights = dnn.create_train_dnn(X, y, Xt, yt, folder, EPOCHS)
         print('Validation Accuracy: {:.1f}%'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
@@ -75,7 +73,7 @@ def test_onn(folder, ONN, lim=90):
             ONN.createFOLDER()
             acc_colormap.colormap_me(ONN)
             ONN.saveAll(model)
-            np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
+            np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')
 
             return ONN, model
     return ONN, 0
@@ -98,7 +96,7 @@ ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.
 onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P', 'R_D_I_P', 'R_D_P']
 
 rng = 192
-N = 24
+N = 12
 FoM = {}
 for ii in range(32, 64):
     while True:
@@ -111,7 +109,7 @@ for ii in range(32, 64):
             ONN.get_topology_name()
             ONN, model = test_onn(folder, ONN)
             if model != 0:
-                PT_FoM.update({ONN.topo:ONN.PT_FoM})    
+                PT_FoM.update({ONN.topo:ONN.PT_FoM})
             else:
                 continue
         break
