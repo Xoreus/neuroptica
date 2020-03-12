@@ -13,7 +13,7 @@ import acc_colormap
 
 def set_phases(onn, phases):
     sep_phases = [[],[]]
-    for l in onn.onn_topo:
+    for l in onn.topo:
         if l == '_':
             continue
         elif l == 'C' or l == 'E':
@@ -32,27 +32,27 @@ if __name__ == '__main__':
 
     ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0.0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 1, 21)
-    ONN.phase_uncert_theta = np.linspace(0., 0.5, 21)
-    ONN.phase_uncert_phi = np.linspace(0., 0.5, 21)
+    ONN.loss_dB = np.linspace(0, 1.5, 41)
+    ONN.phase_uncert_theta = np.linspace(0., 0.4, 41)
+    ONN.phase_uncert_phi = np.linspace(0., 0.4, 41)
 
     ONN.zeta = 0
-    topos = ['R_P', 'C_Q_P', 'E_P']
+    topos = ['R_P', 'C_Q_P']
     # topos = ['R_I_P', 'R_D_I_P', 'R_P']
 
-    for N in [32]:
-        for ONN.onn_topo in topos:
+    for N in [16]:
+        for ONN.topo in topos:
             ONN.get_topology_name()
-            print(f'N={N}, topo={ONN.onn_topo}')
-            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N=32_0/'
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N={N}_0'
+            print(f'N={N}, topo={ONN.topo}')
+            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16-PhiTheta/N=16_0.0052'
+            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16-PhiTheta/N=16_0.0052'
 
             ONN.X = np.loadtxt(FOLDER + '/Datasets/X.txt', delimiter=',')
             ONN.y = np.loadtxt(FOLDER + '/Datasets/y.txt', delimiter=',')
             ONN.Xt = np.loadtxt(FOLDER + '/Datasets/Xt.txt', delimiter=',')
             ONN.yt = np.loadtxt(FOLDER + '/Datasets/yt.txt', delimiter=',')
             ONN.N = N
-            phases = np.loadtxt(f'{FOLDER}/Phases/Phases_Best_{ONN.onn_topo}.txt', skiprows=1, usecols=(1,2), delimiter=',')
+            phases = np.loadtxt(f'{FOLDER}/Phases/Phases_Best_{ONN.topo}.txt', skiprows=1, usecols=(1,2), delimiter=',')
             phases = [(t, p) for t, p in phases]
 
             sep_phases = set_phases(ONN, phases)

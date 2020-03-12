@@ -14,36 +14,36 @@ import pickle
 
 ONN = ONN_Cls.ONN_Simulation()
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 600
+ONN.EPOCHS = 400
 ONN.STEP_SIZE = 0.005
 ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
 
-ONN.loss_dB = np.linspace(0, .5, 41)
-ONN.phase_uncert_theta = np.linspace(0., .5, 41)
-ONN.phase_uncert_phi = np.linspace(0., .5, 41)
+ONN.loss_dB = np.linspace(0, 1, 31)
+ONN.phase_uncert_theta = np.linspace(0., 1, 31)
+ONN.phase_uncert_phi = np.linspace(0., 1, 31)
 
 ONN.rng = 2
 
 # onn_topo = ['R_D_P']
-onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P', 'R_D_I_P', 'R_D_P']
+onn_topo = ['R_I_P', 'R_D_I_P', 'R_D_P']
 # onn_topo = ['C_Q_P']
-for ii in [0]:
-    for N in [4]:
+for ii in range(14):
+    for N in [32]:
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
-            folder = f'/home/simon/Documents/neuroptica/linsep-datasets/LinSepFinal/N={N}/'
+            folder = f'/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=32/Datasets'
 
-            ONN.X = np.loadtxt(folder + f'X.txt', delimiter=',')
-            ONN.y = np.loadtxt(folder + f'y.txt', delimiter=',')
-            ONN.Xt = np.loadtxt(folder + f'Xt.txt', delimiter=',')
-            ONN.yt = np.loadtxt(folder + f'yt.txt', delimiter=',')
+            ONN.X = np.loadtxt(folder + f'/X.txt', delimiter=',')
+            ONN.y = np.loadtxt(folder + f'/y.txt', delimiter=',')
+            ONN.Xt = np.loadtxt(folder + f'/Xt.txt', delimiter=',')
+            ONN.yt = np.loadtxt(folder + f'/yt.txt', delimiter=',')
             ONN.N = N
-            for ONN.rng in range(30, 40):
+            for ONN.rng in range(30, 36):
                 ONN.phases = []
                 model, *_ =  onnClassTraining.train_single_onn(ONN)
-                if max(ONN.val_accuracy) > 97:
-                    ONN.FOLDER = f'Analysis/linsep_final/N={N}_{ii}'
+                if max(ONN.val_accuracy) > 90:
+                    ONN.FOLDER = f'Analysis/average-linsep/N={N}'
                     ONN.createFOLDER()
 
                     ONN.same_phase_uncert = False

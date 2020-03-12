@@ -61,11 +61,9 @@ def test_onn(folder, ONN, lim=90):
         ONN.phases = []
         model, *_ =  onnClassTraining.train_single_onn(ONN)
         if max(ONN.val_accuracy) > lim:
-
             ONN.same_phase_uncert = False
             print('Different Phase Uncert')
             ONN.accuracy_PT = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
-
             ONN.PT_FoM = np.sum((np.array(ONN.accuracy_PT) > ONN.zeta*np.max(ONN.accuracy_PT))*ONN.PT_Area)
             print(ONN.topology, ONN.PT_FoM, 'Rad^2')
             ONN.same_phase_uncert = True
@@ -89,34 +87,32 @@ ONN.EPOCHS = 300
 ONN.STEP_SIZE = 0.005
 ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, .5, 11)
-ONN.phase_uncert_theta = np.linspace(0., .4, 41)
-ONN.phase_uncert_phi = np.linspace(0., .4, 41)
+ONN.loss_dB = np.linspace(0, 1, 41)
+ONN.phase_uncert_theta = np.linspace(0., .5, 41)
+ONN.phase_uncert_phi = np.linspace(0., .5, 41)
 ONN.rng = 2
 ONN.zeta = 0.75
 ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
 ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
-onn_topo = ['R_P', 'C_Q_P']
 
-rng = 5
-N = 16
+onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P', 'R_D_I_P', 'R_D_P']
+
+rng = 192
+N = 24
 FoM = {}
-for _ in range(16):
+for ii in range(32, 64):
     while True:
-        ONN.FOLDER = f'Analysis/better-linsep-final/N={N}'
+        ONN.FOLDER = f'Analysis/average-linsep/N={N}/N={N}_{ii}/'
         folder = f'../better-linsep-datasets/N={N}'
         rng = get_dataset(folder, N, rng)
         PT_FoM = {}
         for ONN.topo in onn_topo:
+            # FOLDER = f'Analysis/average-linsep/N={N}_{ii}/'
             ONN.get_topology_name()
             ONN, model = test_onn(folder, ONN)
             if model != 0:
                 PT_FoM.update({ONN.topo:ONN.PT_FoM})    
             else:
-                break
-            print(PT_FoM)
-        if PT_FoM['C_Q_P'] > PT_FoM['R_P']:
-            ONN.FOLDER = f'Analysis/better-linsep-final/N={N}_{PT_FoM["C_Q_P"] - PT_FoM["R_P"]:.4f}'
-            shutil.copytree(f'Analysis/better-linsep-final/N={N}/', ONN.FOLDER)
-            break
+                continue
+        break
 

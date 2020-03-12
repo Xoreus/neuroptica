@@ -49,9 +49,9 @@ for t = 1:length(topo)
         
 
         a = get(gca,'YTickLabel');
-        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
         a = get(gca,'XTickLabel');
-        set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+        set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz)
         h = gca;
         set(h, 'YTickLabelMode','auto')
         set(h, 'XTickLabelMode','auto')

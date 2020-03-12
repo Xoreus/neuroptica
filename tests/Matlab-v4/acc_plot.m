@@ -10,15 +10,15 @@ clc; close all; clear;
 
 fig_of_merit_value = 0.75;
 print_fig_of_merit = false;
-showContour = true;
-printMe = false;
+showContour = false;
+printMe = true;
 
 N = [4];
 for jj = 1:length(N)
 
     FOLDER = sprintf('/storage/Research/02.2020-NewPaper/N=%d/N=%d-OG',N(jj), N(jj));
     FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N=%d_0',N(jj));
-    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/better-linsep-final/N=6_0.0169';
+    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/N=16-PhiTheta/N=16_0.0052';
 %     FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/MNIST_AddedPhaseNoise/N=%d_0.2', N(jj));
 %     FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/DNN/iris-0h-og';
 %     FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/MNIST/N=10';
@@ -28,10 +28,10 @@ for jj = 1:length(N)
     makeMatlabDirs(FOLDER)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
-    if 1 && 1
+    if 1 && 0
         phiTheta(FOLDER, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
-    if 1 && 0
+    if 1 && 1
         loss_phaseUncert(FOLDER, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
     end
     if 1 && 0

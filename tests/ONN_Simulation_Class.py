@@ -1,4 +1,5 @@
 """
+
 ONN_Simulation_Class.py
 ONN Simulation data class, containing all the simulation variables such as loss_dB, phase_uncert, ONN_Setups, X, y, Xt, yt, EPOCHS, ect...
 Useful because it makes it possible to pickle.dump() the class into a binary file, retrieving it at a later date to continue testing
@@ -13,16 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 import scipy.io
-import matplotlib as mpl
 import pickle
-mpl.use('Agg')
-import matplotlib
-matplotlib.rcParams['mathtext.fontset'] = 'stix'
-matplotlib.rcParams['font.family'] = 'STIXGeneral'
-matplotlib.rcParams['mathtext.fontset'] = 'custom'
-matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
-matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
-matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 from saveSimulationData import plot_scatter_matrix  
 
 class ONN_Simulation:

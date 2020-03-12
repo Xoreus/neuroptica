@@ -3,25 +3,26 @@
 % Author: Simon Geoffroy-Gagnon
 % Edit: 25.01.2020
 
-function [sim, topo] = load_ONN_data(FOLDER)
-fid = fopen([FOLDER, '/all_topologies.txt']);
-topo = textscan(fid, '%s');
-accuracy = cell(length(topo{1}), 1);
-for ii = 1:length(topo{1})
-    simulation = load([FOLDER, '/Topologies/', topo{1}{ii}]);
-    sim.(topo{1}{ii}) = simulation.(topo{1}{ii});
-    acc = [sim.(topo{1}{ii}).accuracy_LPU, sim.(topo{1}{ii}).accuracy_PT];
+function [sim, model_names] = load_ONN_data(FOLDER)
+model_names = dir([FOLDER, '/Topologies/']);
+model_names = {model_names.name};
+model_names = model_names(3:end);
+accuracy = cell(length(model_names),1);
+for ii = 1:length(model_names)
+    simulation = load([FOLDER, '/Topologies/', model_names{ii}]);
+    sim.(model_names{ii}(1:end-4)) = simulation.(model_names{ii}(1:end-4));
+    acc = [sim.(model_names{ii}(1:end-4)).accuracy_LPU, sim.(model_names{ii}(1:end-4)).accuracy_PT];
     accuracy{ii} = acc;
 end
 
-for ii = 1:length(topo{1})
-    filename = [FOLDER, '/Data_Fitting/', topo{1}{ii}, '.txt'];
+for ii = 1:length(model_names)
+    filename = [FOLDER, '/Data_Fitting/', model_names{ii}(1:end-4), '.txt'];
     delimiterIn = ',';
     headerlinesIn = 1;
     bp = importdata(filename,delimiterIn,headerlinesIn);
-    sim.(topo{1}{ii}).losses = bp.data(:,2);
-    sim.(topo{1}{ii}).trn_accuracy = bp.data(:,3);
-    sim.(topo{1}{ii}).val_accuracy = bp.data(:,4);
+    sim.(model_names{ii}(1:end-4)).losses = bp.data(:,2);
+    sim.(model_names{ii}(1:end-4)).trn_accuracy = bp.data(:,3);
+    sim.(model_names{ii}(1:end-4)).val_accuracy = bp.data(:,4);
 end
 
 for ii = 1:length(accuracy)
@@ -29,6 +30,6 @@ for ii = 1:length(accuracy)
 end
 
 sim.max_accuracy = max(maxAcc);
-sim.topo = topo;
-topo = topo{1};
+model_names = cellfun(@(x) x(1:end-4), model_names, 'UniformOutput', false);
+sim.topo = model_names;
 end
