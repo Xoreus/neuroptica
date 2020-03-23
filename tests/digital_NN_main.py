@@ -12,11 +12,11 @@ import numpy as np
 import pandas as pd
 import create_datasets as cd
 sys.path.append('/home/simon/Documents/neuroptica/tests/neural_network_digital')
+sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica_PhiTheta\tests\neural_network_digital')
 import Digital_Neural_Network as dnn
 import neural_network as nn
 import matplotlib.pyplot as plt
 import random
-from plot_scatter_matrix import plot_scatter_matrix
 
 def get_current_accuracy(xtst, ytst, net):
     correct_pred = 0

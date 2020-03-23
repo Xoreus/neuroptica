@@ -16,7 +16,6 @@ import digital_NN_main as dnn
 import create_datasets as cd
 import random
 import os
-import shutil
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -33,7 +32,6 @@ def get_dataset(folder, N, rng, lim=99, SAMPLES=100, EPOCHS=30):
 
         X = (X - np.min(X))/(np.max(X) - np.min(X))
         Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
-        Xog, Xtog = X, Xt
 
         net, weights = dnn.create_train_dnn(X, y, Xt, yt, folder, EPOCHS)
         print('Validation Accuracy: {:.1f}%'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
@@ -93,60 +91,33 @@ def main():
     ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
     ONN.loss_diff = 0
 
-    onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
-    # onn_topo = ['R_I_P','R_D_I_P', 'R_D_P']
-    # onn_topo = [ 'R_P', 'C_Q_P', 'E_P']
-    # onn_topo = ['R_P']
+ONN = ONN_Cls.ONN_Simulation()
+ONN.BATCH_SIZE = 2**6
+ONN.EPOCHS = 300
+ONN.STEP_SIZE = 0.005
+ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
+ONN.loss_diff = 0 # \sigma dB
+ONN.loss_dB = np.linspace(0, 1, 41)
+ONN.phase_uncert_theta = np.linspace(0., .5, 41)
+ONN.phase_uncert_phi = np.linspace(0., .5, 41)
+ONN.rng = 2
+ONN.zeta = 0.75
+ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
+ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
 
-    rng = 11
-    ONN.N = 80
-    FoM = {}
-    for ii in range(5):
-        while True:
-            random.seed(rng)
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N={ONN.N}'
-            # ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/diff_trainings/N={ONN.N}_{ii}'
-            folder = f'../better-linsep-datasets/N={ONN.N}'
-            rng = get_dataset(folder, ONN.N, rng, EPOCHS=50, lim=95)
-            PT_FoM = {}
-            for ONN.topo in onn_topo:
-                ONN.get_topology_name()
-                ONN, model = test_onn(folder, ONN, lim=90)
-                if model != 0:
-                    PT_FoM.update({ONN.topo:ONN.PT_FoM})    
-                else:
-                    continue
+onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P', 'R_D_I_P', 'R_D_P']
 
-            np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
-            break
-
-if __name__ == '__main__':
-    ONN = ONN_Cls.ONN_Simulation()
-    ONN.BATCH_SIZE = 2**6
-    ONN.EPOCHS = 200
-    ONN.STEP_SIZE = 0.005
-    ONN.ITERATIONS = 55555 # number of times to retry same loss/PhaseUncert
-    ONN.loss_diff = 0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, .2, 31)
-    ONN.phase_uncert_theta = np.linspace(0., 0.2, 31)
-    ONN.phase_uncert_phi = np.linspace(0., 0.2, 31)
-    ONN.rng = 2
-    ONN.zeta = 0.75
-    ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
-    ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
-
-    onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
-
-    rng = 1
-    ONN.N = 96
-    folder = f'../better-linsep-datasets/N={ONN.N}'
-    random.seed(rng)
-    # rng = get_dataset(folder, ONN.N, rng, EPOCHS=50, lim=95)
-    for ii in range(1):
-        ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N={ONN.N}'
+rng = 192
+N = 12
+FoM = {}
+for ii in range(32, 64):
+    while True:
+        ONN.FOLDER = f'Analysis/average-linsep/N={N}/N={N}_{ii}/'
+        folder = f'../better-linsep-datasets/N={N}'
+        rng = get_dataset(folder, N, rng)
+        PT_FoM = {}
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
             ONN, model = test_onn(folder, ONN, lim=50)
         ONN.saveAll(model)
         np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
-
