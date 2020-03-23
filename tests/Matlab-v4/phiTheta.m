@@ -21,7 +21,12 @@ for t = 1:length(topo)
         figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
         
         curr_acc = squeeze(accuracy(:,:,loss_idx));
-        h = pcolor(simulation.phase_uncert_theta, simulation.phase_uncert_phi, curr_acc); %,'HandleVisibility','off');
+        if simulation.N == 48
+            h = pcolor(simulation.phase_uncert_theta(1:17), simulation.phase_uncert_phi(1:17), curr_acc(1:17, 1:17)); %,'HandleVisibility','off');
+        else
+            h = pcolor(simulation.phase_uncert_theta, simulation.phase_uncert_phi, curr_acc); %,'HandleVisibility','off');
+        end
+        
         h.Annotation.LegendInformation.IconDisplayStyle = 'off';
         
         hold on
@@ -31,7 +36,7 @@ for t = 1:length(topo)
                 [sim.max_accuracy*fig_of_merit_value sim.max_accuracy*fig_of_merit_value], 'k' , 'linewidth', 4);
             % Create legend for contour map
             lgd = ['Above ', num2str(sim.max_accuracy*fig_of_merit_value, 4), '\% accuracy'];
-            legend(lgd, 'fontsize', fontsz, 'interpreter','latex');
+            legend(lgd, 'fontsize', fontsz*0.8, 'interpreter','latex');
         end
         % Calculate "area" of contour map as a figure of merit
         area_of_merit = sum(sum(curr_acc >= sim.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_phi(2) - ...
@@ -47,25 +52,32 @@ for t = 1:length(topo)
         caxis([100/(simulation.N) 100])
         colormap('jet');
         
-
+        
         a = get(gca,'YTickLabel');
-        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
+        set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
         a = get(gca,'XTickLabel');
-        set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz)
+        set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
         h = gca;
         set(h, 'YTickLabelMode','auto')
         set(h, 'XTickLabelMode','auto')
-        ytickformat('%.1f')
-        xtickformat('%.1f')
+        ytickformat('%.2f')
+        xtickformat('%.2f')
         xlabel('$\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         ylabel('$\sigma_\phi$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         axis square
+        
         if print_fig_of_merit
-            title(sprintf(['Accuracy of %s Topology\nLoss/MZI = %.2f dB, $\\sigma_{Loss/MZI} = $ %.2f dB\nFigure of Merit: %.6f'],simulation.topology,...
-                simulation.loss_dB(loss_idx), simulation.loss_diff, area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
+            title(sprintf('%d$\\times$%d %s\nFoM: %.6f $\\mathrm{Rad}^2$', simulation.N, simulation.N, ...
+                simulation.topology,  area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
         else
+            if strcmp(sim.topo{t}, 'R_D_I_P')
+                simulation.topology = 'Reck + DMM + Inv. Reck';
+            elseif strcmp(sim.topo{t}, 'R_D_I_P')
+                simulation.topology = 'Reck + Inv. Reck';
+            end
             title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
         end
+        
         
         savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topo, simulation.N)])
         saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.topo, simulation.N)])
@@ -76,7 +88,7 @@ for t = 1:length(topo)
         if area_of_merit == 0
             break
         end
-        fprintf('%s FoM: %.4f\n', simulation.topology, area_of_merit)
+        fprintf('%s Phi Theta FoM: %.4f\n', simulation.topology, area_of_merit)
         
     end
     fom(t) = sum(a_of_m);

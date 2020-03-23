@@ -14,26 +14,23 @@ import pickle
 
 ONN = ONN_Cls.ONN_Simulation()
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 400
+ONN.EPOCHS = 200
 ONN.STEP_SIZE = 0.005
 ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
 ONN.loss_diff = 0 # \sigma dB
 
-ONN.loss_dB = np.linspace(0, 1, 31)
-ONN.phase_uncert_theta = np.linspace(0., 1, 31)
-ONN.phase_uncert_phi = np.linspace(0., 1, 31)
+ONN.loss_dB = np.linspace(0, 1, 51)
+ONN.phase_uncert_theta = np.linspace(0., 0.4, 51)
+ONN.phase_uncert_phi = np.linspace(0., 0.4, 51)
 
 ONN.rng = 2
 
-# onn_topo = ['R_D_P']
-onn_topo = ['R_I_P', 'R_D_I_P', 'R_D_P']
-# onn_topo = ['C_Q_P']
-for ii in range(14):
-    for N in [32]:
+onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
+for ii in range(1):
+    for N in [96]:
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
-            folder = f'/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=32/Datasets'
-
+            folder = f'/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N={N}'
             ONN.X = np.loadtxt(folder + f'/X.txt', delimiter=',')
             ONN.y = np.loadtxt(folder + f'/y.txt', delimiter=',')
             ONN.Xt = np.loadtxt(folder + f'/Xt.txt', delimiter=',')

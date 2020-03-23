@@ -16,6 +16,8 @@ import os
 import scipy.io
 import pickle
 from saveSimulationData import plot_scatter_matrix  
+import matplotlib as mpl
+
 
 class ONN_Simulation:
     def __init__(self):
@@ -63,8 +65,7 @@ class ONN_Simulation:
         return np.array(self.X), np.array(self.y), np.array(self.Xt), np.array(self.yt)
     def get_topology_name(self):
         " Get list of actual topology names instead of C_Q_P"
-        if self.topo == 'R_D_P':
-            Topo = 'Reck + DMM'
+        # print(self.topo)
         if self.topo == 'R_D_P':
             Topo = 'Reck + DMM'
         elif self.topo == 'I_P':
@@ -190,7 +191,7 @@ class ONN_Simulation:
     def saveAll(self, model):
         self.saveSimDataset()
         self.saveSimData(model)
-        self.saveAccuracyData()
+        # self.saveAccuracyData()
         self.saveSelf()
     def createFOLDER(self):
         if not os.path.isdir(self.FOLDER):
@@ -215,7 +216,7 @@ class ONN_Simulation:
     def pickle_load(self):
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:
             self = pickle.load(p)
-            
+            return self 
 if __name__ == '__main__':
     ONN = ONN_Simulation()
     ONN.FOLDER = '/home/simon/Desktop/'

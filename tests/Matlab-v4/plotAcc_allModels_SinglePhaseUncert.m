@@ -6,15 +6,15 @@
 % Author: Simon Geoffroy-Gagnon
 % Edit: 20.02.2020
 
-function plotAcc_allModels_SinglePhaseUncert(FOLDER, sim, acc, topo)
-fontsz = 44;
+function plotAcc_allModels_SinglePhaseUncert(FOLDER, sim, topo, printMe)
+fontsz = 64;
 step_sz = 1;
 legend_ = {};
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
 
 for t = 1:length(topo)
     simulation = sim.(topo{t});
-    accuracy = acc.(topo{t}).accuracy;
+    accuracy = sim.(topo{t}).accuracy_LPU;
     for p_idx = 1:length(simulation.phase_uncert_theta(1))
         
         legend_{end+1} = simulation.topology;
@@ -45,19 +45,19 @@ axis('tight')
 ylim([0, 100])
 
 a = get(gca,'XTickLabel');
-set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.9)
+set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
 a = get(gca,'YTickLabel');
-set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.8)
+set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
 
 h = gca;
 set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
-
-savefig([FOLDER, sprintf('Matlab_Figs/AllModels_loss.fig')])
-saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_loss.png')])
+axis square
+savefig([FOLDER, sprintf('/Matlab_Figs/AllModels_loss.fig')])
+saveas(gcf, [FOLDER, sprintf('/Matlab_Pngs/AllModels_loss.png')])
 
 if printMe
-    pMe([FOLDER, 'singlePhaseUncert.pdf'])
+    pMe([FOLDER, '/singlePhaseUncert.pdf'])
 end
 
 end

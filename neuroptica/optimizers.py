@@ -122,7 +122,6 @@ class InSituAdam(Optimizer):
     '''
     On-chip training with in-situ backpropagation using adjoint field method and adam optimizer
     '''
-
     def __init__(self, model: Sequential, loss: Type[Loss], step_size=0.01,
                  beta1=0.9, beta2=0.99, epsilon=1e-8, pKeep=0.8):
         super().__init__(model, loss)

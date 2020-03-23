@@ -30,23 +30,23 @@ def set_phases(onn, phases):
 if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
 
-    ONN.ITERATIONS = 10 # number of times to retry same loss/PhaseUncert
-    ONN.loss_diff = 0.0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 1.5, 41)
-    ONN.phase_uncert_theta = np.linspace(0., 0.4, 41)
-    ONN.phase_uncert_phi = np.linspace(0., 0.4, 41)
+    ONN.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+    ONN.loss_diff = 0 # \sigma dB
+    ONN.loss_dB = np.linspace(0, 0.5, 31)
+    ONN.phase_uncert_theta = np.linspace(0., 0.2, 31)
+    ONN.phase_uncert_phi = np.linspace(0., 0.2, 31)
 
     ONN.zeta = 0
-    topos = ['R_P', 'C_Q_P']
-    # topos = ['R_I_P', 'R_D_I_P', 'R_P']
+    topos = ['R_I_P','E_P','R_D_I_P','R_D_P','C_Q_P','R_P']
+    topos = ['R_I_P','R_P', 'C_Q_P', 'E_P']
 
-    for N in [16]:
+    for N in [48]:
         for ONN.topo in topos:
             ONN.get_topology_name()
             print(f'N={N}, topo={ONN.topo}')
-            FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16-PhiTheta/N=16_0.0052'
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16-PhiTheta/N=16_0.0052'
-
+            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=48/N=48_0'
+            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=48/N=48_32'
+            FOLDER = ONN.FOLDER
             ONN.X = np.loadtxt(FOLDER + '/Datasets/X.txt', delimiter=',')
             ONN.y = np.loadtxt(FOLDER + '/Datasets/y.txt', delimiter=',')
             ONN.Xt = np.loadtxt(FOLDER + '/Datasets/Xt.txt', delimiter=',')
@@ -67,11 +67,9 @@ if __name__ == '__main__':
             print('Same Phase Uncert')
             ONN.accuracy_LPU = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
 
-            # break
             ONN.createFOLDER()
             ONN.saveSelf()
             acc_colormap.colormap_me(ONN)
             ONN.saveSimDataset()
             ONN.saveAccuracyData()
         np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', topos, fmt='%s')
-

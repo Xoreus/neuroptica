@@ -88,7 +88,7 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
 
     return net, weights
 
-if __name__ == '__main__':
+if __name__ == '__main__1':
     import os
     SAMPLES = 300
     rng = 8
@@ -127,5 +127,13 @@ if __name__ == '__main__':
                 ii += 1
                 print('This dataset works!\n')
                 break
+if __name__ == '__main__':
+    X = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/X_1.txt',delimiter=',')
+    y = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/y_1.txt',delimiter=',')
+    Xt = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/Xt_1.txt',delimiter=',')
+    yt = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/yt_1.txt',delimiter=',')
 
+    net, weights = create_train_dnn(X, y, Xt, yt, 'Analysis/DNN', 50)
 
+                    # Val Accuracy
+    print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(Xt, yt, net)*100))

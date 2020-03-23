@@ -18,7 +18,7 @@ for t = 1:length(topo)
     yyaxis left
     plot(simulation.losses(:, 1:end), 'linewidth', 3)
     ylabel('$\mathcal{L}_{\mathrm{(MSE)}}$', 'fontsize', fontsz, 'interpreter','latex')
-%     ylim([0, 2])
+    ylim([0, 1])
     yyaxis('right');
     plot(simulation.trn_accuracy(:, 1:end), '--', 'linewidth', 3)
     hold on
@@ -36,8 +36,9 @@ for t = 1:length(topo)
     set(h, 'YTickLabelMode','auto')
     set(h, 'XTickLabelMode','auto')
     axis square
-    legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz*0.8, 'interpreter','latex', ...
+    h = legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz*0.8, 'interpreter','latex', ...
         'location', 'east');
+    set(h, 'position', get(h, 'position') + [0 -0.073 -0.1 0])
     
     title(sprintf('%s Backpropagation', simulation.topology), 'fontsize', fontsz_title, 'interpreter','latex')
     savefig([FOLDER, sprintf('/Matlab_Figs/%s_loss+acc-plot.fig', simulation.topology)])

@@ -80,7 +80,7 @@ def train_single_onn(onn, create_dataset_flag=True):
     optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
     onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
     print(f'time spent for current training: {(time.time() - t)/60:.2f} minutes')
-    return model, onn
+    return onn, model
 
 def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
     ONN_Classes = []
@@ -90,7 +90,7 @@ def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
         ONN_Classes[-1].topo = onn
         ONN_Classes[-1].get_topology_name()
     for onn in ONN_Classes:
-        model, onn = train_single_onn(onn)
+        onn, model = train_single_onn(onn)
         onn.accuracy = calc_acc.get_accuracy(onn, model, onn.Xt, onn.yt, loss_diff=onn.loss_diff)
         create_folder(onn)
         onn.saveAll(model)
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     ONN.FOLDER = 'Analysis/test'
     ONN.topo = ONN.ONN_setup[0] 
     ONN.get_topology_name()
-    model, ONN = train_single_onn(ONN, create_dataset_flag=False) 
+    ONN, model = train_single_onn(ONN, create_dataset_flag=False) 
     ONN.createFOLDER()
     ONN.saveAll(model)
 
