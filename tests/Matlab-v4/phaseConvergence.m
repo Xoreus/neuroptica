@@ -4,12 +4,20 @@
 % Edit: 2020.03.17
 close all; clc; clear;
 
-N = 12;
-
+N = 4;
+fontsz = 64;
 FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/phaseConvergence_N=%d', N);
 phases = {};
-comp_layer = 'DMM'; % 'Reck'; %
-layer_idx = 2; % 1; %
+
+comp_layer =  'Reck'; %'DMM'; %'Inv. Reck'; % 
+
+if strcmp(comp_layer, 'Inv. Reck')
+    layer_idx = 3;
+elseif strcmp(comp_layer, 'Reck')
+    layer_idx = 1;
+else
+    layer_idx = 2;
+end
 
 for ii = 0:numel(dir(FOLDER))-3
     fold = [FOLDER sprintf('/%d/Topologies',ii)];
@@ -53,16 +61,16 @@ h = gca;
 set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
 axis square
-xlabel('Fitted Distribution for $\phi$ phase (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+xlabel('$\phi$ phase (Rad)', 'fontsize', fontsz, 'interpreter','latex')
 ylabel('', 'fontsize', fontsz, 'interpreter','latex')
 yt = get(gca, 'YTick');
 set(gca, 'YTick', yt, 'YTickLabel', yt/numel(samples_t(:,1)))
 legend(lgd, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northwest');
 yticks('')
 xlim(xlims)
-pMe(sprintf('phi_phaseConvergence_%s_N=%d.pdf', comp_layer, N))
+pMe_lineplot(sprintf('../Crop_Me/phi_phaseConvergence_%s_N=%d.pdf', comp_layer, N))
 
-fontsz = 64;
+
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
 lgd = {};
 for ii = 1:length(samples_t(1,:))
@@ -81,10 +89,10 @@ h = gca;
 set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
 axis square
-xlabel('Fitted Distribution for $\theta$ phase (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+xlabel('$\theta$ phase (Rad)', 'fontsize', fontsz, 'interpreter','latex')
 ylabel('', 'fontsize', fontsz, 'interpreter','latex')
 yticks('')
 
 legend(lgd, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northwest');
 xlim(xlims)
-pMe(sprintf('theta_phaseConvergence_%s_N=%d.pdf', comp_layer, N))
+pMe_lineplot(sprintf('../Crop_Me/theta_phaseConvergence_%s_N=%d.pdf', comp_layer, N))

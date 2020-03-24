@@ -29,10 +29,10 @@ for jj = 1:length(N)
     makeMatlabDirs(F)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
-    if 1 && 1
+    if 1 && 0
         phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
-    if 1 && 1
+    if 1 && 0
         loss_phaseUncert(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
     end
     if 1 && 0

@@ -66,7 +66,7 @@ def retrain_ONN(ONN, rng_range):
     for ONN.rng in rng_range:
         ONN_Training(ONN, create_dataset_flag=False)
 
-def train_single_onn(onn, create_dataset_flag=True):
+def train_single_onn(onn, create_dataset_flag=False):
     if create_dataset_flag: create_dataset(onn)
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()

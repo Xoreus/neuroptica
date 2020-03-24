@@ -1,8 +1,6 @@
-
-
 ''' phase_uncert_thetar simulating Optical Neural Network
 using Neuroptica and linearly separable datasets
-Now goes over every topology types with N = 4-32
+Now goes over every topology types with N = 96 and trains them ONLY
 
 Author: Simon Geoffroy-Gagnon
 Edit: 2020.03.09
@@ -24,10 +22,10 @@ matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 
-def get_dataset(folder, N, rng, lim=99, SAMPLES=100, EPOCHS=30):
+def get_dataset(ONN, folder, rng, lim=99, SAMPLES=100, EPOCHS=30):
     while True:
-        print(f'RNG = {rng}, N = {N}')
-        X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES*N, rng=rng)
+        print(f'RNG = {rng}, N = {ONN.N}')
+        X, y, Xt, yt = cd.gaussian_dataset(targets=int(ONN.N), features=int(ONN.N), nsamples=SAMPLES*ONN.N, rng=rng)
         random.seed(rng)
 
         X = (X - np.min(X))/(np.max(X) - np.min(X))
@@ -40,12 +38,12 @@ def get_dataset(folder, N, rng, lim=99, SAMPLES=100, EPOCHS=30):
             if not os.path.isdir(folder):
                 os.makedirs(folder)
 
-            np.savetxt(f'{folder}/X.txt', X, delimiter=',', fmt='%.6f')
-            np.savetxt(f'{folder}/Xt.txt', Xt, delimiter=',', fmt='%.6f')
-            np.savetxt(f'{folder}/y.txt', y, delimiter=',', fmt='%.6f')
-            np.savetxt(f'{folder}/yt.txt', yt, delimiter=',', fmt='%.6f')
+            ONN.X = X
+            ONN.y = y
+            ONN.Xt = Xt
+            ONN.yt = yt
             print('This dataset works!\n')
-            return rng
+            return ONN, rng
 
 def test_onn(folder, ONN, lim=98.5):
     ONN.get_topology_name()
@@ -55,7 +53,6 @@ def test_onn(folder, ONN, lim=98.5):
     ONN.yt = np.loadtxt(folder + f'/yt.txt', delimiter=',')
     for ONN.rng in range(10):
         ONN.phases = []
-        ONN, model =  onnClassTraining.train_single_onn(ONN)
         if max(ONN.val_accuracy) > lim:
             ONN.same_phase_uncert = False
             print('Different Phase Uncert')
@@ -75,49 +72,37 @@ def test_onn(folder, ONN, lim=98.5):
             return ONN, model
     return ONN, 0
 
-def main():
+if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
     ONN.BATCH_SIZE = 2**6
     ONN.EPOCHS = 300
     ONN.STEP_SIZE = 0.005
-    ONN.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
+    ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
     ONN.loss_diff = 0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 5, 51)
-    ONN.phase_uncert_theta = np.linspace(0., 1, 3)
-    ONN.phase_uncert_phi = np.linspace(0., 1, 3)
+    ONN.loss_dB = np.linspace(0, 1, 41)
+    ONN.phase_uncert_theta = np.linspace(0., .5, 41)
+    ONN.phase_uncert_phi = np.linspace(0., .5, 41)
     ONN.rng = 2
     ONN.zeta = 0.75
     ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
     ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
-    ONN.loss_diff = 0
 
-ONN = ONN_Cls.ONN_Simulation()
-ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 300
-ONN.STEP_SIZE = 0.005
-ONN.ITERATIONS = 5 # number of times to retry same loss/PhaseUncert
-ONN.loss_diff = 0 # \sigma dB
-ONN.loss_dB = np.linspace(0, 1, 41)
-ONN.phase_uncert_theta = np.linspace(0., .5, 41)
-ONN.phase_uncert_phi = np.linspace(0., .5, 41)
-ONN.rng = 2
-ONN.zeta = 0.75
-ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
-ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
+    onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
 
-onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P', 'R_D_I_P', 'R_D_P']
-
-rng = 192
-N = 12
-FoM = {}
-for ii in range(32, 64):
-    while True:
-        ONN.FOLDER = f'Analysis/average-linsep/N={N}/N={N}_{ii}/'
-        folder = f'../better-linsep-datasets/N={N}'
-        rng = get_dataset(folder, N, rng)
-        PT_FoM = {}
-        for ONN.topo in onn_topo:
-            ONN.get_topology_name()
-            ONN, model = test_onn(folder, ONN, lim=50)
-        ONN.saveAll(model)
-        np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
+    rng = 192
+    ONN.N = 6 
+    FoM = {}
+    for ii in range(1):
+        while True:
+            ONN.FOLDER = f'Analysis/N={ONN.N}/N={ONN.N}_{ii}'
+            folder = f'../better-linsep-datasets/N={ONN.N}'
+            ONN, rng = get_dataset(ONN, folder, rng)
+            PT_FoM = {}
+            for ONN.topo in onn_topo:
+                ONN.get_topology_name()
+                ONN, model = onnClassTraining.train_single_onn(ONN)
+                ONN.createFOLDER()
+                ONN.pickle_save()
+                ONN.saveAll(model)
+            np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
+            break
