@@ -45,7 +45,7 @@ for t = 1:length(topo)
     saveas(gcf, [FOLDER, sprintf('/Matlab_Pngs/%s_loss+acc-plot.png',  simulation.topology)])
     
     if printMe
-        pMe([FOLDER,  '/backprop-plot-', simulation.topology, sprintf('-N=%d.pdf', simulation.N)])
+        pMe_lineplot([FOLDER,  '/backprop-plot-', simulation.topology, sprintf('-N=%d.pdf', simulation.N)])
     end
     fprintf('Min MSE Loss = %.5f\n', min(simulation.losses))
     fprintf('Max Val Acc = %.2f%%\n', max(simulation.val_accuracy))

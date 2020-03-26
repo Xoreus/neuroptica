@@ -12,7 +12,6 @@ import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
 import acc_colormap
-import N_Finder
 import ONN_Setups
 from collections import defaultdict
 
@@ -24,9 +23,10 @@ onn_topo = ['R_D_I_P','R_P','C_Q_P','R_D_P','E_P','R_I_P']
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
 rng = 3
-ONN.Ns = [4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32] 
+
 ONN.Ns = [4, 8, 6, 10, 12] 
-for ii in range(10):
+ONN.Ns = [16, 16*2] 
+for ii in [0, 1]:
     for ONN.N in ONN.Ns:
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
@@ -34,6 +34,7 @@ for ii in range(10):
             ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N={ONN.N}_{ii}'
             ONN = ONN.pickle_load()
 
+            # ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy/N={ONN.N}_{ii}'
             ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy_half_dB_loss/N={ONN.N}_{ii}'
 
             model = ONN_Setups.ONN_creation(ONN)

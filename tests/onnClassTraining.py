@@ -44,30 +44,12 @@ def change_dataset_shape(onn):
 
     return X, onn.y, Xt, onn.yt
 
-def create_dataset(onn, digits=[1,3,6,7]):
-    if onn.dataset_name == 'MNIST' and onn.N == 4:
-        onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset(digits, nsamples=onn.SAMPLES)
-    elif onn.dataset_name == 'MNIST':
-        onn.X, onn.y, onn.Xt, onn.yt = cd.MNIST_dataset(N=onn.N, nsamples=onn.SAMPLES)
-    elif onn.dataset_name == 'Gaussian':
-        onn.X, onn.y, onn.Xt, onn.yt = cd.gaussian_dataset(targets=int(onn.N), features=int(onn.N), nsamples=onn.SAMPLES, rng=onn.rng)
-    elif onn.dataset_name == 'Iris':
-        onn.X, onn.y, onn.Xt, onn.yt = cd.iris_dataset(nsamples=int(onn.SAMPLES))
-
-def create_folder(onn):
-    ROOT_FOLDER = r'Analysis/'
-    FUNCTION = 'single_loss_linsep/'
-    FOLDER = f'{onn.dataset_name}_N={onn.N}_loss-diff={onn.loss_diff}_rng{onn.rng}'
-    onn.FOLDER = ROOT_FOLDER + FUNCTION + FOLDER
-    onn.createFOLDER()
-
 def retrain_ONN(ONN, rng_range):
     if len(rng_range) != 0: print('Starting different rng simulations')
     for ONN.rng in rng_range:
         ONN_Training(ONN, create_dataset_flag=False)
 
-def train_single_onn(onn, create_dataset_flag=False):
-    if create_dataset_flag: create_dataset(onn)
+def train_single_onn(onn):
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
     print(f'\nmodel: {onn.topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
@@ -103,40 +85,4 @@ def ONN_Training(ONN, digits=[1,3,6,7], create_dataset_flag=True, zeta=0):
     with open(onn.FOLDER + '/ONN_Pickled_Class.P', 'wb') as f:
         pickle.dump(ONN, f)
     ONN.saveSelf()
-
-if __name__ == '__main__':
-    ONN = ONN_Cls.ONN_Simulation()
-    ONN.N = 4
-    ONN.BATCH_SIZE = 2**6
-    ONN.EPOCHS = 600
-    ONN.STEP_SIZE = 0.0005
-    ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
-    ONN.loss_diff = 0 # \sigma dB
-    ONN.loss_dB = np.linspace(0, 2, 11)
-    ONN.phase_uncert_theta = np.linspace(0., 2.5, 21)
-    ONN.phase_uncert_phi = np.linspace(0., 2.5, 21)
-    ONN.same_phase_uncert = False
-    ONN.rng = 1
-    x = 32
-    reps = 0
-
-    # ONN.dataset_name = 'MNIST'
-    # ONN.dataset_name = 'Gaussian'
-    # ONN.dataset_name = 'Iris'
-
-    # ONN.ONN_setup = np.array(['R_I_P', 'R_P', 'E_P', 'R_D_I_P', 'R_D_P'])
-    # ONN.ONN_setup = np.array(['R_I_P', 'R_D_I_P'])
-    ONN.ONN_setup = np.array(['C_Q_P'])
-    FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/Good_Plots/new-paper-dataset'
-
-    ONN.X = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_X_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
-    ONN.Xt = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_Xt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
-    ONN.y = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_y_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
-    ONN.yt = np.loadtxt(f'{FOLDER}/Datasets/Gaussian_yt_4Features_4Classes_Samples=560_Dataset.txt', delimiter=',')
-    ONN.FOLDER = 'Analysis/test'
-    ONN.topo = ONN.ONN_setup[0] 
-    ONN.get_topology_name()
-    ONN, model = train_single_onn(ONN, create_dataset_flag=False) 
-    ONN.createFOLDER()
-    ONN.saveAll(model)
 

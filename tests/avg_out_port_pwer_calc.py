@@ -33,6 +33,7 @@ ONN.phase_uncert_phi = np.linspace(0., 0.4, 2)
 ONN.rng = 2
 
 onn_topo = ['R_D_I_P','R_P','C_Q_P','R_D_P','E_P', 'R_I_P']
+onn_topo = ['R_P','C_Q_P']
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
 ONN.Ns = [4, 6, 8, 10] 
@@ -44,7 +45,6 @@ for ii in [3]:
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
             ONN.pickle_load()
-
 
             output_pwer[ONN.topo].append(np.mean(np.sum(ONN.out, axis=1)))
             input_pow = [[x**2 for x in sample] for sample in X]

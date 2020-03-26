@@ -27,7 +27,7 @@ def get_current_accuracy(xtst, ytst, net):
             correct_pred += 1
     return correct_pred/len(xtst)
 
-def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
+def create_train_dnn(X, y, Xt, yt, EPOCHS=300):
     h_num = 0
 
     beta = 1
@@ -67,25 +67,6 @@ def create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS=300):
 
     # Get network weights
     weights = net.getWeights()
-
-    # Plot loss, training acc and val acc
-    if 0:
-        plt.plot()
-        plt.plot(losses, color='b')
-        plt.xlabel('Epoch')
-        plt.ylabel("$\mathcal{L}$", color='b')
-        ax2 = plt.gca().twinx()
-        ax2.plot(trn_accuracy, color='r')
-        ax2.plot(val_accuracy, color='g')
-        plt.ylabel('Accuracy', color='r')
-        plt.legend(['Training Accuracy', 'Validation Accuracy'])
-        plt.title(f'Gradient Descent, Max Validation Accuracy: {max(val_accuracy):.2f}')
-        plt.ylim([0, 100])
-        plt.savefig(f'{FOLDER}/Figures_Fitting/DigitalNeuralNetwork-accuracy_losses.png')
-
-        df = pd.DataFrame({'Losses':losses, 'Training Accuracy':trn_accuracy, 'Validation Accuracy':val_accuracy})
-        df.to_csv(f'{FOLDER}/Data_Fitting/DigitalNeuralNetwork_{len(X[0])}Features.txt')
-
     return net, weights
 
 if __name__ == '__main__1':
@@ -107,7 +88,7 @@ if __name__ == '__main__1':
             Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
             Xog, Xtog = X, Xt
 
-            net, weights = create_train_dnn(X, y, Xt, yt, FOLDER, EPOCHS)
+            net, weights = create_train_dnn(X, y, Xt, yt, EPOCHS)
 
                     # Val Accuracy
             print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(

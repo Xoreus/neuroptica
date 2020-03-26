@@ -15,16 +15,19 @@ printMe = false;
 
 N = 4;
 for jj = 1:length(N)
+    %     F = '/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=8';
+    %     F = '/storage/Research/02.2020-NewPaper/N=32/N=32-OG';
+    %     F = '/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N=4_0';
+    %     F = '/home/simon/Documents/neuroptica/tests/Analysis/IL/N=10_1';.
     
-%     FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/LossTest-Loss-mzi/N=8';
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=8';
-%     F = '/storage/Research/02.2020-NewPaper/N=32/N=32-OG';
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/linsep_final/N=4_0';
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/IL/N=10_1';.
-
     F = '/home/simon/Documents/neuroptica/tests/Analysis/average-linsep/N=48/N=48_32';
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/LossTest-Loss-mzi/N=16';
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/diff_trainings/N=4_2';
+    %     F = '/home/simon/Documents/neuroptica/tests/Analysis/LossTest-Loss-mzi/N=16';    
+    F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_2_63.750';
+    F = '/home/simon/Documents/neuroptica/tests/Analysis/Lossy_Training/N=8_new';
+    F = '/home/simon/Documents/neuroptica/tests/Analysis/Lossy_Training/N=8_second_new';
+    F = '/home/simon/Documents/neuroptica/tests/Analysis/Lossy_Training/N=16';
+    F = '/home/simon/Documents/neuroptica/tests/Analysis/Lossy_Training/N=8_loss_diff';
+    
     [sim, topo] = load_ONN_data(F);
     makeMatlabDirs(F)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
@@ -32,7 +35,7 @@ for jj = 1:length(N)
     if 1 && 0
         phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
-    if 1 && 0
+    if 1 &&1
         loss_phaseUncert(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
     end
     if 1 && 0
