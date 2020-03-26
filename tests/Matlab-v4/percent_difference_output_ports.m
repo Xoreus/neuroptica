@@ -11,14 +11,15 @@ fontsz = 64;
 
 lossy = 0.5; % 0.5;
 datasets = 0:8;
-Ns = [4,6,8,10,12, 16];
+Ns = [4,6,8,10,12,16,32];
 perc_diff = [];
 for jj = 1:length(Ns)
     outPow_per_port = zeros(6,Ns(jj));
     in_pwer = zeros(1,Ns(jj));
-    if Ns(jj) == 16
-        datasets = 1;
+    if Ns(jj) == 16 || Ns(jj) == 32
+        datasets = [0,1];
     end
+        
     for ii = datasets
         if lossy == 1
             F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy/N=%d_%d', Ns(jj), ii);
