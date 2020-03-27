@@ -5,6 +5,7 @@ Author: Simon Geoffroy-Gagnon
 Edit: 05.02.2020
 """
 import sys
+sys.path.append('python_packages/')
 sys.path.append('/home/simon/Documents/neuroptica')
 sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica_PhiTheta')
 import neuroptica as neu

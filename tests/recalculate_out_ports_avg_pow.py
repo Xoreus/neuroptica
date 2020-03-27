@@ -19,14 +19,16 @@ from collections import defaultdict
 ONN = ONN_Cls.ONN_Simulation()
 
 onn_topo = ['R_D_I_P','R_P','C_Q_P','R_D_P','E_P','R_I_P']
+onn_topo = ['R_P','C_Q_P','E_P','R_I_P']
 # onn_topo = ['R_D_I_P']
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
-rng = 3
+rng = 323124132
 
-ONN.Ns = [4, 8, 6, 10, 12] 
-ONN.Ns = [16, 16*2] 
-for ii in [0, 1]:
+# ONN.Ns = [4, 8, 6] 
+ONN.Ns = [16] 
+for ii in range(10, 20):
+# for ii in [18, 19]:
     for ONN.N in ONN.Ns:
         for ONN.topo in onn_topo:
             ONN.get_topology_name()

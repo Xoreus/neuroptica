@@ -9,11 +9,12 @@ printMe = false;
 linewid = 3;
 fontsz = 64;
 ii = 4;
-lossy = 1; % 0.5;
-datasets = 0;
-Ns = 16;
+lossy = 0; % 0.5;
+datasets = 0:19;
+Ns = 4;
 for N = Ns
     outPow_per_port = zeros(6,N);
+    outPow_per_port_noloss = zeros(6,N);
     in_pwer = zeros(1,N);
     
     for ii = datasets
@@ -46,19 +47,21 @@ for N = Ns
     
     inPow_per_port = in_pwer/length(datasets);
     outPow_per_port = outPow_per_port/length(datasets);
-    
+ 
     figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
     for name = [1, 6] % 1:length(dirNames)
         plot(1:N, outPow_per_port(name, :), 'displayName', lgd{name}, 'linewidth', linewid)
+        disp(lgd{name})
+        disp((max(outPow_per_port(name, :)) - min(outPow_per_port(name, :)))/mean(outPow_per_port(name, :)))
         hold on
     end
-    
+ 
     plot(1:N, inPow_per_port, 'displayName', 'Input Power', 'linewidth', linewid*2)
     hold off
-    l = legend('-DynamicLegend', 'fontsize', fontsz*0.8, 'interpreter','latex', 'location', 'west');    
-    xticks(1:N)
-    xlim([0,N+1])
-%     ylim([0, 0.35])
+    l = legend('-DynamicLegend', 'fontsize', fontsz*0.8, 'interpreter','latex', 'location', 'west');
+    %     xticks(1:N)
+    %     xlim([0,N+1])
+    %     ylim([0, 0.35])
     a = get(gca,'YTickLabel');
     
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
@@ -67,8 +70,10 @@ for N = Ns
     
     xlabel('Port Number', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Mean Output Power (W)', 'fontsize', fontsz, 'interpreter','latex')
-%     set(gca, 'YScale', 'log')
-
+    %     set(gca, 'YScale', 'log')
+    h = gca;
+    set(h, 'YTickLabelMode','auto')
+    set(h, 'XTickLabelMode','auto')
     axis square
     drawnow;
     if 1 && printMe || 1
@@ -80,6 +85,6 @@ for N = Ns
             pMe_lineplot(sprintf('../Crop_Me/in_out_port_pwer_%d_N=%d.pdf', ii, N))
         end
     end
-%     pMe_lineplot(sprintf('../Crop_Me/LEGEND.pdf'))
+    %     pMe_lineplot(sprintf('../Crop_Me/LEGEND.pdf'))
 end
 

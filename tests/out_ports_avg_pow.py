@@ -32,19 +32,17 @@ ONN.loss_dB = np.linspace(0, 1, 2)
 ONN.phase_uncert_theta = np.linspace(0., 0.4, 2)
 ONN.phase_uncert_phi = np.linspace(0., 0.4, 2)
 
-onn_topo = ['R_D_I_P','R_P','C_Q_P','R_D_P','E_P','R_I_P']
+onn_topo = ['R_P','C_Q_P','E_P','R_I_P']
+onn_topo = ['R_I_P']
 # onn_topo = ['R_P','C_Q_P']
 
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
-rng = 3
-ONN.Ns = [4, 8, 16, 32] 
-ONN.Ns = [16, 32] 
-for ii in range(2):
+rng = 3656165
+ONN.Ns = [16*2*2] 
+# ONN.Ns = [16, 32] 
+for ii in range(1):
     for ONN.N in ONN.Ns:
-        folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={ONN.N}'
-        ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy/N={ONN.N}_{ii}'
-        ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy_half_dB_loss/N={ONN.N}_{ii}'
         ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N={ONN.N}_{ii}'
         ONN, rng = train.get_dataset(ONN, rng, EPOCHS=50)
         for ONN.topo in onn_topo:
