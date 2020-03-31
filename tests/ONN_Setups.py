@@ -32,7 +32,7 @@ def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None,
 
             'C':neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases), # Diamond Mesh
             'Q':neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
-            'W':neu.DropMask(2*onn.N - 2, drop_ports=[0, onn.N+1]), # Central Diamond Topology
+            # 'W':neu.DropMask(2*onn.N - 2, drop_ports=[0, onn.N+1]), # Central Diamond Topology
 
             'E':neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
             }

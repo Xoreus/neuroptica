@@ -9,13 +9,19 @@ import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import ONN_Setups
-import onnClassTraining
 import acc_colormap
 import digital_NN_main as dnn
 import create_datasets as cd
 import test_trained_onns as test
+
+import sys
+sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica')
+sys.path.append('/home/simon/Documents/neuroptica')
+import neuroptica as neu
+
 import random
 import os
+import time
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -23,6 +29,20 @@ matplotlib.rcParams['mathtext.fontset'] = 'custom'
 matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
+
+def change_dataset_shape(onn):
+    if 'C' in onn.topo and 'Q' in onn.topo:
+        X = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.X])
+        Xt = np.array([list(np.zeros(int((onn.N-2)))) + list(samples) for samples in onn.Xt])
+    elif 'C' in onn.topo and 'W' in onn.topo:
+        X = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
+            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.X]))
+        Xt = (np.array([list(np.zeros(int((onn.N-2)/2))) + list(samples) +
+            list(np.zeros(int(np.ceil((onn.N-2)/2)))) for samples in onn.Xt]))
+    else:
+        X, Xt = onn.X, onn.Xt
+
+    return X, onn.y, Xt, onn.yt
 
 def get_dataset(ONN, rng, lim=99, SAMPLES=100, EPOCHS=30):
     while True:

@@ -1,5 +1,4 @@
 """
-
 ONN_Simulation_Class.py
 ONN Simulation data class, containing all the simulation variables such as loss_dB, phase_uncert, ONN_Setups, X, y, Xt, yt, EPOCHS, ect...
 Useful because it makes it possible to pickle.dump() the class into a binary file, retrieving it at a later date to continue testing
@@ -35,6 +34,7 @@ class ONN_Simulation:
         self.phase_uncert_phi = np.linspace(0., 2.5, 21)
         self.same_phase_uncert = False
         self.rng = 1
+        self.zeta = 0.75
 
         self.loss_dB = np.linspace(0, 3, 31)
         self.loss_dB_test = [0]
@@ -65,7 +65,6 @@ class ONN_Simulation:
         return np.array(self.X), np.array(self.y), np.array(self.Xt), np.array(self.yt)
     def get_topology_name(self):
         " Get list of actual topology names instead of C_Q_P"
-        # print(self.topo)
         if self.topo == 'R_D_P':
             Topo = 'Reck + DMM'
         elif self.topo == 'I_P':
@@ -221,3 +220,4 @@ if __name__ == '__main__':
     ONN = ONN_Simulation()
     ONN.FOLDER = '/home/simon/Desktop/'
     ONN.saveSelf()
+    ONN.pickle_save()

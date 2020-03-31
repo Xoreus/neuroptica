@@ -33,24 +33,32 @@ ONN.phase_uncert_theta = np.linspace(0., 0.4, 2)
 ONN.phase_uncert_phi = np.linspace(0., 0.4, 2)
 
 onn_topo = ['R_P','C_Q_P','E_P','R_I_P']
-onn_topo = ['R_I_P']
+onn_topo = ['C_Q_P']
+# onn_topo = ['R_I_P']
 # onn_topo = ['R_P','C_Q_P']
 
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
-rng = 3656165
-ONN.Ns = [16*2*2] 
+rng = 3656
+ONN.Ns = [3] 
 # ONN.Ns = [16, 32] 
-for ii in range(1):
+for ii in range(100):
     for ONN.N in ONN.Ns:
         ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N={ONN.N}_{ii}'
+        # ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/IL/N={ONN.N}_{ii}'
         ONN, rng = train.get_dataset(ONN, rng, EPOCHS=50)
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
             for _ in range(10):
+                ONN.loss_dB = [0]
                 ONN, model = onnClassTraining.train_single_onn(ONN)
                 if max(ONN.val_accuracy) > 80:
                     ONN.createFOLDER()
+
+                    ONN.loss_dB = np.linspace(0, 2, 41)
+                    ONN.phase_uncert_theta = np.linspace(0., 2, 41)
+                    ONN.phase_uncert_phi = np.linspace(0., 2, 41)
+
                     ONN, model = test.test_onn(ONN, model)
 
                     model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, 0, 0)

@@ -6,7 +6,6 @@ Edit: 19.02.2020
 '''
 import numpy as np
 import sys
-sys.path.append('python_packages/')
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining

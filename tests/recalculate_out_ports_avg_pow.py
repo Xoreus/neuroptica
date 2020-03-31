@@ -14,43 +14,44 @@ import onnClassTraining
 import acc_colormap
 import ONN_Setups
 from collections import defaultdict
-
+import glob
 
 ONN = ONN_Cls.ONN_Simulation()
 
 onn_topo = ['R_D_I_P','R_P','C_Q_P','R_D_P','E_P','R_I_P']
 onn_topo = ['R_P','C_Q_P','E_P','R_I_P']
-# onn_topo = ['R_D_I_P']
+# onn_topo = ['C_Q_P']
+
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
-rng = 323124132
+rng = 3
 
-# ONN.Ns = [4, 8, 6] 
-ONN.Ns = [16] 
-for ii in range(10, 20):
-# for ii in [18, 19]:
-    for ONN.N in ONN.Ns:
+loss = 0.25
+
+Ns = [4, 6, 8, 10, 12, 16, 32, 64] 
+for N in Ns:
+    fileList = glob.glob(f'/home/simon/Documents/neuroptica/tests/Analysis/0.00_outPorts_mean_pow/N={N}*')
+    for ii, FOLDER in enumerate(fileList):
         for ONN.topo in onn_topo:
-            ONN.get_topology_name()
-            print(ONN.N, ONN.topo, ii)
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N={ONN.N}_{ii}'
-            ONN = ONN.pickle_load()
+            ONN.FOLDER = FOLDER
+            if len(glob.glob(ONN.FOLDER + '/' + ONN.topo + '*')):
+                ONN.get_topology_name()
+                print(N, ONN.topo, ii, loss)
+                ONN = ONN.pickle_load()
+                ONN.loss_diff = 0.25
 
-            # ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy/N={ONN.N}_{ii}'
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy_half_dB_loss/N={ONN.N}_{ii}'
+                ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/{loss}_sigma{ONN.loss_diff}_outPorts_mean_pow/N={N}_{ii}'
 
-            model = ONN_Setups.ONN_creation(ONN)
-            model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, 0.5, 0)
-            X, _, Xt, _ = onnClassTraining.change_dataset_shape(ONN)
-            out = []
-            for x in X:
-                out.append(model.forward_pass(np.array([x]).T))
-            output_pwer[ONN.topo].append(np.mean(np.sum(out, axis=1)))
-            input_pow = [[x**2 for x in sample] for sample in X]
-            ONN.out_pwer = out
-            ONN.in_pwer = input_pow
-            ONN.createFOLDER()
-            ONN.saveAll(model)
-            ONN.pickle_save()
-
-
+                model = ONN_Setups.ONN_creation(ONN)
+                model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, loss, 0)
+                X, _, Xt, _ = onnClassTraining.change_dataset_shape(ONN)
+                out = []
+                for x in X:
+                    out.append(model.forward_pass(np.array([x]).T))
+                output_pwer[ONN.topo].append(np.mean(np.sum(out, axis=1)))
+                input_pow = [[x**2 for x in sample] for sample in X]
+                ONN.out_pwer = out
+                ONN.in_pwer = input_pow
+                ONN.createFOLDER()
+                ONN.saveAll(model)
+                ONN.pickle_save()

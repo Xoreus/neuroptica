@@ -10,6 +10,7 @@ from tqdm import tqdm
 import time
 
 def get_accuracy_singleLoss(ONN, model, Xt, yt, loss_diff=0):
+    ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
     t = time.time()
     if 'C' in ONN.topo and 'Q' in ONN.topo:
         Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
@@ -40,6 +41,7 @@ def get_accuracy_singleLoss(ONN, model, Xt, yt, loss_diff=0):
     return np.squeeze(np.swapaxes(np.array(accuracy), 0, 2))
 
 def get_accuracy_samePU(ONN, model, Xt, yt, loss_diff=0):
+    ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
     t = time.time()
     if 'C' in ONN.topo and 'Q' in ONN.topo:
         Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])

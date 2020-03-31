@@ -8,11 +8,9 @@ close all;clear;clc
 F = '/home/simon/Documents/neuroptica/tests/Analysis/linsep-Thesis';
 F = '/home/simon/Documents/neuroptica/tests/Analysis/linsep_final';
 
-Ns = [4,6,8,10,12,14,16,20,24,28,32];
-Ns = [4,6,8,10,12,14];
+Ns = [4, 6, 8, 10, 12, 16, 32, 64];
 fig_of_merit_value = 0.75;
 
-f = sprintf('/N=%d_1/', Ns(1));
 f = sprintf('/N=%d_0/', Ns(1));
 FOLDER = [F, f];
 [sim, topo] = load_ONN_data(FOLDER);
@@ -22,30 +20,53 @@ FoM_PT = cell2struct(c, topo);
 FoM_LPU = cell2struct(c, topo);
 MSE = cell2struct(c, topo);
 
-for N = Ns
-    f = sprintf('/N=%d_1/', N);
-    FOLDER = [F, f];
-    [sim, topo] = load_ONN_data(FOLDER);
-    for tt = 1:length(sim.topo{1})
-        PT = sim.(sim.topo{1}{tt}).accuracy_PT;
-        LPU = sim.(sim.topo{1}{tt}).accuracy_LPU;
-        
-        % Calculate "area" of contour map as a figure of merit
-        sim.(sim.topo{1}{tt}).FoM_PT = sum(sum(PT >= sim.max_accuracy*fig_of_merit_value)) * (sim.(sim.topo{1}{tt}).phase_uncert_phi(2) - ...
-            sim.(sim.topo{1}{tt}).phase_uncert_phi(1)) * (sim.(sim.topo{1}{tt}).phase_uncert_theta(2) - sim.(sim.topo{1}{tt}).phase_uncert_theta(1));
-        
-        FoM_PT.(sim.topo{1}{tt})(end+1) = sim.(sim.topo{1}{tt}).FoM_PT;
-        
-        % Calculate "area" of contour map as a figure of merit
-        sim.(sim.topo{1}{tt}).FoM_LPU = sum(sum(LPU >= sim.max_accuracy*fig_of_merit_value)) * (sim.(sim.topo{1}{tt}).phase_uncert_phi(2) - ...
-            sim.(sim.topo{1}{tt}).phase_uncert_phi(1)) * (sim.(sim.topo{1}{tt}).phase_uncert_theta(2) - sim.(sim.topo{1}{tt}).phase_uncert_theta(1));
-        
-        FoM_LPU.(sim.topo{1}{tt})(end+1) = sim.(sim.topo{1}{tt}).FoM_LPU;
-        
-        MSE.(sim.topo{1}{tt})(end+1) = sim.(sim.topo{1}{tt}).losses(end);
+for jj = 1:length(Ns)
+    switch Ns(jj)
+        case 4
+            datasets = 0:119;
+        case 6
+            datasets = 0:119;
+        case 8
+            datasets = 0:119;
+        case 10
+            datasets = 0:9;
+        case 12
+            datasets = 0:9;
+        case 16
+            datassets = [0, 1, 10:16];
+        case 32
+            datasets = 0:1;
+        case 64
+            datasets = 0;
     end
+    for ii = datasets
+        f = sprintf('/N=%d_%d/', Ns(jj), ii);
+        FOLDER = [F, f];
+        [sim, topo] = load_ONN_data(FOLDER);
+        for tt = 1:length(sim.topo)
+            PT = sim.(sim.topo{tt}).accuracy_PT;
+            LPU = sim.(sim.topo{tt}).accuracy_LPU;
+            
+            % Calculate "area" of contour map as a figure of merit
+            sim.(sim.topo{tt}).FoM_PT = sum(sum(PT >= sim.max_accuracy*fig_of_merit_value)) * (sim.(sim.topo{tt}).phase_uncert_phi(2) - ...
+                sim.(sim.topo{tt}).phase_uncert_phi(1)) * (sim.(sim.topo{tt}).phase_uncert_theta(2) - sim.(sim.topo{tt}).phase_uncert_theta(1));
+            
+            % Calculate "area" of contour map as a figure of merit
+            sim.(sim.topo{tt}).FoM_LPU = sum(sum(LPU >= sim.max_accuracy*fig_of_merit_value)) * (sim.(sim.topo{tt}).phase_uncert_phi(2) - ...
+                sim.(sim.topo{tt}).phase_uncert_phi(1)) * (sim.(sim.topo{tt}).phase_uncert_theta(2) - sim.(sim.topo{tt}).phase_uncert_theta(1));
+            
+            
+            FoM_PT.(sim.topo{tt})(jj) = FoM_PT.(sim.topo{tt})(jj) + sim.(sim.topo{tt}).FoM_PT;
+            
+            FoM_LPU.(sim.topo{tt})(jj) = FoM_LPU.(sim.topo{tt})(jj) + sim.(sim.topo{tt}).FoM_LPU;
+            
+            MSE.(sim.topo{tt})(jj) = MSE.(sim.topo{tt})(jj) + sim.(sim.topo{tt}).losses(end);
+        end
+    end
+    MSE.(sim.topo{tt})(jj) = MSE.(sim.topo{tt})(jj)/length(datasets);
+    FoM_LPU.(sim.topo{tt})(jj) = FoM_LPU.(sim.topo{tt})(jj)/length(datasets);
+    FoM_PT.(sim.topo{tt})(jj) = FoM_PT.(sim.topo{tt})(jj)/length(datasets);
 end
-
 fontsz = 64;
 
 linecolor = {[0, 0.5, 0],[0, 0, 0.5],[0.5,0,0]};

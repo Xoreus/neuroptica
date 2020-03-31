@@ -1,9 +1,9 @@
 ''' phase_uncert_thetar simulating Optical Neural Network
 using Neuroptica and linearly separable datasets
-Now goes over every topology types with N = 4-32
+Simply short fcns to test trained models with Loss/MZI and Phase Uncert.
 
 Author: Simon Geoffroy-Gagnon
-Edit: 2020.03.09
+Edit: 2020.03.28
 '''
 import numpy as np
 import calculate_accuracy as calc_acc
@@ -48,7 +48,7 @@ def colormap_me(ONN):
 def test_onn(ONN, model):
     ONN, model = test_PT(ONN, model)
     ONN, model = test_LPU(ONN, model)
-    colormap_me(ONN)
+    acc_colormap.colormap_me(ONN)
     return ONN, model
 
 

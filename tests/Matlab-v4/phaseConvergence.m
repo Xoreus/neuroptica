@@ -6,10 +6,10 @@ close all; clc; clear;
 
 N = 4;
 fontsz = 64;
-FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/phaseConvergence_N=%d', N);
+FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/phaseConvergence_RDP/N=4', N);
 phases = {};
 
-comp_layer =  'Reck'; %'DMM'; %'Inv. Reck'; % 
+comp_layer =  'DMM'; % 'Reck'; %
 
 if strcmp(comp_layer, 'Inv. Reck')
     layer_idx = 3;
@@ -18,11 +18,12 @@ elseif strcmp(comp_layer, 'Reck')
 else
     layer_idx = 2;
 end
-
-for ii = 0:numel(dir(FOLDER))-3
-    fold = [FOLDER sprintf('/%d/Topologies',ii)];
-    load([fold, '/R_D_I_P.mat'])
-    phases{end+1} = R_D_I_P.phases{layer_idx};
+dirF = dir(FOLDER);
+dirNames = {dirF(3:end).name};
+for dname = 1:length(dirNames)
+    fold = [FOLDER sprintf('/%s/Topologies',dirNames{dname})];
+    load([fold, '/R_D_P.mat'])
+    phases{end+1} = R_D_P.phases{layer_idx};
 end
 theta = zeros(length(phases{1}),length(phases));
 phi = zeros(length(phases{1}),length(phases));

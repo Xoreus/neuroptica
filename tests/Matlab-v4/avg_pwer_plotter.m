@@ -17,8 +17,9 @@ for ii = [0,1]
     F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/pwer_out/N=32_%d', ii);
     load([F '/Topologies/' 'E_P.mat'])
     topos = fieldnames(E_P.out_pwer);
+    topos = topos([2,3,5]);
     Ns = [4,6,8,10,12,14,16,20,24,28,32];
-    topologies = {'Reck + DMM + Inv. Reck','Reck','Diamond','Reck + DMM','Clements', 'Input Power'};
+    topologies = {'Reck','Diamond','Clements', 'Input Power'};
     
     figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
     for tt = 1:length(topos)
@@ -46,9 +47,9 @@ for ii = [0,1]
     end
     
     if ii == 0
-        plot(Ns, in_pwer,  'kp', 'markersize', 30, 'MarkerFaceColor', '#c3c3c3', 'displayName', topologies{end}, 'linewidth', 1)
+        plot(Ns, in_pwer,  'ko', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3', 'displayName', topologies{end}, 'linewidth', 1)
     else
-        plot(Ns, in_pwer,  'k-p', 'markersize', 30, 'MarkerFaceColor', '#c3c3c3', 'displayName', topologies{end}, 'linewidth', 1)
+        plot(Ns, in_pwer,  'k-o', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3', 'displayName', topologies{end}, 'linewidth', 1)
     end
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)

@@ -7,12 +7,12 @@ clear; close all; clc;
 fontsz = 64;
 printme = true;
 
-FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/average-linsep-NoDMM';
+FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/average_linsep_NoDMM';
 Ns = [4, 6, 8, 10, 16, 24, 32, 48, 64];
 
 topo = {'R_P', 'C_Q_P', 'E_P', 'R_I_P'};% , 'R_D_I_P', 'R_D_P'};
 topology = {'Reck','Diamond','Clements','Reck + Inv. Reck'};% ,'Reck + DMM + Inv. Reck','Reck + DMM'};
-errBar = '_errBar';
+errBar = '';
 
 for ii = 1:length(topo)
     FoM_PT.(topo{ii}) = zeros(length(Ns), 1);
@@ -38,24 +38,18 @@ for jj = 1:length(Ns)
             num.(topo_cur{tt})(jj) = num.(topo_cur{tt})(jj) + 1;
         end
     end
-    %     fprintf('\tN = %d\n',Ns(jj))
     for tt = 1:length(topo)
         FoM_LPU.(topo{tt})(jj) = FoM_LPU.(topo{tt})(jj)/num.(topo{tt})(jj);
-        %         fprintf('%-10s Loss Phase Uncert Avg FoM:\t %10.4f\n',topo{tt}, FoM_LPU.(topo{tt})(jj))
     end
-    %     fprintf('\n')
     for tt = 1:length(topo)
         FoM_PT.(topo{tt})(jj) = FoM_PT.(topo{tt})(jj)/num.(topo{tt})(jj);
-        %         fprintf('%-10s Phi Theta Avg FoM:\t %10.4f\n',topo{tt}, FoM_PT.(topo{tt})(jj))
     end
-    %     fprintf('\n')
     for tt = 1:length(topo)
         MSE.(topo{tt})(jj) = MSE.(topo{tt})(jj)/num.(topo{tt})(jj);
-        %         fprintf('%-10s Avg final MSE:\t %10.4f\n',topo{tt}, MSE.(topo{tt})(jj))
     end
 end
 
-for a = 1
+for a = 0:0
     for ii = 1:length(topo)
         FoM_PT_var.(topo{ii}) = cell(length(Ns), 1);
         FoM_LPU_var.(topo{ii}) = cell(length(Ns), 1);

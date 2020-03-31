@@ -19,10 +19,12 @@ for ii = 1:length(model_names)
     filename = [FOLDER, '/Data_Fitting/', model_names{ii}(1:end-4), '.txt'];
     delimiterIn = ',';
     headerlinesIn = 1;
-    bp = importdata(filename,delimiterIn,headerlinesIn);
-    sim.(model_names{ii}(1:end-4)).losses = bp.data(:,2);
-    sim.(model_names{ii}(1:end-4)).trn_accuracy = bp.data(:,3);
-    sim.(model_names{ii}(1:end-4)).val_accuracy = bp.data(:,4);
+    if exist(filename, 'file')
+        bp = importdata(filename,delimiterIn,headerlinesIn);
+        sim.(model_names{ii}(1:end-4)).losses = bp.data(:,2);
+        sim.(model_names{ii}(1:end-4)).trn_accuracy = bp.data(:,3);
+        sim.(model_names{ii}(1:end-4)).val_accuracy = bp.data(:,4);
+    end
 end
 
 for ii = 1:length(accuracy)

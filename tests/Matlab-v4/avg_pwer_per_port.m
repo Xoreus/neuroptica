@@ -9,9 +9,9 @@ printMe = false;
 linewid = 3;
 fontsz = 64;
 ii = 4;
-lossy = 0; % 0.5;
-datasets = 0:19;
-Ns = 4;
+lossy = 1; % 0.5;
+datasets = 0:9;
+Ns = 12;
 for N = Ns
     outPow_per_port = zeros(6,N);
     outPow_per_port_noloss = zeros(6,N);
@@ -58,25 +58,24 @@ for N = Ns
  
     plot(1:N, inPow_per_port, 'displayName', 'Input Power', 'linewidth', linewid*2)
     hold off
-    l = legend('-DynamicLegend', 'fontsize', fontsz*0.8, 'interpreter','latex', 'location', 'west');
+    l = legend('-DynamicLegend', 'fontsize', fontsz, 'interpreter','latex', 'location', 'west');
     %     xticks(1:N)
     %     xlim([0,N+1])
     %     ylim([0, 0.35])
     a = get(gca,'YTickLabel');
     
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz)
     
     xlabel('Port Number', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Mean Output Power (W)', 'fontsize', fontsz, 'interpreter','latex')
-    %     set(gca, 'YScale', 'log')
     h = gca;
     set(h, 'YTickLabelMode','auto')
     set(h, 'XTickLabelMode','auto')
     axis square
     drawnow;
-    if 1 && printMe || 1
+    if 1 && printMe
         if lossy == 1
             pMe(sprintf('../Crop_Me/lossy_in_out_port_pwer_%d_N=%d_1dB.pdf', ii, N))
         elseif lossy == 0.5

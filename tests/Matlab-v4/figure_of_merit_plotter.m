@@ -23,7 +23,7 @@ fontsz = 64;
 
 % title('Figure of Merit', 'fontsize', fontsz, 'interpreter','latex');
 lgd = {'Reck', 'Diamond'};
-legend(lgd, 'fontsize', fontsz*0.8, 'interpreter','latex');
+legend(lgd, 'fontsize', fontsz, 'interpreter','latex');
 
 a = get(gca,'YTickLabel');
 set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
@@ -31,11 +31,11 @@ h = gca;
 set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
 xticks(N)
-xlabel('Structure Size ($N$)', 'fontsize', fontsz*0.8, 'interpreter','latex')
-ylabel('FoM $(\mathrm{Rad} \cdot \mathrm{dB})$', 'fontsize', fontsz*0.8, 'interpreter','latex')
+xlabel('Structure Size ($N$)', 'fontsize', fontsz, 'interpreter','latex')
+ylabel('FoM $(\mathrm{Rad} \cdot \mathrm{dB})$', 'fontsize', fontsz, 'interpreter','latex')
 % axis square
 grid('on')
-pMe('/storage/Research/02.2020-NewPaper/FoM.pdf')
+pMe_lineplot('/home/simon/Documents/neuroptica/tests/Crop_Me/FoM.pdf')
 %%
 diamond_bp  = [0.1927, 0.2067, 0.2086, 0.1948, 0.1530, 0.1848];
 reck_bp     = [0.1935, 0.2276, 0.3572, 0.6381, 1.2113, 2.4012];
@@ -52,19 +52,19 @@ fontsz = 64;
 
 % title('Figure of Merit', 'fontsize', fontsz, 'interpreter','latex');
 lgd = {'Reck', 'Diamond'};
-legend(lgd, 'fontsize', fontsz*0.8, 'interpreter','latex', 'location', 'northwest');
+legend(lgd, 'fontsize', fontsz, 'interpreter','latex', 'location', 'northwest');
 
 a = get(gca,'YTickLabel');
-set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
 h = gca;
 set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
 xticks(N)
-xlabel('Structure Size ($N$)', 'fontsize', fontsz*0.8, 'interpreter','latex')
-ylabel('Final $\mathcal{L}_{\mathrm{(MSE)}}$', 'fontsize', fontsz*0.8, 'interpreter','latex')
+xlabel('Structure Size ($N$)', 'fontsize', fontsz, 'interpreter','latex')
+ylabel('Final $\mathcal{L}_{\mathrm{(MSE)}}$', 'fontsize', fontsz, 'interpreter','latex')
 
 % axis square
 grid('on')
-pMe('/storage/Research/02.2020-NewPaper/MSE-N.pdf')
+pMe_lineplot('/home/simon/Documents/neuroptica/tests/Crop_Me/MSE-N.pdf')
 
 %%
