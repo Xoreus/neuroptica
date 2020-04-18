@@ -38,22 +38,22 @@ h = gca;
 ylim([0 100])
 set(h, 'YTickLabelMode', 'auto')
 set(h, 'XTickLabelMode','auto')
-legend(lgd, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northeast');
-axis tight
-axis square
+legend(lgd, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'southwest');
+% axis tight
+% axis square
 ylim([0, 100])
-
-savefig([FOLDER, sprintf('/Matlab_Figs/LPM_lineplot.fig')])
-saveas(gcf, [FOLDER, sprintf('/LPM_lineplot.png')])
+box on
 
 if printMe
     fname = [FOLDER, '/LPM_lineplot.pdf'];
     set(gcf,'Units','inches');
-
-screenposition = [4 4 18 17];
-% screenposition = get(gcf, 'position');
-set(gcf, 'PaperPosition',[0 0 screenposition(3:4)], 'PaperSize',[screenposition(3:4)]);
-print('-dpdf','-painters', fname)
-
+    savefig([FOLDER, sprintf('/Matlab_Figs/LPM_lineplot.fig')])
+    saveas(gcf, [FOLDER, sprintf('/LPM_lineplot.png')])
+    
+    screenposition = [4 4 18 17];
+    % screenposition = get(gcf, 'position');
+    set(gcf, 'PaperPosition',[0 0 screenposition(3:4)], 'PaperSize',[screenposition(3:4)]);
+    print('-dpdf','-painters', fname)
 end
+
 end

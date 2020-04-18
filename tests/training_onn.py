@@ -44,7 +44,7 @@ def change_dataset_shape(onn):
 
     return X, onn.y, Xt, onn.yt
 
-def get_dataset(ONN, rng, lim=99, SAMPLES=100, EPOCHS=30):
+def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
     while True:
         print(f'RNG = {rng}, N = {ONN.N}')
         X, y, Xt, yt = cd.gaussian_dataset(targets=int(ONN.N), features=int(ONN.N), nsamples=SAMPLES*ONN.N, rng=rng)

@@ -19,6 +19,10 @@ matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 
+from matplotlib import rc,rcParams
+rc('font', weight='bold')
+rc('text', usetex=True)
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import random
@@ -167,23 +171,20 @@ def plot_agmented_iris(nsamples=300):
 
     plt.rcParams.update({'font.size': 12})
 
-    fig = scatter_matrix(df[predictors], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
+    fig = scatter_matrix(df[predictors], alpha=0.8, figsize=(10, 10), diagonal='kde', color=colors)
 
     for item in fig:
         for ax in item:
             # We change the fontsize of minor ticks label
             ax.tick_params(axis='both', which='major', labelsize=0)
             ax.tick_params(axis='both', which='minor', labelsize=0)
-            # ax.xlabel(fontsize=34)
-            # ax.ylabel(fontsize=34)
-            # ax.set_xlabel(fontsize=30)
-            ax.xaxis.label.set_size(20)
-            ax.yaxis.label.set_size(20)
-            # ax.set_ylabel(fontsize=30)
+
+            ax.xaxis.label.set_size(27)
+            ax.yaxis.label.set_size(27)
 
 
-    plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('/home/simon/Documents/Thesis/Figures/Iris-Augmented-300Samples.pdf')
+    plt.suptitle('')
+    plt.savefig('/home/simon/Documents/neuroptica/tests/Crop_Me/Iris-Augmented.pdf')
 
 def plot_OG_iris():
     iris = datasets.load_iris()
@@ -210,23 +211,19 @@ def plot_OG_iris():
     df2 = df.set_axis(predictor + ['Label'], axis=1, inplace=False)
     plt.rcParams.update({'font.size': 12})
 
-    fig = scatter_matrix(df2[predictor], alpha=0.8, figsize=(10, 8), diagonal='kde', color=colors)
+    fig = scatter_matrix(df2[predictor], alpha=0.8, figsize=(10, 10), diagonal='kde', color=colors)
 
     for item in fig:
         for ax in item:
             # We change the fontsize of minor ticks label
             ax.tick_params(axis='both', which='major', labelsize=0)
             ax.tick_params(axis='both', which='minor', labelsize=0)
-            # ax.xlabel(fontsize=34)
-            # ax.ylabel(fontsize=34)
-            # ax.set_xlabel(fontsize=)
-            ax.xaxis.label.set_size(20)
-            ax.yaxis.label.set_size(20)
-            # ax.set_ylabel(fontsize=30)
+            ax.xaxis.label.set_size(27)
+            ax.yaxis.label.set_size(27)
 
 
     plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('/home/simon/Documents/Thesis/Figures/iris_scatter_matrix_OG.pdf')
+    plt.savefig('/home/simon/Documents/neuroptica/tests/Crop_Me/Iris-OG.pdf')
 
 def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=1):
     " GAUSSIAN BLOB MAKER "
@@ -237,6 +234,6 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 if __name__ == '__main__':
-    # plot_OG_iris()
+    plot_OG_iris()
     plot_agmented_iris()
 

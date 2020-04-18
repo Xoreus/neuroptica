@@ -12,7 +12,7 @@ step_sz = 1;
 legend_ = {};
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
 
-for t = topo([2,end])
+for t = topo
     simulation = sim.(t{1});
     accuracy = sim.(t{1}).accuracy_LPU;
     for p_idx = 1
@@ -23,7 +23,7 @@ for t = topo([2,end])
         accuracy = squeeze(accuracy);
         same_phaseUncert = accuracy(:, 1:step_sz:end);
         
-        plot(simulation.loss_dB(1:step_sz:end), same_phaseUncert(p_idx, :), 'linewidth', 3)
+        plot(simulation.loss_dB(1:step_sz:end), same_phaseUncert(p_idx, 1:end), 'linewidth', 3)
         
         hold on
     end
@@ -32,10 +32,10 @@ hold off
 legend(legend_, 'fontsize', fontsz*0.8,  'interpreter','latex', 'location', 'best');
 
 
-xlabel(sprintf('Loss (dB/MZI)'), 'fontsize', fontsz, 'interpreter','latex')
+xlabel(sprintf('Loss/MZI (dB)'), 'fontsize', fontsz, 'interpreter','latex')
 ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
 
-title(sprintf('Accuracy vs Loss/MZI'), 'fontsize', fontsz, 'interpreter','latex')
+% title(sprintf('Accuracy vs Loss/MZI'), 'fontsize', fontsz, 'interpreter','latex')
 axis('tight')
 ylim([0, 100])
 

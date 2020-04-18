@@ -10,8 +10,11 @@ printMe = true;
 linewid = 3;
 fontsz = 64;
 newPaper = false;
+sigma = 0.5;
 
-for lossy = [0.25, 0.5, 1]
+for lossy = [0.5]
+
+    
     Ns = [4,6,8,10,12,16,32,64];
     Ns_D = [];
     for N = Ns
@@ -23,7 +26,7 @@ for lossy = [0.25, 0.5, 1]
         outPow_per_port_nl = zeros(4,Ns(jj));
         in_pwer = zeros(1,Ns(jj));
         
-        F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/%.2f_outPorts_mean_pow', lossy);
+        F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/%.2f_sigma%.2f_outPorts_mean_pow', lossy, sigma);
         
         folders = dir([F sprintf('/N=%d_*', Ns(jj))]);
         foldNames = {folders.name};
@@ -56,16 +59,9 @@ for lossy = [0.25, 0.5, 1]
         
         inPow_per_port = in_pwer/length(foldNames);
         avg_outPow_per_port = avg_outPow_per_port/length(foldNames);
-        %         outPow_per_port_nl = outPow_per_port_nl/length(foldNames);
-        
-%         perc_diff(jj, :) = (max(avg_outPow_per_port') - mean(avg_outPow_per_port') + mean(avg_outPow_per_port') - min(avg_outPow_per_port'))/2*100;
         perc_diff(jj, :) = (max(avg_outPow_per_port') - min(avg_outPow_per_port'))./mean(avg_outPow_per_port');
         perc_diff_in(jj) = (max(inPow_per_port') - min(inPow_per_port'))./mean(inPow_per_port');
-%         perc_diff(jj, :) = max([max(avg_outPow_per_port') - mean(avg_outPow_per_port'); mean(avg_outPow_per_port') - min(avg_outPow_per_port')])/2*100;
-%         perc_diff(jj, :) = max([max(avg_outPow_per_port') - mean(avg_outPow_per_port'); mean(avg_outPow_per_port') - min(avg_outPow_per_port')])./mean(avg_outPow_per_port')*100;
-        
-        %         perc_diff(jj, :) = max([max(outPow_per_port') - mean(outPow_per_port'), mean(outPow_per_port') - min(outPow_per_port')])/2*100;
-%         perc_diff_in(jj) =(max(in_pwer') - mean(in_pwer') + mean(in_pwer') - min(in_pwer'))/2*100;
+
         perc_diff_wrt_inPow(jj, :) = perc_diff(jj, :);
     end
     
@@ -89,18 +85,19 @@ for lossy = [0.25, 0.5, 1]
         xlabel('Structure Size ($N$)', 'fontsize', fontsz*0.8, 'interpreter','latex', 'color', 'k')
         ylabel('Output Ports Power Deviation (\%)', 'fontsize', fontsz*0.8, 'interpreter','latex')
         grid('on')
-    elseif newPaper && 0
-        plot(Ns, perc_diff(:, 1), 'b-d', 'markersize', 20, 'MarkerFaceColor', 'k', 'linewidth', 3)
-        hold on
-        plot(Ns, perc_diff(:, 6), 'r-v', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3','linewidth', 3)
-        l = legend(lgd([1,6]), 'fontsize', fontsz*0.8, 'interpreter','latex', 'location', 'southeast');
     else
-        plot(Ns_D(1:end), perc_diff(1:end, 1), 'linewidth', linewid)
-        hold on
-        plot(Ns, perc_diff(:, 2:4), 'linewidth', linewid)
+        lgd = [lgd(4), lgd(3), lgd(2), lgd(1)];
+        plot_idx = [4,3,2,1];
+        markers = {'-v','-o','-s','-d'};
+        
+        for tt = 1:length(lgd)
+            plot(Ns_D(1:end), perc_diff(1:end, plot_idx(tt)), markers{tt}, 'markersize', 20, 'MarkerFaceColor', '#c3c3c3', ...
+                'linewidth', 3)
+            hold on
+        end
         plot(Ns, perc_diff_in, 'linewidth', linewid)
         lgd{end+1} = 'Input Power';
-        lgd{3} = 'Reck + Inv. Reck';
+        lgd{2} = 'Reck + Inv. Reck';
         l = legend(lgd, 'fontsize',  fontsz*0.8, 'interpreter','latex', 'location', 'northwest');
         a = get(gca,'YTickLabel');
         set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz)
@@ -121,15 +118,7 @@ for lossy = [0.25, 0.5, 1]
     %     ylim([0, 15])
     
     %     axis squasre
-    if printMe && newPaper
-        pMe_lineplot(sprintf('../Crop_Me/perc_diff_%.2fdB.pdf', lossy))
-    elseif printMe
-        if lossy == 1
-            pMe_lineplot(sprintf('../Crop_Me/lossy_output_power_percentDiff_1dB.pdf'))
-        elseif lossy == 0.5
-            pMe_lineplot(sprintf('../Crop_Me/lossy_output_power_percentDiff_half_dB.pdf'))
-        else
-            pMe_lineplot(sprintf('../Crop_Me/output_power_percentDiff.pdf'))
-        end
+    if printMe
+        pMe_lineplot(sprintf('../Crop_Me/perc_diff_loss_%.2fdB.pdf', lossy))
     end
 end

@@ -22,7 +22,7 @@ for t = 1:length(topo)
         
         curr_acc = squeeze(accuracy(:,:,loss_idx));
         if simulation.N == 48
-            h = pcolor(simulation.phase_uncert_theta(1:17), simulation.phase_uncert_phi(1:17), curr_acc(1:17, 1:17)); %,'HandleVisibility','off');
+            h = pcolor(simulation.phase_uncert_theta, simulation.phase_uncert_phi, curr_acc); %,'HandleVisibility','off');
         else
             h = pcolor(simulation.phase_uncert_theta, simulation.phase_uncert_phi, curr_acc); %,'HandleVisibility','off');
         end
@@ -58,16 +58,17 @@ for t = 1:length(topo)
         a = get(gca,'XTickLabel');
         set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
         h = gca;
-        set(h, 'YTickLabelMode','auto')
-        set(h, 'XTickLabelMode','auto')
-        ytickformat('%.2f')
-        xtickformat('%.2f')
+%         ytickformat('%.1f')
+%         xtickformat('%.1f')
         xlabel('$\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
         ylabel('$\sigma_\phi$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+        set(h, 'YTickLabelMode','auto')
+        set(h, 'XTickLabelMode','auto')
+
         axis square
         
         if print_fig_of_merit
-            title(sprintf('%d$\\times$%d %s\nFoM: %.6f $\\mathrm{Rad}^2$', simulation.N, simulation.N, ...
+            title(sprintf('%d$\\times$%d %s\nFoM: %.4f $\\mathrm{Rad}^2$', simulation.N, simulation.N, ...
                 simulation.topology,  area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
         else
             if strcmp(sim.topo{t}, 'R_D_I_P')
@@ -79,16 +80,16 @@ for t = 1:length(topo)
         end
         
         
-        savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topo, simulation.N)])
-        saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.topo, simulation.N)])
-        
+%         savefig([FOLDER, sprintf('/Matlab_Figs/%s_phiThetaUncert_N=%d.fig', simulation.topo, simulation.N)])
+%         saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.topo, simulation.N)])
+  
         if printMe
             pMe([FOLDER, sprintf('/%s_phiThetaUncert_N=%d.pdf', simulation.topo, simulation.N)])
         end
         if area_of_merit == 0
             break
         end
-        fprintf('%s Phi Theta FoM: %.4f\n', simulation.topology, area_of_merit)
+        fprintf('%s PT FoM: %.4f\n', simulation.topology, area_of_merit)
         
     end
     fom(t) = sum(a_of_m);

@@ -14,9 +14,7 @@ import matplotlib.pyplot as plt
 import os
 import scipy.io
 import pickle
-from saveSimulationData import plot_scatter_matrix  
 import matplotlib as mpl
-
 
 class ONN_Simulation:
     def __init__(self):
@@ -167,12 +165,6 @@ class ONN_Simulation:
         scipy.io.savemat(f"{self.FOLDER}/acc_{self.topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
     def saveSimDataset(self):
         ''' Save simulation's datasset, both in plot and txt form '''
-        if self.N < 9:
-            axes = plot_scatter_matrix(self.X, self.y)
-            plt.savefig(f'{self.FOLDER}/Datasets/{self.dataset_name}_Samples={len(self.X)}_Dataset.png')
-            plt.close()
-            mpl.rcParams.update(mpl.rcParamsDefault)
-
         np.savetxt(f'{self.FOLDER}/Datasets/y.txt', self.y, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/Xt.txt', self.Xt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%.3f')
@@ -216,8 +208,3 @@ class ONN_Simulation:
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:
             self = pickle.load(p)
             return self 
-if __name__ == '__main__':
-    ONN = ONN_Simulation()
-    ONN.FOLDER = '/home/simon/Desktop/'
-    ONN.saveSelf()
-    ONN.pickle_save()

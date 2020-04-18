@@ -20,17 +20,16 @@ ONN = ONN_Cls.ONN_Simulation()
 
 onn_topo = ['R_D_I_P','R_P','C_Q_P','R_D_P','E_P','R_I_P']
 onn_topo = ['R_P','C_Q_P','E_P','R_I_P']
-# onn_topo = ['C_Q_P']
 
 output_pwer = defaultdict(list)
 input_pwer = defaultdict(list)
 rng = 3
 
-loss = 0.25
-
+loss = 0.5
+sigma = 0
 Ns = [4, 6, 8, 10, 12, 16, 32, 64] 
 for N in Ns:
-    fileList = glob.glob(f'/home/simon/Documents/neuroptica/tests/Analysis/0.00_outPorts_mean_pow/N={N}*')
+    fileList = glob.glob(f'/home/simon/Documents/neuroptica/tests/Analysis/{0:.2f}_sigma{0:.2f}_outPorts_mean_pow/N={N}*')
     for ii, FOLDER in enumerate(fileList):
         for ONN.topo in onn_topo:
             ONN.FOLDER = FOLDER
@@ -38,9 +37,9 @@ for N in Ns:
                 ONN.get_topology_name()
                 print(N, ONN.topo, ii, loss)
                 ONN = ONN.pickle_load()
-                ONN.loss_diff = 0.25
+                ONN.loss_diff = 0.5
 
-                ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/{loss}_sigma{ONN.loss_diff}_outPorts_mean_pow/N={N}_{ii}'
+                ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/{loss:.2f}_sigma{ONN.loss_diff:.2f}_outPorts_mean_pow/N={N}_{ii}'
 
                 model = ONN_Setups.ONN_creation(ONN)
                 model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, loss, 0)

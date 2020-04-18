@@ -28,37 +28,37 @@ for t = 1:length(topo)
         %         same_phaseUncert = accuracy(:, [1, 6, 11, 16, 21]);
     end
     
-    plot(simulation.phase_uncert_theta, same_phaseUncert(:, [1,2,3]), 'linewidth', 3)
+    plot(simulation.phase_uncert_theta, same_phaseUncert(:, [1,end]), 'linewidth', 3)
     axis square
     
     %     legend_ = create_legend_single_model(simulation.loss_dB([1, 6, 11, 16, 21]));
-    legend_ = create_legend_single_model(simulation.loss_dB(1:step_sz:end));
-    legend(legend_([1,2,3]), 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northeast');
+    lgd = create_legend_single_model(simulation.loss_dB([1,end]));
+    legend(lgd, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northeast');
     
     ylim([0, 100])
     
     h = gca;
-    ylim([0 100])
     set(h, 'YTickLabelMode', 'auto')
     set(h, 'XTickLabelMode','auto')
     
-    disp(max(max(max(accuracy))))
+    fprintf('%s acc = %.3f\n', simulation.topo, max(max(max(accuracy))))
     
-    xlabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    xlabel('$\sigma_\phi,\;\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
     
     title(sprintf('%s',simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.75)
     a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.75)
     h = gca;
-    set(h, 'YTickLabelMode','auto')
-    set(h, 'XTickLabelMode','auto')
+
     axis square
-    savefig([FOLDER, sprintf('/Matlab_Figs/Model=%s_lineplot.fig', simulation.topology)])
+%     set(h, 'YTickLabelMode','auto')
+    set(h, 'XTickLabelMode','auto')
+%     xlim([0 0.5])
     saveas(gcf, [FOLDER, sprintf('/Model=%s_lineplot.png', simulation.topology)])
     if printMe
-        pMe([FOLDER, '/' simulation.topology, '-all-losses_lineplot.pdf'])
+        pMe(['../Crop_Me' '/' simulation.topology, '-all-losses_lineplot.pdf'])
     end
 end

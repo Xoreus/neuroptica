@@ -27,9 +27,9 @@ def get_current_accuracy(xtst, ytst, net):
             correct_pred += 1
     return correct_pred/len(xtst)
 
-def create_train_dnn(X, y, Xt, yt, EPOCHS=300):
-    h_num = 0
+def create_train_dnn(X, y, Xt, yt, EPOCHS=300, hnum=0):
 
+    h_num = hnum
     beta = 1
     eta = .05
     alpha = 0.1
@@ -108,13 +108,27 @@ if __name__ == '__main__1':
                 ii += 1
                 print('This dataset works!\n')
                 break
-if __name__ == '__main__':
-    X = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/X_1.txt',delimiter=',')
-    y = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/y_1.txt',delimiter=',')
-    Xt = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/Xt_1.txt',delimiter=',')
-    yt = np.loadtxt('/home/simon/Documents/neuroptica/better-linsep-datasets/N=4/yt_1.txt',delimiter=',')
 
-    net, weights = create_train_dnn(X, y, Xt, yt, 'Analysis/DNN', 50)
+if __name__ == '__main__':
+    import os
+    SAMPLES = 300
+    EPOCHS = 60
+    for N in [10]:
+        ii = 0
+        for rng in [1]:
+            FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
+            print(f'RNG = {rng}, N = {N}')
+            X, y, Xt, yt = cd.MNIST_dataset(N=10,nsamples=2000)
+
+            # X, y, Xt, yt = cd.MNIST_dataset(nsamples=SAMPLES*N, digits=[1,3,6,7])
+            random.seed(rng)
+
+            X = (X - np.min(X))/(np.max(X) - np.min(X))
+            Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
+            Xog, Xtog = X, Xt
+
+            net, weights = create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=1)
 
                     # Val Accuracy
-    print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(Xt, yt, net)*100))
+            print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(
+                    Xt, yt, net)*100))

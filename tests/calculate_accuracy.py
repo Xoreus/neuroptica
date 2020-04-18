@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm
 import time
 
-def get_accuracy_singleLoss(ONN, model, Xt, yt, loss_diff=0):
+def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0):
     ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
     t = time.time()
     if 'C' in ONN.topo and 'Q' in ONN.topo:
@@ -40,7 +40,7 @@ def get_accuracy_singleLoss(ONN, model, Xt, yt, loss_diff=0):
     pbar.close()
     return np.squeeze(np.swapaxes(np.array(accuracy), 0, 2))
 
-def get_accuracy_samePU(ONN, model, Xt, yt, loss_diff=0):
+def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0):
     ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
     t = time.time()
     if 'C' in ONN.topo and 'Q' in ONN.topo:
@@ -74,7 +74,7 @@ def get_accuracy_samePU(ONN, model, Xt, yt, loss_diff=0):
 
 def get_accuracy(onn, model, Xt, yt, loss_diff):
     if onn.same_phase_uncert:
-       return get_accuracy_samePU(onn, model, Xt, yt, loss_diff=loss_diff)
+       return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff)
     else:
-       return get_accuracy_singleLoss(onn, model, Xt, yt, loss_diff=loss_diff)
+       return get_accuracy_PT(onn, model, Xt, yt, loss_diff=loss_diff)
         

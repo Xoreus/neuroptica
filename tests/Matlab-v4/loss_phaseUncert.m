@@ -33,7 +33,7 @@ for t = 1:length(topo)
         % Create legend for contour map
         lgd = ['Above ', num2str(sim.max_accuracy*fig_of_merit_value, 4), '\% accuracy'];
         
-        legend(lgd, 'fontsize', fontsz*0.7, 'interpreter','latex');
+        legend(lgd, 'fontsize', fontsz*0.8, 'interpreter','latex');
     end
     % Calculate "area" of contour map as a figure of merit
     area_of_merit = sum(sum(same_phaseUncert >= sim.max_accuracy*fig_of_merit_value)) * (simulation.phase_uncert_theta(2) - ...
@@ -47,6 +47,7 @@ for t = 1:length(topo)
     c.Label.String = 'Accuracy (\%)';
     c.Label.FontSize = fontsz;
     caxis([50 95])
+    caxis([100/(simulation.N) 100])
     colormap('jet');
     
     a = get(gca,'YTickLabel');
@@ -57,15 +58,15 @@ for t = 1:length(topo)
     set(h, 'YTickLabelMode','auto')
     set(h, 'XTickLabelMode','auto')
     axis square
-    ytickformat('%.2f')
-    xtickformat('%.2f')
+%     ytickformat('%.1f')
+%     xtickformat('%.1f')
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\sigma_\phi,\;\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     %     ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     
     if print_fig_of_merit
-        title(sprintf('%d$\\times$%d %s\nFoM: %.6f $\\mathrm{Rad} \\cdot \\mathrm{dB}$', simulation.N, simulation.N, ...
+        title(sprintf('%d$\\times$%d %s\nFoM: %.4f $\\mathrm{Rad} \\cdot \\mathrm{dB}$', simulation.N, simulation.N, ...
             simulation.topology,  area_of_merit), 'fontsize', fontsz, 'interpreter','latex')
     else
         if strcmp(sim.topo, 'R_D_I_P')
@@ -73,12 +74,9 @@ for t = 1:length(topo)
         end
         title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
     end
-    
-    savefig([FOLDER, sprintf('/Matlab_Figs/%s_power-phaseUncert_N=%d.fig', simulation.topo, simulation.N)])
-    saveas(gcf, [FOLDER, sprintf('/%s_power-phaseUncert_N=%d.png', simulation.topo, simulation.N)])
-    
+
     if printMe
-        pMe([FOLDER, sprintf('/%s_lossPhaseUncert_N=%d.pdf', simulation.topo, simulation.N)])
+        pMe([sprintf('../Crop_Me/%s_lossPhaseUncert_N=%d.pdf', simulation.topo, simulation.N)])
     end
     fprintf('%s LPU FoM = %.6f\n', simulation.topology, area_of_merit)
 end

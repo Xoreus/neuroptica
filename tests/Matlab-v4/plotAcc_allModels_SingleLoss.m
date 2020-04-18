@@ -8,42 +8,53 @@
 % Edit: 25.01.2020
 
 
-function plotAcc_allModels_SingleLoss(FOLDER, SimulationSettings)
-fontsz = 28;
+function plotAcc_allModels_SingleLoss(F, sim, topo, printMe)
+fontsz = 64;
+step_sz = 1;
+legend_ = {};
 figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-for l_idx = 1:length(SimulationSettings.loss_dB)
-    
-    for model_idx = 1:length(SimulationSettings.ONN_Setups)
+
+for t = topo([2,end])
+    simulation = sim.(t{1});
+    accuracy = sim.(t{1}).accuracy_LPU;
+    for p_idx = 1
         
-        Model_acc = load([FOLDER, sprintf('acc_%s_loss=%.3f_uncert=%.3f_%sFeat.txt', ...
-            SimulationSettings.ONN_Setups{model_idx}, SimulationSettings.loss_dB(1), SimulationSettings.phase_uncerts(1), SimulationSettings.N)]);
+        legend_{end+1} = simulation.topology;
+        same_phaseUncert = [];
         
-        plot(SimulationSettings.phase_uncerts, Model_acc(:, l_idx), 'linewidth', 3)
+        accuracy = squeeze(accuracy);
+        same_phaseUncert = accuracy(:, 1:step_sz:end);
+        
+        plot(simulation.phase_uncert_theta(1:step_sz:end-20), same_phaseUncert(p_idx, 1:end-20), 'linewidth', 3)
+        
         hold on
-        
     end
-    hold off
-    
-    legend_ = create_legend_single_loss(SimulationSettings.models);
-    
-    legend(legend_, 'fontsize', fontsz, 'interpreter','latex', 'location', 'best');
-    ylim([0, 100])
-    
-    a = get(gca,'XTickLabel');
-    set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz/1.2, 'interpreter','latex')
-    
-    a = get(gca,'YTickLabel');
-    set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz/1.2, 'interpreter','latex')
-    
-    xlabel('Phase Uncertainty $(\sigma)$', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
-    
-    title(sprintf('Accuracy of Models with Loss = %.2f dB/MZI, $\\sigma_{Loss} =$ %s dB/MZI', SimulationSettings.loss_dB(l_idx), SimulationSettings.loss_diff),...
-        'fontsize', 1.5*fontsz, 'interpreter','latex')
-    
-    
-    savefig([FOLDER, sprintf('Matlab_Figs/AllModels_Loss=%.3f.fig', SimulationSettings.loss_dB(l_idx))])
-    saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/AllModels_Loss=%.3f.png', SimulationSettings.loss_dB(l_idx))])
+end
+hold off
+legend(legend_, 'fontsize', fontsz*0.8,  'interpreter','latex', 'location', 'best');
+
+
+xlabel(sprintf('Loss/MZI (dB)'), 'fontsize', fontsz, 'interpreter','latex')
+ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
+
+% title(sprintf('Accuracy vs Loss/MZI'), 'fontsize', fontsz, 'interpreter','latex')
+axis('tight')
+ylim([0, 100])
+
+a = get(gca,'XTickLabel');
+set(gca,'XTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+a = get(gca,'YTickLabel');
+set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
+
+h = gca;
+set(h, 'YTickLabelMode','auto')
+set(h, 'XTickLabelMode','auto')
+% axis square
+savefig([FOLDER, sprintf('/Matlab_Figs/AllModels_loss.fig')])
+saveas(gcf, [FOLDER, sprintf('/Matlab_Pngs/AllModels_loss.png')])
+
+if printMe
+    pMe([FOLDER, '/singleLoss.pdf'])
 end
 
 end

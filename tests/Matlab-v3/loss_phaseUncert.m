@@ -61,7 +61,7 @@ for t = 1:length(topo)
     set(h, 'XTickLabelMode','auto')
     
     xlabel('Loss/MZI (dB)', 'fontsize', fontsz, 'interpreter','latex')
-    ylabel('$\sigma_\phi = \sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
+    ylabel('$\sigma_\phi,\;\sigma_\theta$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     %     ylabel('$\sigma$ (Rad)', 'fontsize', fontsz, 'interpreter','latex')
     
     if print_fig_of_merit
@@ -75,7 +75,7 @@ for t = 1:length(topo)
     saveas(gcf, [FOLDER, sprintf('%s_power-phaseUncert_N=%d.png', simulation.topology, simulation.N)])
     
     if printMe
-        pMe([FOLDER, simulation.topology, sprintf('-loss_phaseNoise_N=%d.pdf', simulation.N)])
+        pMe(['../Crop_Me/' simulation.topology, sprintf('-loss_phaseNoise_N=%d.pdf', simulation.N)])
     end
     fprintf('%s FoM = %.6f\n', simulation.topology, area_of_merit)
 end

@@ -22,7 +22,7 @@ for t = 1:length(topo)
     yticks(0:0.2:2)
     
     yyaxis('right');
-    plot(simulation.trn_accuracy(:, 1:end), '--', 'linewidth', 3)
+    plot(simulation.trn_accuracy(:, 1:end), '-k', 'linewidth', 3)
     hold on
     plot(simulation.val_accuracy(:, 1:end), '-', 'linewidth', 3)
     ylabel('Accuracy (\%)', 'fontsize', fontsz, 'interpreter','latex')
@@ -48,6 +48,6 @@ for t = 1:length(topo)
     saveas(gcf, [FOLDER, sprintf('Matlab_Pngs/%s_loss+acc-plot.png',  simulation.topology)])
     
     if printMe
-        pMe([FOLDER, simulation.topology, '-backprop-plot.pdf'])
+        pMe(['../Crop_Me/', simulation.topology, '-backprop-plot.pdf'])
     end
 end
