@@ -23,9 +23,13 @@ ONN.ITERATIONS = 40 # number of times to retry same loss/PhaseUncert
 rng = 5588151   
 
 onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
-for ii in range(11):
-    for ONN.N in [128]:
+for ii in range(1):
+    for ONN.N in [50]:
         ONN, rng = train.get_dataset(ONN, rng, SAMPLES=50)
+        ONN.FOLDER = f'Analysis/N={ONN.N}/N={ONN.N}_{ii}'
+        ONN.createFOLDER()
+        ONN.saveSimDataset()
+
         for ONN.topo in onn_topo:
             ONN.loss_diff = 0
             ONN.get_topology_name()
@@ -34,10 +38,6 @@ for ii in range(11):
                 ONN.loss_dB = [0]
                 ONN, model = train.train_single_onn(ONN)
                 if max(ONN.val_accuracy) > 95:
-                    ONN.FOLDER = f'Analysis/N={ONN.N}/N={ONN.N}_{ii}'
-
-                    ONN.createFOLDER()
-
                     ONN.loss_dB = np.linspace(0, 0.5, 41)
                     ONN.phase_uncert_theta = np.linspace(0., 0.1, 41)
                     ONN.phase_uncert_phi = np.linspace(0., 0.1, 41)

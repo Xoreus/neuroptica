@@ -328,13 +328,14 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         return np.dot(self.mesh.get_transfer_matrix().T, delta)
 
-class DiamondLayer(OpticalMeshNetworkLayer): # New Optical layer Topology, in a diamond shape:
-    """ Diamond layer"""
+class DiamondLayer(OpticalMeshNetworkLayer): 
+    """ Diamond laye: New Optical layer Topology, in a diamond shape
+    Proposed by Shokraneh et al in 'A Novel Phase Error- and Loss-Tolerant Multiport Field Programmable MZI-Based Optical Processor for Optical Neural Networks'"""
 
     def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
         ''' Initialize the Diamond Layer
         :param N: number of input and output waveguides - N = signals carried
-        :param S: number of total waveguides, with N-2 waveguides acting as simple information processors
+        :param S: number of total waveguides 2*(N-1)
         :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
         the mesh (required to implement arbitrary unitary)
         :param initializer: optional initializer method (WIP)

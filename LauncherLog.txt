@@ -1,0 +1,10 @@
+-------------------------------------------
+Launching the Launcher...
+Found Working Directory: Z:\home\simon\Documents\neuroptica
+Created/Opened HKCU\Software\Firaxis\Civilization5 Registry Entry.
+Succesfully Saved Working Directory.
+OS: Microsoft Windows 7  Service Pack 1 (build 7601), 64-bit
+DirectX 11 is installed.
+Recommending DirectX 11.
+Created/Opened HKCU\Software\Firaxis\Civilization5 Registry Entry.
+Launching CivilizationV.exe

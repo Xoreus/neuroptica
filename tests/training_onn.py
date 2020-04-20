@@ -53,7 +53,7 @@ def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
         X = (X - np.min(X))/(np.max(X) - np.min(X))
         Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
 
-        net, weights = dnn.create_train_dnn(X, y, Xt, yt, EPOCHS)
+        net, weights = dnn.create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=0)
         print('Validation Accuracy: {:.1f}%'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
         rng += 1
         if dnn.get_current_accuracy(Xt, yt, net)*100 > lim:

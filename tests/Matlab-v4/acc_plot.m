@@ -11,9 +11,11 @@ clc; close all; clear;
 fig_of_merit_value = 0.75;
 print_fig_of_merit = 0;
 showContour = 0;
-printMe = 1;
+printMe = 0;
 
 for jj = 1
+    % 80x80 sims
+    F = '/home/simon/Documents/neuroptica/tests/Analysis/N=80';
     % 32x32 sims
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=32/N=32_1';
 %     16x16 sims
@@ -48,7 +50,7 @@ for jj = 1
     makeMatlabDirs(F)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
-    if 1 && 0
+    if 1 && 1
         phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
     if 1 && 1

@@ -43,11 +43,11 @@ class Neuron:
 ###############################################################################
 # The nonlinear function is here
 ###############################################################################
-    def non_linear_activation(self, x):
-        return 1 / (1 + math.exp(-x * 1.0))
+    # def non_linear_activation(self, x):
+    #     return 1 / (1 + math.exp(-x * 1.0))
 
-    def deriv_non_linear_activation(self, x):
-        return x * (1.0 - x)
+    # def deriv_non_linear_activation(self, x):
+    #     return x * (1.0 - x)
 
     # def non_linear_activation(self, x):
     #     return max(0.0, x)
@@ -55,11 +55,11 @@ class Neuron:
     # def deriv_non_linear_activation(self, x):
     #     return 1 if x >= 0 else 0
 
-    # def non_linear_activation(self, x):
-    #     return x
+    def non_linear_activation(self, x):
+        return x
 
-    # def deriv_non_linear_activation(self, x):
-    #     return 1
+    def deriv_non_linear_activation(self, x):
+        return 1
 
     # def sigmoid(self, x):
     # def non_linear_activation(self, x):

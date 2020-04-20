@@ -126,7 +126,7 @@ class MZI(OpticalComponent):
             [np.exp(1j * phi) * (np.exp(1j * theta) - 1), 1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
-        if self.loss_dB != 0:
+        if self.loss_dB != 0.0:
             mzi_r = apply_loss(mzi_r, self.loss)
         return(mzi_r)
 
@@ -291,6 +291,9 @@ class MZI_H(OpticalComponent):
 def apply_loss(mzi, loss):
     return mzi * np.array([[loss, 1],[1, loss]])
 
-def get_loss(loss_dB, loss_diff=0):
-    return np.abs(np.random.normal(loss_dB, loss_diff))
+def get_loss(loss_dB, loss_diff=0, loss_min=0.5):
+    while True and loss_dB > 1e-6:
+        loss_dB_cur = loss_dB + np.abs(np.random.normal(0, loss_diff))
+        return loss_dB_cur
+    return 0
 
