@@ -59,7 +59,11 @@ for lossy = [0.5]
         
         inPow_per_port = in_pwer/length(foldNames);
         avg_outPow_per_port = avg_outPow_per_port/length(foldNames);
-        perc_diff(jj, :) = (max(avg_outPow_per_port') - min(avg_outPow_per_port'))./mean(avg_outPow_per_port');
+        perc_diff(jj, :) = abs(max(avg_outPow_per_port') - 2*mean(avg_outPow_per_port') + min(avg_outPow_per_port'))./mean(avg_outPow_per_port')*100;
+        
+%         perc_diff(jj, :) = (max(avg_outPow_per_port') - min(avg_outPow_per_port'))./mean(avg_outPow_per_port')*100;
+
+        
         perc_diff_in(jj) = (max(inPow_per_port') - min(inPow_per_port'))./mean(inPow_per_port');
 
         perc_diff_wrt_inPow(jj, :) = perc_diff(jj, :);
@@ -67,7 +71,7 @@ for lossy = [0.5]
     
     
     figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-    
+%     set(gca, 'YScale','log')
     if newPaper && 1
         plot(Ns(1:end), perc_diff_wrt_inPow(1:end, end), 'r-v', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3','linewidth', 3)
         hold on

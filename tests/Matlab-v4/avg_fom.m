@@ -11,8 +11,8 @@ FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/average_linsep_NoDMM';
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/average_linsep_NoDMM_NoJump';
 Ns = [4, 6, 8, 10, 16, 24, 32, 48, 64, 80];
 
-topo = {'R_P', 'C_Q_P', 'E_P', 'R_I_P'};% , 'R_D_I_P', 'R_D_P'};
-topology = {'Reck','Diamond','Clements','Reck + Inv. Reck'};% ,'Reck + DMM + Inv. Reck','Reck + DMM'};
+topo = {'R_P','R_I_P',  'E_P', 'C_Q_P',};% , 'R_D_I_P', 'R_D_P'};
+topology = {'Reck','Reck + Inv. Reck','Clements','Diamond'};% ,'Reck + DMM + Inv. Reck','Reck + DMM'};
 errBar = '';
 
 for ii = 1:length(topo)
@@ -55,7 +55,7 @@ for jj = 1:length(Ns)
 end
 
 
-markers = {'-v','-d','-s', '-h'};
+markers = {'-v','-o','-s','-d' };
 linecolor = [[0.5,0,0],[0,0.5,0],[0,0,0.5],[0.5,0.5,0]];
 figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
 for tt = 1:length(topo)

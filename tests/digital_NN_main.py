@@ -69,32 +69,31 @@ def create_train_dnn(X, y, Xt, yt, EPOCHS=300, hnum=0):
     weights = net.getWeights()
     return net, weights
 
-if __name__ == '__main__1':
+if __name__ == '__main__':
     import os
     SAMPLES = 300
     rng = 8
     EPOCHS = 30
-    for N in [20]:
+    for N in [4]:
         # for rng in range(100, 200):
         ii = 0
-        for rng in [101, 102]:
+        for rng in [2]:
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
-            X, y, Xt, yt = cd.gaussian_dataset(targets=int(N), features=int(N), nsamples=SAMPLES*N, rng=rng)
-            # X, y, Xt, yt = cd.MNIST_dataset(nsamples=SAMPLES*N, digits=[1,3,6,7])
+            X, y, Xt, yt = cd.iris_dataset(nsamples=1000)
             random.seed(rng)
 
             X = (X - np.min(X))/(np.max(X) - np.min(X))
             Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
             Xog, Xtog = X, Xt
 
-            net, weights = create_train_dnn(X, y, Xt, yt, EPOCHS)
+            net, weights = create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=0)
 
                     # Val Accuracy
             print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(
                     Xt, yt, net)*100))
 
-            if get_current_accuracy(Xt, yt, net)*100 > 98:
+            if get_current_accuracy(Xt, yt, net)*100 > 50:
                 datasetFolder = f'../linsep-datasets/N={N}'
                 if not os.path.isdir(datasetFolder):
                     os.makedirs(datasetFolder)
@@ -103,32 +102,7 @@ if __name__ == '__main__1':
                 np.savetxt(f'{datasetFolder}/Xt_{ii}.txt', Xt, delimiter=',', fmt='%.6f')
                 np.savetxt(f'{datasetFolder}/y_{ii}.txt', y, delimiter=',', fmt='%.6f')
                 np.savetxt(f'{datasetFolder}/yt_{ii}.txt', yt, delimiter=',', fmt='%.6f')
-                # axes = plot_scatter_matrix(X, y)
-                # plt.savefig('linsep_dataset.pdf')
                 ii += 1
                 print('This dataset works!\n')
                 break
 
-if __name__ == '__main__':
-    import os
-    SAMPLES = 300
-    EPOCHS = 60
-    for N in [10]:
-        ii = 0
-        for rng in [1]:
-            FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
-            print(f'RNG = {rng}, N = {N}')
-            X, y, Xt, yt = cd.MNIST_dataset(N=10,nsamples=2000)
-
-            # X, y, Xt, yt = cd.MNIST_dataset(nsamples=SAMPLES*N, digits=[1,3,6,7])
-            random.seed(rng)
-
-            X = (X - np.min(X))/(np.max(X) - np.min(X))
-            Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
-            Xog, Xtog = X, Xt
-
-            net, weights = create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=1)
-
-                    # Val Accuracy
-            print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(
-                    Xt, yt, net)*100))
