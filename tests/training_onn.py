@@ -15,8 +15,9 @@ import create_datasets as cd
 import test_trained_onns as test
 
 import sys
-sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica')
-sys.path.append('/home/simon/Documents/neuroptica')
+# sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica')
+# sys.path.append('/home/simon/Documents/neuroptica')
+sys.path.append('../../neuroptica')
 import neuroptica as neu
 
 import random
@@ -46,7 +47,7 @@ def change_dataset_shape(onn):
 
 def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
     while True:
-        print(f'RNG = {rng}, N = {ONN.N}')
+        print(f'RNG = {rng}, N = {ONN.N}, Digital Neural Network')
         X, y, Xt, yt = cd.gaussian_dataset(targets=int(ONN.N), features=int(ONN.N), nsamples=SAMPLES*ONN.N, rng=rng)
         random.seed(rng)
 
