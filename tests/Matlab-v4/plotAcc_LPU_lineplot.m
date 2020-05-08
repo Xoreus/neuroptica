@@ -17,10 +17,9 @@ for t = 1:length(topo)
     
     figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
     same_phaseUncert = [];
-    if ~simulation.same_phase_uncert
+    if ~simulation.same_phase_uncert 
         for ii = 1:length(simulation.phase_uncert_phi)
             same_phaseUncert(ii, :) = accuracy(ii,ii,1:step_sz:end);
-            
         end
     else
         accuracy = squeeze(accuracy);
@@ -28,11 +27,11 @@ for t = 1:length(topo)
         %         same_phaseUncert = accuracy(:, [1, 6, 11, 16, 21]);
     end
     
-    plot(simulation.phase_uncert_theta, same_phaseUncert(:, [1,end]), 'linewidth', 3)
+    plot(simulation.phase_uncert_theta, same_phaseUncert(:, [1,21]), 'linewidth', 3)
     axis square
     
     %     legend_ = create_legend_single_model(simulation.loss_dB([1, 6, 11, 16, 21]));
-    lgd = create_legend_single_model(simulation.loss_dB([1,end]));
+    lgd = create_legend_single_model(simulation.loss_dB([1,21]));
     legend(lgd, 'fontsize', fontsz*.8, 'interpreter','latex', 'location', 'northeast');
     
     ylim([0, 100])

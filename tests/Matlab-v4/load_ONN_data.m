@@ -11,7 +11,7 @@ accuracy = cell(length(model_names),1);
 for ii = 1:length(model_names)
     simulation = load([FOLDER, '/Topologies/', model_names{ii}]);
     sim.(model_names{ii}(1:end-4)) = simulation.(model_names{ii}(1:end-4));
-    acc = [sim.(model_names{ii}(1:end-4)).accuracy_LPU, sim.(model_names{ii}(1:end-4)).accuracy_PT];
+    acc = max(sim.(model_names{ii}(1:end-4)).accuracy_LPU(1,1), sim.(model_names{ii}(1:end-4)).accuracy_PT(1,1));
     accuracy{ii} = acc;
 end
 

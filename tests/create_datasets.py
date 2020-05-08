@@ -233,7 +233,7 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     X, Xt, y, yt = train_test_split(X, ohe_labels, test_size=0.2)
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
-if __name__ == '__main__':
-    plot_OG_iris()
-    plot_agmented_iris()
+# if __name__ == '__main__':
+    # plot_OG_iris()
+    # plot_agmented_iris()
 

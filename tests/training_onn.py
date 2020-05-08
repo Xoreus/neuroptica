@@ -15,11 +15,9 @@ import create_datasets as cd
 import test_trained_onns as test
 
 import sys
-# sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica')
-# sys.path.append('/home/simon/Documents/neuroptica')
 sys.path.append('../../neuroptica')
 import neuroptica as neu
-
+from plot_scatter_matrix import plot_scatter_matrix
 import random
 import os
 import time
@@ -30,6 +28,8 @@ matplotlib.rcParams['mathtext.fontset'] = 'custom'
 matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
+import matplotlib.pyplot as plt
+
 
 def change_dataset_shape(onn):
     if 'C' in onn.topo and 'Q' in onn.topo:
@@ -68,6 +68,7 @@ def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
 def train_single_onn(onn):
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
+
     print(f'\nmodel: {onn.topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
 
     model = ONN_Setups.ONN_creation(onn)
@@ -76,6 +77,7 @@ def train_single_onn(onn):
 
     # initialize the ADAM optimizer and fit the ONN to the training data
     optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
+    # optimizer = neu.InSituAdam(model, neu.CategoricalCrossEntropy, step_size=onn.STEP_SIZE)
     onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
     print(f'time spent for current training: {(time.time() - t)/60:.2f} minutes')
     return onn, model

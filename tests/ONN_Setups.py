@@ -13,7 +13,6 @@ import numpy as np
 
 np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
-
 def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None, None)]):
     """  Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond """
     layers = onn.topo.replace('_', '')

@@ -27,9 +27,10 @@ for jj = 1
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_9';
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_6_PT_0dB';
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_19';
+F = '/storage/Research/OE_2020/Figs+Datasets/N=4/N=4_PT';
 % 8x8 Lossy/Not lossy
-F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0_0.5dB-loss';
-F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0_0.5dB-loss';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0';
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0_0.25dB-loss'
     % Random Phase --> Different Final Acc THESIS
     %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_2_63.750';
@@ -53,7 +54,7 @@ F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0';
     makeMatlabDirs(F)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
     
-    if 1 && 1
+    if 1 && 0
         phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
     end
     if 1 && 0
@@ -62,7 +63,7 @@ F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0';
     if 1 && 0
         ONN_Backprop_Plot(F, sim, topo, printMe)
     end
-    if 1 && 0
+    if 1 && 
         plotAcc_LPU_lineplot(F, sim, topo, 1, printMe)
     end
     if 1 && 0
