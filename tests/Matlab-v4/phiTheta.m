@@ -84,12 +84,12 @@ for t = 1:length(topo)
 %         saveas(gcf, [FOLDER, sprintf('/%s_phiThetaUncert_N=%d.png', simulation.topo, simulation.N)])
   
         if printMe
-            pMe([FOLDER, sprintf('/%s_phiThetaUncert_N=%d.pdf', simulation.topo, simulation.N)])
+            pMe([sprintf('../Crop_Me/%s_phiThetaUncert_N=%d.pdf', simulation.topo, simulation.N)])
         end
         if area_of_merit == 0
             break
         end
-        fprintf('%s PT FoM: %.4f\n', simulation.topology, area_of_merit)
+        fprintf('%s PT FoM = %.4f\n', simulation.topology, area_of_merit)
         
     end
     fom(t) = sum(a_of_m);

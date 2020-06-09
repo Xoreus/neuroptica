@@ -83,7 +83,7 @@ class PhaseShifter(OpticalComponent):
 class MZI(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
 
-    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0):
+    def __init__(self, m: int, n: int, theta: float = None, phi: float = None, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0, rv='fold'):
         '''
         :param m: first waveguide index
         :param n: second waveguide index
@@ -97,9 +97,10 @@ class MZI(OpticalComponent):
         self.n = n  # input waveguide B index
         self.phase_uncert_theta = phase_uncert_theta
         self.phase_uncert_phi = phase_uncert_phi
-
-        self.loss_dB = get_loss(loss_dB, loss_diff=loss_diff) # dB Loss
+        self.loss_diff = loss_diff
+        self.loss_dB = loss_dB
         self.loss = 10**(-self.loss_dB/10) # Linear Loss
+        self.rv = rv
 
         if theta is None: theta = pi * np.random.rand()
         if phi is None: phi = 2 * pi * np.random.rand()
@@ -127,8 +128,11 @@ class MZI(OpticalComponent):
             [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
         ], dtype=NP_COMPLEX)
         if self.loss_dB != 0.0:
+            loss_dB = get_loss(self.loss_dB, loss_diff=self.loss_diff, rv=self.rv) # dB Loss
+            self.loss = 10**(-loss_dB/10) # Linear Loss
+            print(self.loss)
             mzi_r = apply_loss(mzi_r, self.loss)
-        return(mzi_r)
+        return mzi_r 
 
     def get_partial_transfer_matrices(self, backward=False, cumulative=True, add_uncertainties=True) -> np.ndarray:
         '''
@@ -165,6 +169,8 @@ class MZI(OpticalComponent):
             return np.array(partial_transfer_matrices)*self.loss
         else:
             # print(np.array(component_transfer_matrices))
+            loss_dB = get_loss(self.loss_dB, loss_diff=self.loss_diff, rv=self.rv) # dB Loss
+            self.loss = 10**(-loss_dB/10) # Linear Loss
             return apply_loss(component_transfer_matrices, np.array(self.loss))
 
 @jit(nopython=True, nogil=True, parallel=True)
@@ -289,11 +295,19 @@ class MZI_H(OpticalComponent):
             return apply_loss(component_transfer_matrices, np.array(self.loss))
 
 def apply_loss(mzi, loss):
-    return mzi * np.array([[loss, 1],[1, loss]])
+    return np.array([[loss, 1],[1, loss]]) * mzi 
 
-def get_loss(loss_dB, loss_diff=0, loss_min=0.5):
-    while True and loss_dB > 1e-6:
-        loss_dB_cur = loss_dB + np.abs(np.random.normal(0, loss_diff))
-        return loss_dB_cur
+def get_loss(loss_dB, loss_diff=0, rv='fold'):
+    if loss_dB != 0:
+        if rv == 'exp':
+            loss_dB_cur = loss_dB + np.random.exponential(loss_diff)
+            return loss_dB_cur
+        elif rv == 'gauss':
+            loss_dB_cur = loss_dB + np.random.normal(0, loss_diff)
+            return loss_dB_cur
+        elif rv == 'fold':
+            fg_rv = np.sqrt(2)/np.sqrt(np.pi)
+            loss_dB_cur = loss_dB + np.abs(np.random.normal(0, loss_diff/fg_rv))
     return 0
+
 

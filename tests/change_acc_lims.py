@@ -14,27 +14,26 @@ import acc_colormap
 if __name__ == '__main__':
     ONN = ONN_Cls.ONN_Simulation()
     topos = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
-    
-    for ONN.N in [4]:
+    # topos = ['R_P','E_P']
+    # topos = ['R_P', 'C_Q_P']
+    ii = 1
+    for ONN.N in [16]:
         # # #for ii in range(1)
             for ONN.topo in topos:
                 print(f'N={ONN.N}, topo={ONN.topo}')
-                ONN.FOLDER = '/storage/Research/OE_2020/N=4/N=4_new'
-                ONN.FOLDER = f'/storage/Research/OE_2020/N={ONN.N}/N={ONN.N}_LPU'
-                ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16/N=16_2'
-                ONN.FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_16'
+                ONN.FOLDER = f'Analysis/mse/N={ONN.N}/N={ONN.N}_{ii}'
+                ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/exponential/N=16/N=16_0'
                 ONN = ONN.pickle_load()
                 model = ONN_Setups.ONN_creation(ONN)
 
-                # ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16/N=16_2-new'
-                ONN.FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_16_stdDev'
+                ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/exponential/N=16/N=16_2'
                 ONN.createFOLDER()
-                ONN.ITERATIONS = 200 # number of times to retry same loss/PhaseUncert
-                ONN.loss_diff = 0.50 # \sigma dB
+                ONN.ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
+                ONN.loss_diff = 0.01 # \sigma dB
 
-                ONN.loss_dB = np.linspace(0, 1, 2)
-                ONN.phase_uncert_theta = np.linspace(0., 2, 21)
-                ONN.phase_uncert_phi = np.linspace(0., 2, 21)
+                ONN.loss_dB = np.linspace(0, 3, 41)
+                ONN.phase_uncert_theta = np.linspace(0., 1, 2)
+                ONN.phase_uncert_phi = np.linspace(0., 1, 2)
 
                 model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, 0, 0)
                 ONN, model = test.test_onn(ONN, model)

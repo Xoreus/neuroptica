@@ -28,7 +28,6 @@ def get_current_accuracy(xtst, ytst, net):
     return correct_pred/len(xtst)
 
 def create_train_dnn(X, y, Xt, yt, EPOCHS=300, hnum=0):
-
     h_num = hnum
     beta = 1
     eta = .05
@@ -56,7 +55,7 @@ def create_train_dnn(X, y, Xt, yt, EPOCHS=300, hnum=0):
             net.backPropagate(targets[ii])
             err = err + net.getError(targets[ii])
 
-        losses.append(err)
+        losses.append(err/len(X))
         val_accuracy.append(get_current_accuracy(Xt, yt, net)*100)
         trn_accuracy.append(get_current_accuracy(X, y, net)*100)
 
@@ -64,7 +63,9 @@ def create_train_dnn(X, y, Xt, yt, EPOCHS=300, hnum=0):
             print("error: ", err)
 
     print('Done Epochs')
-
+    net.losses = losses
+    net.val = val_accuracy
+    net.trn = trn_accuracy
     # Get network weights
     weights = net.getWeights()
     return net, weights
@@ -73,14 +74,14 @@ if __name__ == '__main__':
     import os
     SAMPLES = 300
     rng = 8
-    EPOCHS = 30
+    EPOCHS = 80
     for N in [4]:
         # for rng in range(100, 200):
         ii = 0
         for rng in [2]:
             FOLDER = f'Analysis/DNN/Digital_Neural_Network_{SAMPLES*N}_{rng}_N={N}'
             print(f'RNG = {rng}, N = {N}')
-            X, y, Xt, yt = cd.iris_dataset(nsamples=1000)
+            X, y, Xt, yt = cd.iris_dataset(nsamples=4200)
             random.seed(rng)
 
             X = (X - np.min(X))/(np.max(X) - np.min(X))
@@ -88,6 +89,29 @@ if __name__ == '__main__':
             Xog, Xtog = X, Xt
 
             net, weights = create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=0)
+
+            plt.figure(num=None, figsize=(18, 10), dpi=80, facecolor='w',edgecolor='k')
+            plt.rcParams.update({'font.size': 24})
+            plt.plot(np.array(net.losses)/max(net.losses), linewidth=3)
+            plt.title('Cumulative Error, normalized')
+            plt.xlabel('Epochs')
+            plt.ylabel('Error')
+            saving: plt.savefig('Figures/cumul_err_hnum={}.pdf'.format(0))
+
+            plt.figure(num=None, figsize=(18, 10), dpi=80, facecolor='w',edgecolor='k')
+            plt.rcParams.update({'font.size': 24})
+            plt.plot(net.trn, linewidth=3, label='Train Accuracy')
+            plt.plot(net.val, linewidth=3, label='Validation Accuracy')
+            plt.plot(np.array(net.losses), linewidth=3)
+            np.savetxt('Analysis/DNN/dnn-iris-val.txt', net.val, fmt='%.3f',delimiter=',')
+            np.savetxt('Analysis/DNN/dnn-iris-trn.txt', net.trn, fmt='%.3f',delimiter=',')
+            np.savetxt('Analysis/DNN/dnn-iris-err.txt', net.losses, fmt='%.3f',delimiter=',')
+
+            plt.title('Validation Accuracy after each epoch')
+            plt.xlabel('Epochs')
+            plt.ylabel('Accuracy')
+            plt.legend()
+            plt.savefig('Analysis/DNN/accuracy_hnum={}.pdf'.format(0))
 
                     # Val Accuracy
             print('Validation Accuracy: {:.1f}%'.format(get_current_accuracy(

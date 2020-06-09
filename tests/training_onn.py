@@ -65,7 +65,7 @@ def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
             print('This dataset works!\n')
             return ONN, rng
 
-def train_single_onn(onn):
+def train_single_onn(onn, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
     X, y, Xt, yt = onn.normalize_dataset()
     t = time.time()
 
@@ -76,8 +76,11 @@ def train_single_onn(onn):
     X, y, Xt, yt = change_dataset_shape(onn)
 
     # initialize the ADAM optimizer and fit the ONN to the training data
-    optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
-    # optimizer = neu.InSituAdam(model, neu.CategoricalCrossEntropy, step_size=onn.STEP_SIZE)
+    if loss_function == 'mse':
+        optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
+    elif loss_function == 'cce':
+        optimizer = neu.InSituAdam(model, neu.CategoricalCrossEntropy, step_size=onn.STEP_SIZE)
+
     onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
     print(f'time spent for current training: {(time.time() - t)/60:.2f} minutes')
     return onn, model

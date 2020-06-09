@@ -79,6 +79,8 @@ class ONN_Simulation:
             Topo = 'Clements'
         elif self.topo == 'R_P':
             Topo = 'Reck'
+        else:
+            Topo = self.topo.replace('_','')
         self.topology = Topo
     def get_all_topologies(self):
         " Get list of actual topology names instead of C_Q_P"
@@ -119,19 +121,19 @@ class ONN_Simulation:
         np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
     def saveSimData(self, model):
         ''' Plot loss, training acc and val acc '''
-        ax1 = plt.plot()
-        plt.plot(self.losses, color='b', linewidth=1)
-        plt.xlabel('Epoch')
-        plt.ylabel("$\mathcal{L}$", color='b')
-        ax2 = plt.gca().twinx()
-        ax2.plot(self.trn_accuracy, color='r', linewidth=1)
-        ax2.plot(self.val_accuracy, color='g', linewidth=1)
-        plt.ylabel('Accuracy', color='r')
-        plt.legend(['Training Accuracy', 'Validation Accuracy'])
-        plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
-        plt.ylim([0, 100])
-        plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.topo}_N={self.N}.png')
-        plt.clf()
+        # ax1 = plt.plot()
+        # plt.plot(self.losses, color='b', linewidth=1)
+        # plt.xlabel('Epoch')
+        # plt.ylabel("$\mathcal{L}$", color='b')
+        # ax2 = plt.gca().twinx()
+        # ax2.plot(self.trn_accuracy, color='r', linewidth=1)
+        # ax2.plot(self.val_accuracy, color='g', linewidth=1)
+        # plt.ylabel('Accuracy', color='r')
+        # plt.legend(['Training Accuracy', 'Validation Accuracy'])
+        # plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
+        # plt.ylim([0, 100])
+        # plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.topo}_N={self.N}.png')
+        # plt.clf()
 
         # Get losses of MZIs
         losses_MZI = model.get_all_losses()

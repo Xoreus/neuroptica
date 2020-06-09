@@ -61,6 +61,7 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0):
                 acc = []
                 for _ in range(ONN.ITERATIONS):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
+                    print(loss_dB)
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
                     gt = np.array([np.argmax(tru) for tru in yt])

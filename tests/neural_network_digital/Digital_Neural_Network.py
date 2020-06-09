@@ -16,7 +16,9 @@ import numpy as np
 import os
 import pickle
 import matplotlib.pyplot as plt
-
+import sys
+sys.path.append('/home/simon/Documents/neuroptica/tests/')
+import create_datasets
 import neural_network as nn
 from sklearn.utils import shuffle
 from sklearn.model_selection import train_test_split
@@ -30,7 +32,7 @@ np.random.seed(5)
 def build_network(xtrn, ytrn, h_num=0, biasing=False):
     topology = []
     topology.append(len(xtrn[0]))
-    for _ in range(1, h_num+1):
+    for _ in range(h_num):
         topology.append(len(xtrn[0]))
     topology.append(len(ytrn[0]))
     net = nn.Network(topology, biasing)
@@ -74,9 +76,9 @@ def get_current_accuracy(xtst, ytst, net):
 def main():
     Epochs = 500
     h_num = 0
-#    dataset = 'iris'
-    dataset = 'blobs'
-    saving = False
+    dataset = 'iris'
+    # dataset = 'blobs'
+    saving = True
     plotting = True
     beta = 0.1
     eta = 1
@@ -86,7 +88,7 @@ def main():
     cumul_error = []
 
     if dataset == 'iris':
-        x, y = iris_dataset(print_plots=True, augment=250)
+        xtrn, ytrn, xval, yval = create_datasets.iris_dataset(nsamples=1200)
     if dataset == 'blobs':
 #        x, y = blob_maker(plotting=False, nsamples=200, cluster_std=.075)
 #        x = np.loadtxt('../4x4_ONN/x_q.txt')
@@ -97,11 +99,11 @@ def main():
         y = np.genfromtxt('y.csv', delimiter=',')
 
     # Build network
-    net = build_network(x, y, h_num=h_num)
+    net = build_network(xtrn, ytrn, h_num=h_num)
     # Split Data into train set and test set
-    xtrn, xtst, ytrn, ytst = train_test_split(x, y, shuffle=True, stratify=y)
-    xtrn, xval, ytrn, yval = train_test_split(xtrn, ytrn, shuffle=True,
-                                              stratify=ytrn)
+    # xtrn, xtst, ytrn, ytst = train_test_split(x, y, shuffle=True, stratify=y)
+    # xtrn, xval, ytrn, yval = train_test_split(xtrn, ytrn, shuffle=True,
+                                              # stratify=ytrn)
 
 
     # Train model with Gradient Descent
