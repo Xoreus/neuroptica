@@ -4,10 +4,11 @@ This allows for the quick creation of different ONN layers, such as Reck (R) or 
 Author: Simon Geoffroy-Gagnon
 Edit: 05.02.2020
 """
+import os
+cwd = os.getcwd()
 import sys
 sys.path.append('python_packages/')
-sys.path.append('/home/simon/Documents/neuroptica')
-sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica_PhiTheta')
+sys.path.append('../')
 import neuroptica as neu
 import numpy as np
 

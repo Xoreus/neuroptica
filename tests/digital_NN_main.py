@@ -11,8 +11,9 @@ from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
 import create_datasets as cd
-sys.path.append('/home/simon/Documents/neuroptica/tests/neural_network_digital')
-sys.path.append(r'C:\Users\sgeoff1\Documents\neuroptica_PhiTheta\tests\neural_network_digital')
+import os
+cwd = os.getcwd()
+sys.path.append('neural_network_digital')
 import Digital_Neural_Network as dnn
 import neural_network as nn
 import matplotlib.pyplot as plt

@@ -20,7 +20,7 @@ ONN.STEP_SIZE = 0.005
 
 ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 rng_og = 16
-max_rng = 15 # how many repititions 
+max_rng = 15
 # onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
 onn_topo = ['R_D_I_P']
 # onn_topo = ['R_I_D_P','E_D_P', 'R_D_P', 'C_Q_P']
