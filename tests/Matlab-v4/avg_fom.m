@@ -8,8 +8,8 @@ fontsz = 64;
 printme = 1;
 
 FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/average_linsep_NoDMM';
-FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/average_linsep_NoDMM_NoJump';
-Ns = [4, 6, 8, 10, 16, 24, 32, 48, 64, 80];
+FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/average_linsep_NoDMM_NoJump';
+Ns = [4, 6, 8, 10, 16, 24, 32, 48, 64, 80, 96];
 
 topo = {'R_P','R_I_P',  'E_P', 'C_Q_P',};% , 'R_D_I_P', 'R_D_P'};
 topology = {'Reck','Reck + Inv. Reck','Clements','Diamond'};% ,'Reck + DMM + Inv. Reck','Reck + DMM'};

@@ -7,7 +7,7 @@ loss_mean = 0.5
 sz = 500000 # Number of samples taken
 b = 100 # Bins
 
-loss_diff = 0.25
+loss_diff = 0
 loss_min = loss_mean - loss_diff
 sigma_f = loss_diff/fg_rv # Folded Gaussian standard dev
 f = abs(np.random.normal(0, sigma_f, sz));
@@ -15,7 +15,7 @@ actual_loss_f = loss_min + f;
 
 plt.figure(figsize=(6,6))
 plt.hist(actual_loss_f, bins=b, density=True)
-# plt.title(f'Hist, Folded Gaussian RV, Loss_dB Min = {np.min(actual_loss_f):.3f}\nLoss_dB Mean = {np.mean(actual_loss_f):.3f}', fontdict = {'fontsize' : 20})
+plt.title(f'Hist, Folded Gaussian RV, Loss_dB Min = {np.min(actual_loss_f):.3f}\nLoss_dB Mean = {np.mean(actual_loss_f):.3f}', fontdict = {'fontsize' : 20})
 plt.xlabel('Loss/MZI (dB)', fontdict = {'fontsize' : 20})
 plt.ylabel('Frequency (normalized)', fontdict = {'fontsize' : 20})
 plt.xlim([0, 2])

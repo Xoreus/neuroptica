@@ -33,7 +33,7 @@ for t = 1:length(topo)
     xlabel('Epoch', 'fontsize', fontsz*1, 'interpreter','latex')
     
     
-    title(sprintf('%s Backpropagation\n Mean Square Error', simulation.topology), 'fontsize', fontsz*1, 'interpreter','latex')
+    title(sprintf('%s Backpropagation', simulation.topology), 'fontsize', fontsz*1, 'interpreter','latex')
     h = legend({'Loss Function','Training Accuracy','Validation Accuracy'}, 'fontsize', fontsz*0.9, ...
         'interpreter','latex', 'location', 'east');
     set(h, 'position', get(h, 'position') + [-0.125 -.015 0 0])
@@ -51,4 +51,3 @@ for t = 1:length(topo)
     fprintf('Min MSE Loss = %.5f\n', min(simulation.losses))
     fprintf('Max Val Acc = %.2f%%\n', max(simulation.val_accuracy))
 end
-pMe()
