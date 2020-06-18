@@ -12,6 +12,7 @@ import ONN_Simulation_Class as ONN_Cls
 import acc_colormap
 import training_onn as train
 import test_trained_onns as test
+import create_datasets
 
 ONN = ONN_Cls.ONN_Simulation()
 ONN.BATCH_SIZE = 2**6
@@ -24,6 +25,10 @@ max_rng = 15
 # onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
 onn_topo = ['R_D_I_P']
 # onn_topo = ['R_I_D_P','E_D_P', 'R_D_P', 'C_Q_P']
+
+dataset = 'Gauss'
+dataset = 'MNIST'
+
 for ONN.N in [4]:
     loss_diff = [0]
     loss_var = [0]
@@ -32,7 +37,12 @@ for ONN.N in [4]:
         for lt in loss_var:
             rng = rng_og
             np.random.seed(rng)
-            ONN, _ = train.get_dataset(ONN, rng, SAMPLES=40, EPOCHS=60)
+            if dataset == 'Gauss':
+                ONN, _ = train.get_dataset(ONN, rng, SAMPLES=40, EPOCHS=60)
+            elif dataset == 'MNIST':
+                ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.MNIST_dataset(N=ONN.N, nsamples=1000)
+                
+
             ONN.FOLDER = f'Analysis/N={ONN.N}'
             ONN.createFOLDER()
             ONN.saveSimDataset()
