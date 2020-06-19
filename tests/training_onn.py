@@ -65,16 +65,33 @@ def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
             print('This dataset works!\n')
             return ONN, rng
 
-def train_single_onn(onn, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
+def create_model(onn):
     X, y, Xt, yt = onn.normalize_dataset()
-    t = time.time()
 
     print(f'\nmodel: {onn.topo}, Loss/MZI = {onn.loss_dB[0]:.2f} dB, Loss diff = {onn.loss_diff}, Phase Uncert = {onn.phase_uncert_theta[0]:.2f} Rad, dataset = {onn.dataset_name}, rng = {onn.rng}, N = {onn.N}')
 
     model = ONN_Setups.ONN_creation(onn)
 
-    X, y, Xt, yt = change_dataset_shape(onn)
+    onn.topo = 'rdi_n_rdi_p'
+    model = neu.Sequential([
+        neu.ReckLayer(N=onn.N),
+        neu.DMM_layer(N=onn.N),
+        neu.flipped_ReckLayer(N=onn.N),
+        neu.Activation(neu.Sigmoid(N=onn.N)),
+        neu.ReckLayer(N=onn.N),
+        neu.DMM_layer(N=onn.N),
+        neu.flipped_ReckLayer(N=onn.N),
+        neu.Activation(neu.AbsSquared(onn.N)), # photodetector measurement
+    ])
 
+
+    return model
+
+
+def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
+    t = time.time()
+
+    X, y, Xt, yt = change_dataset_shape(onn)
     # initialize the ADAM optimizer and fit the ONN to the training data
     if loss_function == 'mse':
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
