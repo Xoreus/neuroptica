@@ -160,6 +160,7 @@ class ONN_Simulation:
 
         # Save best phases as well
         best_phases_flat = [item for sublist in self.phases for item in sublist]
+        print(len(best_phases_flat))
         df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
         df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.topo}.txt')
     def saveAccuracyData(self):

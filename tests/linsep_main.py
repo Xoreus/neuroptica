@@ -9,6 +9,7 @@ Edit: 2020.03.28
 import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
+import ONN_Setups
 import acc_colormap
 import training_onn as train
 import test_trained_onns as test
@@ -19,12 +20,12 @@ ONN.BATCH_SIZE = 2**6
 ONN.EPOCHS = 300
 ONN.STEP_SIZE = 0.005
 
-ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
-rng_og = 16
-max_rng = 15
+ONN.ITERATIONS = 2 # number of times to retry same loss/PhaseUncert
+rng_og = 18
+max_rng = 5
 # onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
 # onn_topo = ['R_D_I_P']
-onn_topo = ['R_P']
+onn_topo = ['RDI_N_P']
 # onn_topo = ['R_I_D_P','E_D_P', 'R_D_P', 'C_Q_P']
 
 dataset = 'Gauss'
@@ -43,7 +44,6 @@ for ONN.N in [4]:
             elif dataset == 'MNIST':
                 ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.MNIST_dataset(N=ONN.N, nsamples=1000)
                 
-
             ONN.FOLDER = f'Analysis/N={ONN.N}'
             ONN.createFOLDER()
             ONN.saveSimDataset()
@@ -55,15 +55,16 @@ for ONN.N in [4]:
                 ONN.get_topology_name()
                 for ONN.rng in range(max_rng):
                     ONN.phases = []
-                    model = train.create_model(ONN)
+
+                    model = ONN_Setups.ONN_creation(ONN)
                     ONN, model = train.train_single_onn(ONN, model, loss_function='mse')
 
                     if max(ONN.val_accuracy) > max_acc:
                         best_model = model
                         max_acc = max(ONN.val_accuracy) 
 
-                    if max(ONN.val_accuracy) > 50 or ONN.rng == max_rng-1:
-                        print(f'max accuracy for {ONN.topo}: {max_acc:.3f}%')
+                    if max(ONN.val_accuracy) > 0 or ONN.rng == max_rng-1:
+                        # print(f'max accuracy for {ONN.topo}: {max_acc:.3f}%')
                         ONN.loss_diff = ld
                         ONN.loss_dB = np.linspace(0, 3, 2)
                         ONN.phase_uncert_theta = np.linspace(0., 0.75, 2)
@@ -73,4 +74,5 @@ for ONN.N in [4]:
                         ONN.saveAll(best_model)
                         ONN.pickle_save()
                         break
+
 

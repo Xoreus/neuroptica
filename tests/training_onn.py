@@ -72,21 +72,7 @@ def create_model(onn):
 
     model = ONN_Setups.ONN_creation(onn)
 
-    onn.topo = 'rdi_n_rdi_p'
-    model = neu.Sequential([
-        neu.ReckLayer(N=onn.N),
-        neu.DMM_layer(N=onn.N),
-        neu.flipped_ReckLayer(N=onn.N),
-        neu.Activation(neu.Sigmoid(N=onn.N)),
-        neu.ReckLayer(N=onn.N),
-        neu.DMM_layer(N=onn.N),
-        neu.flipped_ReckLayer(N=onn.N),
-        neu.Activation(neu.AbsSquared(onn.N)), # photodetector measurement
-    ])
-
-
     return model
-
 
 def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
     t = time.time()
@@ -157,3 +143,5 @@ if __name__ == '__main__':
                     ONN.phase_uncert_theta = [0]
                     ONN.phase_uncert_phi = [0]
                     break
+
+
