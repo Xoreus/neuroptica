@@ -178,90 +178,12 @@ class OpticalMeshNetworkLayer(NetworkLayer):
     def backward_pass(self, delta: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
         raise NotImplementedError('backward_pass() must be overridden in child class!')
 
-class ClementsLayer_old(OpticalMeshNetworkLayer):
-    '''Performs a unitary NxM operator with MZIs arranged in a Clements decomposition. If M=N then the layer can
-    perform any arbitrary unitary operator
-    '''
-
-    def __init__(self, N: int, M=None, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
-        '''
-        Initialize the ClementsLayer
-        :param N: number of input and output waveguides
-        :param M: number of MZI columns; equal to N by default
-        :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
-        the mesh (required to implement arbitrary unitary)
-        :param initializer: optional initializer method (WIP)
-        '''
-        super().__init__(N, N, initializer=initializer)
-
-        self.phase_uncert = phase_uncert
-        self.loss_dB = loss_dB
-        self.N = N
-
-        layers = []
-        if include_phase_shifter_layer:
-            layers.append(PhaseShifterLayer(N))
-
-        if M is None:
-            M = N
-
-        for layer_index in range(M):
-            if N % 2 == 0:  # even number of waveguides
-                if layer_index % 2 == 0:
-                    layers.append(MZILayer.from_waveguide_indices(N, list(range(0, N))))
-                else:
-                    layers.append(MZILayer.from_waveguide_indices(N, list(range(1, N - 1))))
-            else:  # odd number of waveguides
-                if layer_index % 2 == 0:
-                    layers.append(MZILayer.from_waveguide_indices(N, list(range(0, N - 1))))
-                else:
-                    layers.append(MZILayer.from_waveguide_indices(N, list(range(1, N))))
-
-        self.mesh = OpticalMesh(N, layers)
-
-    def forward_pass(self, X: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
-        '''
-        Compute the forward pass
-        :param X: input electric fields
-        :param cache_fields: if true, fields are cached
-        :param use_partial_vectors: if true, use partial vector method to speed up transfer matrix computations
-        :return: output fields for next ONN layer
-
-        '''
-        self.input_prev = X
-        if cache_fields:
-            self.mesh.forward_fields = self.mesh.compute_phase_shifter_fields(
-                X, align="right", use_partial_vectors=use_partial_vectors)
-            self.output_prev = np.copy(self.mesh.forward_fields[-1][-1])
-        else:
-            self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
-
-        return self.output_prev
-
-    def backward_pass(self, delta: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
-        '''
-        Compute the backward pass
-        :param delta: adjoint "output" electric fields backpropagated from the next ONN layer
-        :param cache_fields: if true, fields are cached
-        :param use_partial_vectors: if true, use partial vector method to speed up transfer matrix computations
-        :return: adjoint "input" fields for previous ONN layer
-        '''
-        if cache_fields:
-            self.mesh.adjoint_fields = self.mesh.compute_adjoint_phase_shifter_fields(
-                delta, align="right", use_partial_vectors=use_partial_vectors)
-            if isinstance(self.mesh.layers[0], PhaseShifterLayer):
-                return np.dot(self.mesh.layers[0].get_transfer_matrix().T, self.mesh.adjoint_fields[-1][-1])
-            else:
-                raise ValueError("Field_store will not work in this case, please set to False")
-        else:
-            return np.dot(self.mesh.get_transfer_matrix().T, delta)
-
 class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Layer
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition,
     but in the inverse setup (Reck^-1), to create the V^\dagger
     portion of the SVD Decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, loss_dB=0, thetas=[None], phis=[None]):
+    def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, loss_dB=0, thetas=[None], phis=[None]):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -275,7 +197,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
         if include_phase_shifter_layer:
             layers.append(PhaseShifterLayer(N))
 
-        # get the wabeguide limits of the hermitian transpose of the Reck layer (will be the flipped Reck layer)
+        # get the waveguide limits of the hermitian transpose of the Reck layer (will be the flipped Reck layer)
         mzi_limits_lower = [i for i in range(N - 2, 0, -1)] + [i for i in range(0, N - 1)]
         mzi_limits_upper = [(N - 1) - i % 2 for i in range(len(mzi_limits_lower))]
 
@@ -455,7 +377,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition, but flipped. This means that the triangle is facing
     up rather than down, like in the originali Reck mesh'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
+    def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
         '''
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -510,7 +432,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
 class ReckLayer(OpticalMeshNetworkLayer):
     '''Performs a unitary NxN operator with MZIs arranged in a Reck decomposition'''
 
-    def __init__(self, N: int, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
+    def __init__(self, N: int, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
         ''' 
         Initialize the ReckLayer
         :param N: number of input and output waveguides
@@ -567,7 +489,7 @@ class ClementsLayer(OpticalMeshNetworkLayer):
     perform any arbitrary unitary operator
     '''
 
-    def __init__(self, N: int, M=None, include_phase_shifter_layer=True, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
+    def __init__(self, N: int, M=None, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
         '''
         Initialize the ClementsLayer
         :param N: number of input and output waveguides

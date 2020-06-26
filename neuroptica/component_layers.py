@@ -119,7 +119,7 @@ class OpticalMesh:
         X_current = np.copy(X)
 
         for layer in self.layers:
-            if isinstance(layer, MZILayer) or isinstance(layer, MZILayer_H):
+            if isinstance(layer, MZILayer):
                 if use_partial_vectors:
                     if include_bs: raise NotImplementedError
                     (partial_transfer_vectors, inds_mn) = layer.get_partial_transfer_vectors(backward=False,
@@ -188,7 +188,7 @@ class OpticalMesh:
 
         for layer in reversed(self.layers):
 
-            if isinstance(layer, MZILayer) or isinstance(layer, MZILayer_H):
+            if isinstance(layer, MZILayer):
                 if use_partial_vectors:
                     (partial_transfer_vectors_inv, inds_mn) = layer.get_partial_transfer_vectors(backward=True,
                                                                                                  cumulative=True)

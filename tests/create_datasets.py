@@ -1,11 +1,11 @@
 """
 This code creates different datasets to be used for training an Optical Neural Network (4x4).
-MNIST - takes 4 digits and normalizes them from 0 to 1
+MNIST - takes N digits and normalizes them from 0 to 1
 IRIS - takes the iris dataset, adds a flower, and augments the remaining flowers using their respective distributions
 GAUSSIAN - just takes the sklearn function to create multiple gaussian distributions
 
 Author: Simon Geoffroy-Gagnon
-Edit: 2020.01.13
+Edit: 2020.06.26
 """
 import os
 from urllib.request import urlretrieve

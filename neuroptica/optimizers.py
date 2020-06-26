@@ -7,7 +7,7 @@ from typing import Tuple, Type
 import numpy as np
 from numpy import pi
 
-from neuroptica.components import MZI, MZI_H, PhaseShifter
+from neuroptica.components import MZI, PhaseShifter
 from neuroptica.layers import OpticalMeshNetworkLayer
 from neuroptica.losses import Loss
 from neuroptica.models import Sequential
