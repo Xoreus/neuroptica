@@ -37,19 +37,19 @@ def normalize_inputs(data, num_inputs, P0=50):
 
 ONN = ONN_Cls.ONN_Simulation()
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 300
-ONN.STEP_SIZE = 0.01
+ONN.EPOCHS = 1000
+ONN.STEP_SIZE = 0.001
 
-ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
+ONN.ITERATIONS = 2 # number of times to retry same loss/PhaseUncert
 rng_og = 18
 max_rng = 5
 onn_topo = ['E_P']
 
-features = 17
+features = 18
 classes = 10
-eo_settings = { 'alpha': 0.1,
-                'g':     0.15 * np.pi,
-                'phi_b': 1 * np.pi }
+eo_settings = {'alpha': 0.1,
+               'g':     0.4 * np.pi,
+               'phi_b': -1 * np.pi }
 
 model = neu.Sequential([
     neu.ClementsLayer(features),
@@ -71,6 +71,7 @@ model = neu.Sequential([
 #     neu.Activation(neu.AbsSquared(N)), # photodetector measurement
 #     neu.DropMask(N, keep_ports=range(N-1))
 # ])
+
 # dataset = 'Gauss'
 dataset = 'MNIST'
 
@@ -84,11 +85,11 @@ for ONN.N in [features]:
             np.random.seed(rng)
             if dataset == 'Gauss':
                 ONN, _ = train.get_dataset(ONN, rng, SAMPLES=40, EPOCHS=60, extra_channels=1)
-                ONN.X = normalize_inputs(ONN.X, N)
-                ONN.Xt = normalize_inputs(ONN.Xt, N)
+                ONN.X = normalize_inputs(ONN.X, ONN.N)
+                ONN.Xt = normalize_inputs(ONN.Xt, ONN.N)
             elif dataset == 'MNIST':
-                ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.MNIST_dataset(classes=classes, features=ONN.N-1, nsamples=40)
-                ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.FFT_MNIST(N=2, nsamples=90)
+                # ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.MNIST_dataset(classes=classes, features=ONN.N-1, nsamples=40)  
+                ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.FFT_MNIST(N=2, nsamples=100)
                 ONN.X = normalize_inputs(ONN.X, ONN.N)
                 ONN.Xt = normalize_inputs(ONN.Xt, ONN.N)
 
@@ -106,6 +107,12 @@ for ONN.N in [features]:
 
                     # model = ONN_Setups.ONN_creation(ONN)
                     ONN, model = train.train_single_onn(ONN, model, loss_function='cce')
+                    print(model.forward_pass(ONN.X[0].T))
+                    print(model.forward_pass(ONN.X[1].T))
+                    print(model.forward_pass(ONN.X[2].T))
+                    print(model.forward_pass(ONN.X[3].T))
+                    print(model.forward_pass(ONN.X[4].T))
+                    print(model.forward_pass(ONN.X[5].T))
 
                     if max(ONN.val_accuracy) > max_acc:
                         best_model = model
@@ -113,10 +120,13 @@ for ONN.N in [features]:
 
                     if max(ONN.val_accuracy) > 0 or ONN.rng == max_rng-1:
                         ONN.loss_diff = ld
+                        print("Starting Simulations")
                         ONN.loss_dB = np.linspace(0, 3, 3)
                         ONN.phase_uncert_theta = np.linspace(0., 0.75, 3)
                         ONN.phase_uncert_phi = np.linspace(0., 0.75, 3)
+                        print("Starting Simulations")
                         test.test_PT(ONN, best_model)
+                        print("Starting Simulations")
                         test.test_LPU(ONN, best_model)
                         ONN.saveAll(best_model)
                         ONN.plotAll()

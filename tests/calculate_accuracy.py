@@ -9,7 +9,7 @@ import numpy as np
 from tqdm import tqdm
 import time
 
-def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0):
+def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
     t = time.time()
     if 'C' in ONN.topo and 'Q' in ONN.topo:
@@ -18,12 +18,12 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0):
         Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
-    pbar = tqdm(total=len(ONN.phase_uncert_phi)*len(ONN.phase_uncert_theta))
+    if show_progress: pbar = tqdm(total=len(ONN.phase_uncert_phi)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB[:1]:
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
-            pbar.set_description(fr'theta PU = {phase_uncert_theta:.2f}/{ONN.phase_uncert_theta[-1]:.2f}', refresh=True)
+            if show_progress: pbar.set_description(fr'theta PU = {phase_uncert_theta:.2f}/{ONN.phase_uncert_theta[-1]:.2f}', refresh=True)
             acc_phi = []
             for phase_uncert_phi in ONN.phase_uncert_phi:
                 acc = []
@@ -34,13 +34,13 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0):
                     gt = np.array([np.argmax(tru) for tru in yt])
                     acc.append(np.sum((pred == gt))/yt.shape[0]*100)
                 acc_phi.append(np.mean(acc))
-                pbar.update(1)
+                if show_progress: pbar.update(1)
             acc_theta.append(acc_phi)
         accuracy.append(acc_theta)
-    pbar.close()
+    if show_progress: pbar.close()
     return np.squeeze(np.swapaxes(np.array(accuracy), 0, 2))
 
-def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0):
+def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
     t = time.time()
     if 'C' in ONN.topo and 'Q' in ONN.topo:
@@ -49,10 +49,11 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0):
         Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
-    pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
+
+    if show_progress: pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB:
-        pbar.set_description(f'Loss/MZI (dB): {loss_dB:.2f}/{ONN.loss_dB[-1]:.2f}', refresh=True)
+        if show_progress: pbar.set_description(f'Loss/MZI (dB): {loss_dB:.2f}/{ONN.loss_dB[-1]:.2f}', refresh=True)
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
             acc_phi = []
@@ -67,14 +68,14 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0):
                     acc.append(np.sum((pred == gt))/yt.shape[0]*100)
                 acc_phi.append(np.mean(acc))
             acc_theta.append(acc_phi)
-            pbar.update(1)
+            if show_progress: pbar.update(1)
         accuracy.append(acc_theta)
-    pbar.close()
+    if show_progress: pbar.close()
     return np.squeeze(np.swapaxes(np.array(accuracy), 0, 2))
 
-def get_accuracy(onn, model, Xt, yt, loss_diff):
+def get_accuracy(onn, model, Xt, yt, loss_diff, show_progress=True):
     if onn.same_phase_uncert:
-       return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff)
+       return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
     else:
-       return get_accuracy_PT(onn, model, Xt, yt, loss_diff=loss_diff)
+       return get_accuracy_PT(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
         

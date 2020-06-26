@@ -23,7 +23,6 @@ matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 from matplotlib import rc,rcParams
 rc('font', weight='bold')
 rc('text', usetex=True)
-import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 import random
@@ -122,16 +121,14 @@ def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST,
     X_test = X_test[rand_ind]
     y_test= y_test[rand_ind]
 
-
     X_train = np.array([np.fft.fft2(X) for X in X_train])
     X_test = np.array([np.fft.fft2(X) for X in X_test])
 
-    plt.imshow(np.absolute(X_train[1,:,:]), cmap='gray')
-    plt.show()
+    # plt.imshow(np.absolute(X_train[1,:,:]), cmap='gray')
+    # plt.show()
 
-    plt.imshow(np.absolute(np.fft.fftshift(X_train[1,:,:])), cmap='gray')
-    plt.show()
-
+    # plt.imshow(np.absolute(np.fft.fftshift(X_train[1,:,:])), cmap='gray')
+    # plt.show()
 
     X = [[X[:N,:N], X[-N:,:N], X[-N:,-N:], X[:N, -N:]] for X in X_train]
     y = pd.get_dummies(y_train, len(digits)).values
@@ -140,7 +137,8 @@ def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST,
     yt = pd.get_dummies(y_test, len(digits)).values
     Xt = np.reshape(Xt, [int(nsamples*0.2*classes), 4*(N)**2])
 
-    return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
+    return (np.array(X)), np.array(y), (np.array(Xt)), np.array(yt)
+    # return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
     
 def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "

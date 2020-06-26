@@ -26,26 +26,26 @@ if 1:
     matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
     matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 
-def test_PT(ONN, model):
+def test_PT(ONN, model, show_progress=True):
     ONN.same_phase_uncert = False
-    print('PT')
-    ONN.accuracy_PT = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+    print('Phi + Theta')
+    ONN.accuracy_PT = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff, show_progress=show_progress)
     ONN.PT_FoM = np.sum((np.array(ONN.accuracy_PT) > ONN.zeta*np.max(ONN.accuracy_PT))*ONN.PT_Area)
     return ONN, model
 
-def test_LPU(ONN, model):
+def test_LPU(ONN, model, show_progress=True):
     ONN.same_phase_uncert = True
-    print('LPU')
-    ONN.accuracy_LPU = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff)
+    print('Loss + Phase Uncertainty')
+    ONN.accuracy_LPU = calc_acc.get_accuracy(ONN, model, ONN.Xt, ONN.yt, loss_diff=ONN.loss_diff, show_progress=show_progress)
     ONN.LPU_FoM = np.sum((np.array(ONN.accuracy_LPU) >  ONN.zeta*np.max(ONN.accuracy_LPU))*ONN.LPU_Area)
     return ONN, model
 
 def colormap_me(ONN):
     acc_colormap.colormap_me(ONN)
 
-def test_onn(ONN, model):
-    ONN, model = test_PT(ONN, model)
-    ONN, model = test_LPU(ONN, model)
+def test_onn(ONN, model, show_progress=True):
+    ONN, model = test_PT(ONN, model, show_progress=show_progress)
+    ONN, model = test_LPU(ONN, model, show_progress=show_progress)
     acc_colormap.colormap_me(ONN)
     return ONN, model
 

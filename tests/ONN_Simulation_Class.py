@@ -130,20 +130,23 @@ class ONN_Simulation:
         self.saveSelf()
     def plotAll(self):
         fig, ax1 = plt.subplots()
-        color = 'tab:red'
+        color = 'tab:blue'
         ax1.set_xlabel('Epochs')
         ax1.set_ylabel('$\mathcal{L}$', color=color)
-        ax1.plot(self.losses, color='b', label='Losses')
+        lns1 = ax1.plot(self.losses, color='tab:blue', label='Losses')
         ax1.tick_params(axis='y', labelcolor=color)
         ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
-        color = 'tab:blue'
-        ax2.set_ylabel('Accuracy', color=color)  # we already handled the x-label with ax1
+        color = 'tab:red'
+        ax2.set_ylabel('Accuracy (\%)', color=color)  # we already handled the x-label with ax1
         ax2.set_ylim([0, 100])
-        ax2.plot(self.val_accuracy, color='r', label='Validation Accuracy')
-        ax2.plot(self.trn_accuracy, color='k', label='Training Accuracy')
+        lns2 = ax2.plot(self.val_accuracy, color='tab:red', label='Validation Accuracy')
+        lns3 = ax2.plot(self.trn_accuracy, color='k', label='Training Accuracy')
+        lns = lns1+lns2+lns3
+        labs = [l.get_label() for l in lns]
+        ax1.legend(lns, labs, loc=0)
         ax2.tick_params(axis='y', labelcolor=color)
         fig.tight_layout() 
-        plt.legend(['Losses','Validation Accuracy','Training Accuracy'])
+        # plt.legend(['Validation Accuracy','Training Accuracy'])
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
 
