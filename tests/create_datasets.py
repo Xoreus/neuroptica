@@ -121,7 +121,8 @@ def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST,
     rand_ind = random.sample(list(range(len(X_test))), int(nsamples*0.2*classes))
     X_test = X_test[rand_ind]
     y_test= y_test[rand_ind]
-    # plt.imshow(X_train[1,:,:], cmap='gray')
+
+    # plt.imshow(np.fft.fftshift(X_train[1,:,:]), cmap='gray')
     # plt.show()
 
     X_train = np.array([np.fft.fft2(X) for X in X_train])
