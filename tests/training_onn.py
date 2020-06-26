@@ -45,10 +45,10 @@ def change_dataset_shape(onn):
 
     return X, onn.y, Xt, onn.yt
 
-def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30):
+def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
     while True:
         print(f'RNG = {rng}, N = {ONN.N}, Digital Neural Network')
-        X, y, Xt, yt = cd.gaussian_dataset(targets=int(ONN.N), features=int(ONN.N), nsamples=SAMPLES*ONN.N, rng=rng)
+        X, y, Xt, yt = cd.gaussian_dataset(targets=int(ONN.N-extra_channels), features=int(ONN.N-extra_channels), nsamples=SAMPLES*ONN.N, rng=rng)
         random.seed(rng)
 
         X = (X - np.min(X))/(np.max(X) - np.min(X))

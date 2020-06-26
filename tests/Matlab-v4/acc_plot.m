@@ -75,15 +75,15 @@ F = '/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_min
 
 % BIG ass sims N=96
 F = '/home/simon/Documents/neuroptica/tests/Analysis/N=96_3';
-
+F = '/home/simon/Documents/neuroptica/tests/Analysis/5layers/N=10';
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
 
-if 1 && 1
+if 1 && 0
     phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
 end
-if 1 && 1
+if 1 && 0
     loss_phaseUncert(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
 end
 if 1 && 0

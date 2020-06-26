@@ -6,7 +6,7 @@ saves the Phases of each ONN Setups in the order that they appear
 also saves the 3D accuracy array to a .mat file with accuracy[losses_dB, theta, phi]
 
 Author: Simon Geoffroy-Gagnon
-Edit: 05.02.2020
+Edit: 2020.06.25
 """
 import numpy as np
 import pandas as pd
@@ -82,87 +82,28 @@ class ONN_Simulation:
         else:
             Topo = self.topo.replace('_','')
         self.topology = Topo
-    def get_all_topologies(self):
-        " Get list of actual topology names instead of C_Q_P"
-        models = []
-        for model in self.ONN_setup:
-            if model == 'R_P':
-                Topo = 'Reck'
-            if model == 'R_D_P':
-                Topo = 'Reck + DMM'
-            if model == 'R_D_P':
-                Topo = 'Reck + DMM'
-            elif model == 'I_P':
-                Topo = 'Inverted Reck'
-            elif model == 'R_I_P':
-                Topo = 'Reck + Inverted Reck'
-            elif model == 'R_D_I_P':
-                Topo = 'Reck + DMM + Inverted Reck'
-            elif model == 'C_Q_P':
-                Topo = 'Diamond'
-            elif model == 'C_W_P':
-                Topo = 'Central Diamond'
-            elif model == 'E_P':
-                Topo = 'Clements'
-            else:
-                Topo = self.topo
-            models.append(Topo)
-        self.models = models
     def saveSimSettings(self):
         " save loss_dB, phase_uncert, ITERATIONS, ONN_setups, and N "
         simSettings = self.create_dict()
         simulationSettings = simSettings.to_string()
         with open(f'{self.FOLDER}/SimulationSettings.txt','w') as f:
             f.write(simulationSettings)
-        np.savetxt(f'{self.FOLDER}/loss_dB.txt', self.loss_dB, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/phase_uncert_theta.txt', self.phase_uncert_theta, fmt='%.4f')
-        np.savetxt(f'{self.FOLDER}/phase_uncert_phi.txt', self.phase_uncert_phi, fmt='%.4f')
-
-        np.savetxt(f'{self.FOLDER}/ONN_Setups.txt', self.ONN_setup, fmt='%s')
     def saveSimData(self, model):
-        ''' Plot loss, training acc and val acc '''
-        # ax1 = plt.plot()
-        # plt.plot(self.losses, color='b', linewidth=1)
-        # plt.xlabel('Epoch')
-        # plt.ylabel("$\mathcal{L}$", color='b')
-        # ax2 = plt.gca().twinx()
-        # ax2.plot(self.trn_accuracy, color='r', linewidth=1)
-        # ax2.plot(self.val_accuracy, color='g', linewidth=1)
-        # plt.ylabel('Accuracy', color='r')
-        # plt.legend(['Training Accuracy', 'Validation Accuracy'])
-        # plt.title(f'Gradient Descent, Max Validation Accuracy: {max(self.val_accuracy):.2f}\n Dataset: {self.dataset_name}, Topology: {self.topology}')
-        # plt.ylim([0, 100])
-        # plt.savefig(f'{self.FOLDER}/Figures_Fitting/{self.topo}_N={self.N}.png')
-        # plt.clf()
-
-        # Get losses of MZIs
-        losses_MZI = model.get_all_losses()
-        losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
-        df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.topo}_N={self.N}.txt')
-
-        # save a txt file containing the loss, trn acc, val acc, in case i want to replot it using matlab
+        ''' simulation data to .txt files'''
         df = pd.DataFrame({'Losses':self.losses, 'Training Accuracy':self.trn_accuracy, 'Validation Accuracy':self.val_accuracy})
-        df.to_csv(f'{self.FOLDER}/Data_Fitting/{self.topo}.txt')
-
-        # Get losses of MZIs
-        losses_MZI = model.get_all_losses()
-        losses_MZI_flat = [item for sublist in losses_MZI for item in sublist]
-        df = pd.DataFrame(losses_MZI_flat, columns=['Losses_MZI_dB'])
-        df.to_csv(f'{self.FOLDER}/Losses_per_MZI/lossPerMZI_{self.topo}.txt')
+        df.to_csv(f'{self.FOLDER}/backpropagation-{self.topo}.txt')
 
         # Save best transformation matrix
         best_trf_matrix = np.array(self.best_trf_matrix)
-        with open(f'{self.FOLDER}/TransformationMatrices/Best_TransformationMatrix_{self.topo}_.txt', "w") as myfile:
+        with open(f'{self.FOLDER}/TransformationMatrix_{self.topo}_.txt', "w") as myfile:
             for trf in best_trf_matrix:
                 np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
                 myfile.write('\n')
 
         # Save best phases as well
         best_phases_flat = [item for sublist in self.phases for item in sublist]
-        print(len(best_phases_flat))
         df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
-        df.to_csv(f'{self.FOLDER}/Phases/Phases_Best_{self.topo}.txt')
+        df.to_csv(f'{self.FOLDER}/Phases_Best_{self.topo}.txt')
     def saveAccuracyData(self):
         ''' save the accuracy computed from calculate_accuracy '''
         scipy.io.savemat(f"{self.FOLDER}/acc_{self.topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
@@ -181,29 +122,51 @@ class ONN_Simulation:
         return simSettings
     def saveSelf(self):
         ''' save .mat strutcure of this class' variables '''
-        scipy.io.savemat(f"{self.FOLDER}/Topologies/{self.topo}.mat", mdict={f'{self.topo}':self})
+        scipy.io.savemat(f"{self.FOLDER}/{self.topo}.mat", mdict={f'{self.topo}':self})
     def saveAll(self, model):
         self.saveSimDataset()
         self.saveSimData(model)
-        # self.saveAccuracyData()
+        self.plotAll()
         self.saveSelf()
+    def plotAll(self):
+        fig, ax1 = plt.subplots()
+        color = 'tab:red'
+        ax1.set_xlabel('Epochs')
+        ax1.set_ylabel('$\mathcal{L}$', color=color)
+        ax1.plot(self.losses, color='b', label='Losses')
+        ax1.tick_params(axis='y', labelcolor=color)
+        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+        color = 'tab:blue'
+        ax2.set_ylabel('Accuracy', color=color)  # we already handled the x-label with ax1
+        ax2.set_ylim([0, 100])
+        ax2.plot(self.val_accuracy, color='r', label='Validation Accuracy')
+        ax2.plot(self.trn_accuracy, color='k', label='Training Accuracy')
+        ax2.tick_params(axis='y', labelcolor=color)
+        fig.tight_layout() 
+        plt.legend(['Losses','Validation Accuracy','Training Accuracy'])
+        plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
+        plt.clf()
+
+        plt.pcolor(self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.xlabel('Loss/MZI (dB)')
+        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)')
+        cbar = plt.colorbar()
+        cbar.set_label('Accuracy (\%)')
+        plt.savefig(f'{self.FOLDER}/LPU_ACC_{self.topo}.pdf')
+        plt.clf()
+
+        plt.pcolor(self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.xlabel(r'$\sigma_\theta$ (Rad)')
+        plt.ylabel(r'$\sigma_{\phi}$ (Rad)')
+        cbar = plt.colorbar()
+        cbar.set_label('Accuracy (\%)')
+        plt.savefig(f'{self.FOLDER}/PT_ACC_{self.topo}.pdf')
+        plt.clf()
     def createFOLDER(self):
         if not os.path.isdir(self.FOLDER):
             os.makedirs(self.FOLDER)
-        if not os.path.isdir(self.FOLDER + '/Figures_Fitting'):
-            os.makedirs(self.FOLDER + '/Figures_Fitting')
-        if not os.path.isdir(self.FOLDER + '/Data_Fitting'):
-            os.makedirs(self.FOLDER + '/Data_Fitting')
-        if not os.path.isdir(self.FOLDER + '/Phases'):
-            os.makedirs(self.FOLDER + '/Phases')
         if not os.path.isdir(self.FOLDER + '/Datasets'):
             os.makedirs(self.FOLDER + '/Datasets')
-        if not os.path.isdir(self.FOLDER + '/Losses_per_MZI'):
-            os.makedirs(self.FOLDER + '/Losses_per_MZI')
-        if not os.path.isdir(self.FOLDER + '/TransformationMatrices'):
-            os.makedirs(self.FOLDER + '/TransformationMatrices')
-        if not os.path.isdir(self.FOLDER + '/Topologies'):
-            os.makedirs(self.FOLDER + '/Topologies')
     def pickle_save(self):
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'wb') as p:
             pickle.dump(self, p)

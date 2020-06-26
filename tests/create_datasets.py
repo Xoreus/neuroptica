@@ -10,7 +10,8 @@ Edit: 2020.01.13
 import os
 from urllib.request import urlretrieve
 import matplotlib as mpl
-mpl.use('Agg')
+# mpl.use('Agg')
+mpl.use('TKAgg')
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
 matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -22,7 +23,7 @@ matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 from matplotlib import rc,rcParams
 rc('font', weight='bold')
 rc('text', usetex=True)
-
+import cv2
 import matplotlib.pyplot as plt
 import pandas as pd
 import random
@@ -66,15 +67,14 @@ def load_mnist_labels(filename):
     # The labels are vectors of integers now, that's exactly what we want.
     return data
 
-def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized MNIST: [1,3,6,7]):
+def MNIST_dataset(classes=4, features=4, nsamples=100): # this is for unnormalized MNIST: [1,3,6,7]):
     " Download MNIST dataset "
     X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1)
     y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
     X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
     y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
 
-    if digits is None:
-        digits = random.sample(range(0, 10), N)
+    digits = random.sample(range(10), classes)
 
     train_mask = np.isin(y_train, digits)
     test_mask = np.isin(y_test, digits)
@@ -82,7 +82,7 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
     X_train_4_digits, y_train_4_digits = X_train[train_mask], y_train[train_mask]
 
     # Create dimensionality reducer (PCA with 4 dimensions) and fit it to dataset
-    pca = PCA(n_components=len(digits))
+    pca = PCA(n_components=features)
     pca.fit(X_train_4_digits)
 
     # transform the training and testing datasets
@@ -91,15 +91,51 @@ def MNIST_dataset(digits=None, N=4, nsamples=1000): # this is for unnormalized M
 
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
 
-    rand_ind = random.sample(list(range(len(X))), int(nsamples))
+    rand_ind = random.sample(list(range(len(X))), int(nsamples*classes))
     X = X[rand_ind]
     y = y[rand_ind]
-    rand_ind = random.sample(list(range(len(Xt))), int(nsamples*0.2))
+    rand_ind = random.sample(list(range(len(Xt))), int(nsamples*0.2*classes))
     Xt = Xt[rand_ind]
     yt = yt[rand_ind]
 
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
+def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST, 
+    " Download MNIST dataset "
+    X_train = load_mnist_images('train-images-idx3-ubyte.gz').squeeze()
+    y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
+    X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').squeeze()
+    y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
+    
+    digits = random.sample(range(0, 10), classes)
+
+    train_mask = np.isin(y_train, digits)
+    test_mask = np.isin(y_test, digits)
+
+    X_train, y_train = X_train[train_mask], y_train[train_mask]
+    X_test, y_test = X_test[test_mask], y_test[test_mask]
+
+    rand_ind = random.sample(list(range(len(X_train))), int(nsamples*classes))
+    X_train = X_train[rand_ind]
+    y_train = y_train[rand_ind]
+    rand_ind = random.sample(list(range(len(X_test))), int(nsamples*0.2*classes))
+    X_test = X_test[rand_ind]
+    y_test= y_test[rand_ind]
+    # plt.imshow(X_train[1,:,:], cmap='gray')
+    # plt.show()
+
+    X_train = np.array([np.fft.fft2(X) for X in X_train])
+    X_test = np.array([np.fft.fft2(X) for X in X_test])
+
+    X = [[X[:N,:N], X[-N:,:N], X[-N:,-N:], X[:N, -N:]] for X in X_train]
+    y = pd.get_dummies(y_train, len(digits)).values
+    X = np.reshape(X, [int(nsamples*classes), 4*(N)**2])
+    Xt = [[X[:N,:N], X[-N:,:N], X[-N:,-N:], X[:N, -N:]] for X in X_test]
+    yt = pd.get_dummies(y_test, len(digits)).values
+    Xt = np.reshape(Xt, [int(nsamples*0.2*classes), 4*(N)**2])
+
+    return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
+    
 def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
     iris = datasets.load_iris()
@@ -236,6 +272,6 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
 if __name__ == '__main__':
     # plot_OG_iris()
     # plot_agmented_iris()
-    X, y, *_ = gaussian_dataset(targets=3, features=3)
+    FFT_MNIST()
 
 
