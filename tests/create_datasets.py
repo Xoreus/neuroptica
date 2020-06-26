@@ -122,11 +122,16 @@ def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST,
     X_test = X_test[rand_ind]
     y_test= y_test[rand_ind]
 
-    # plt.imshow(np.fft.fftshift(X_train[1,:,:]), cmap='gray')
-    # plt.show()
 
     X_train = np.array([np.fft.fft2(X) for X in X_train])
     X_test = np.array([np.fft.fft2(X) for X in X_test])
+
+    plt.imshow(np.absolute(X_train[1,:,:]), cmap='gray')
+    plt.show()
+
+    plt.imshow(np.absolute(np.fft.fftshift(X_train[1,:,:])), cmap='gray')
+    plt.show()
+
 
     X = [[X[:N,:N], X[-N:,:N], X[-N:,-N:], X[:N, -N:]] for X in X_train]
     y = pd.get_dummies(y_train, len(digits)).values
