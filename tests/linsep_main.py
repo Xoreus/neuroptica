@@ -8,6 +8,7 @@ Edit: 2020.03.28
 '''
 import numpy as np
 import calculate_accuracy as calc_acc
+import cmath
 import ONN_Simulation_Class as ONN_Cls
 import ONN_Setups
 import acc_colormap
@@ -15,10 +16,12 @@ import training_onn as train
 import test_trained_onns as test
 import create_datasets
 import sys
+from sklearn import preprocessing
 sys.path.append('../')
 import neuroptica as neu
+import cmath
 
-def normalize_inputs(data, num_inputs, P0=50):
+def normalize_inputs(data, num_inputs, P0=10):
     '''
     Reshapes the inputs to fit into the specified mesh size and normalizes input data to
     have the same total power input by injecting extra power to an "unused" input port.
@@ -34,21 +37,34 @@ def normalize_inputs(data, num_inputs, P0=50):
         data_normalized[i][injection_port] = np.sqrt(P0 - np.sum(x**2))
     return data_normalized
 
+def L2_norm(data):
+    polar_data = [[cmath.polar(feature) for feature in sample] for sample in data]
+    r = np.array([[feature[0] for feature in sample] for sample in polar_data])
+    phi = np.array([[feature[1] for feature in sample] for sample in polar_data])
+    r_nor = preprocessing.normalize(r, norm='l2')
+    data_nor = []
+    for idx, _ in enumerate(r):
+        data_nor += [list(zip(r_nor[idx], phi[idx]))]
+    # print(data_nor[1])
+    data_nor = [[cmath.rect(r, phi) for r, phi in sample] for sample in data_nor]
+
+    return np.array(data_nor)
 
 ONN = ONN_Cls.ONN_Simulation()
 ONN.BATCH_SIZE = 2**6
-ONN.EPOCHS = 1000
-ONN.STEP_SIZE = 0.001
+ONN.EPOCHS = 500
+ONN.STEP_SIZE = 0.0005
 
 ONN.ITERATIONS = 2 # number of times to retry same loss/PhaseUncert
-rng_og = 18
+rng_og = 16
 max_rng = 5
 onn_topo = ['E_P']
 
-features = 18
+features = 19
+
 classes = 10
 eo_settings = {'alpha': 0.1,
-               'g':     0.4 * np.pi,
+               'g':     0.5 * np.pi,
                'phi_b': -1 * np.pi }
 
 model = neu.Sequential([
@@ -58,19 +74,6 @@ model = neu.Sequential([
     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     neu.DropMask(features, keep_ports=range(classes))
 ])
-
-#     neu.ClementsLayer(N),
-#     neu.Activation(neu.cReLU(N)),
-#     neu.ClementsLayer(N),
-#     neu.Activation(neu.cReLU(N)),
-#     neu.ClementsLayer(N),
-#     neu.Activation(neu.cReLU(N)),
-#     neu.ClementsLayer(N),
-#     neu.Activation(neu.cReLU(N)),
-#     neu.ClementsLayer(N),
-#     neu.Activation(neu.AbsSquared(N)), # photodetector measurement
-#     neu.DropMask(N, keep_ports=range(N-1))
-# ])
 
 # dataset = 'Gauss'
 dataset = 'MNIST'
@@ -85,15 +88,23 @@ for ONN.N in [features]:
             np.random.seed(rng)
             if dataset == 'Gauss':
                 ONN, _ = train.get_dataset(ONN, rng, SAMPLES=40, EPOCHS=60, extra_channels=1)
-                ONN.X = normalize_inputs(ONN.X, ONN.N)
+                # ONN.X = normalize_inputs(ONN.X, ONN.N)
                 ONN.Xt = normalize_inputs(ONN.Xt, ONN.N)
             elif dataset == 'MNIST':
                 # ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.MNIST_dataset(classes=classes, features=ONN.N-1, nsamples=40)  
                 ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.FFT_MNIST(N=2, nsamples=100)
+                # ONN.X, ONN.y, ONN.Xt, ONN.yt = create_datasets.FFT_MNIST_PCA(classes=classes, features=ONN.N-1, nsamples=100)
                 ONN.X = normalize_inputs(ONN.X, ONN.N)
                 ONN.Xt = normalize_inputs(ONN.Xt, ONN.N)
 
-            ONN.FOLDER = f'Analysis/FFT_MNIST/N={ONN.N}'
+#                 ONN.X = L2_norm(ONN.X)
+#                 ONN.Xt = L2_norm(ONN.Xt)
+
+            # X_norm = np.sum(np.abs(ONN.X[:,:-1])**2,axis=-1)**(1./2)
+            # print(ONN.X[:,:-1])
+            # print(X_norm)
+
+            ONN.FOLDER = f'Analysis/FFT_MNIST/bs={ONN.BATCH_SIZE}/N={ONN.N}'
             ONN.createFOLDER()
             ONN.saveSimDataset()
 
@@ -107,12 +118,6 @@ for ONN.N in [features]:
 
                     # model = ONN_Setups.ONN_creation(ONN)
                     ONN, model = train.train_single_onn(ONN, model, loss_function='cce')
-                    print(model.forward_pass(ONN.X[0].T))
-                    print(model.forward_pass(ONN.X[1].T))
-                    print(model.forward_pass(ONN.X[2].T))
-                    print(model.forward_pass(ONN.X[3].T))
-                    print(model.forward_pass(ONN.X[4].T))
-                    print(model.forward_pass(ONN.X[5].T))
 
                     if max(ONN.val_accuracy) > max_acc:
                         best_model = model
@@ -120,13 +125,10 @@ for ONN.N in [features]:
 
                     if max(ONN.val_accuracy) > 0 or ONN.rng == max_rng-1:
                         ONN.loss_diff = ld
-                        print("Starting Simulations")
                         ONN.loss_dB = np.linspace(0, 3, 3)
                         ONN.phase_uncert_theta = np.linspace(0., 0.75, 3)
                         ONN.phase_uncert_phi = np.linspace(0., 0.75, 3)
-                        print("Starting Simulations")
                         test.test_PT(ONN, best_model)
-                        print("Starting Simulations")
                         test.test_LPU(ONN, best_model)
                         ONN.saveAll(best_model)
                         ONN.plotAll()

@@ -2,7 +2,7 @@
 network. The API for this module is based loosely on Keras.
 
 Last Author: Simon Geoffroy-Gagnon
-Edit: 05.02.2020
+Edit: 2020.06.26
 '''
 
 import numpy as np
@@ -10,7 +10,6 @@ import numpy as np
 from neuroptica.component_layers import MZILayer, OpticalMesh, PhaseShifterLayer
 from neuroptica.nonlinearities import Nonlinearity
 from neuroptica.settings import NP_COMPLEX
-
 
 class NetworkLayer:
     '''Represents a logical layer in a simulated optical neural network. A NetworkLayer is different from a
@@ -238,7 +237,6 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
             layers.append(MZILayer_H.from_waveguide_indices(N, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis))
-
 
         self.mesh = OpticalMesh(N, layers)
 

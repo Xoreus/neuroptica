@@ -49,7 +49,6 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
         Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
             list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
-
     if show_progress: pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
     for loss_dB in ONN.loss_dB:
@@ -78,4 +77,3 @@ def get_accuracy(onn, model, Xt, yt, loss_diff, show_progress=True):
        return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
     else:
        return get_accuracy_PT(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
-        

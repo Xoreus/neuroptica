@@ -140,6 +140,44 @@ def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST,
     return (np.array(X)), np.array(y), (np.array(Xt)), np.array(yt)
     # return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
     
+def FFT_MNIST_PCA(features=10, classes=10, nsamples=100): # FFT of MNIST, 
+    " Download MNIST dataset "
+    X_train = load_mnist_images('train-images-idx3-ubyte.gz').squeeze()
+    y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
+    X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').squeeze()
+    y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
+    
+    digits = random.sample(range(0, 10), classes)
+
+    train_mask = np.isin(y_train, digits)
+    test_mask = np.isin(y_test, digits)
+
+    X_train, y_train = X_train[train_mask], y_train[train_mask]
+    X_test, y_test = X_test[test_mask], y_test[test_mask]
+
+    rand_ind = random.sample(list(range(len(X_train))), int(nsamples*classes))
+    X_train = X_train[rand_ind]
+    y_train = y_train[rand_ind]
+    rand_ind = random.sample(list(range(len(X_test))), int(nsamples*0.2*classes))
+    X_test = X_test[rand_ind]
+    y_test= y_test[rand_ind]
+
+    X_train = np.array([np.fft.fft2(X) for X in X_train])
+    X_test = np.array([np.fft.fft2(X) for X in X_test])
+
+    X_train = np.reshape(X_train, [nsamples*classes, -1])
+    X_test = np.reshape(X_test, [int(nsamples*0.2*classes), -1])
+
+    pca = PCA(n_components=features)
+    X = pca.fit_transform(np.absolute(X_train))
+    Xt = pca.transform(np.absolute(X_test))
+
+    y = pd.get_dummies(y_train, len(digits)).values
+    yt = pd.get_dummies(y_test, len(digits)).values
+
+    return (np.array(X)), np.array(y), (np.array(Xt)), np.array(yt)
+    # return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
+    
 def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
     iris = datasets.load_iris()
