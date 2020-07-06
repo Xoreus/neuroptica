@@ -103,6 +103,7 @@ class AddMaskDiamond(NetworkLayer):
         n_features, n_samples = delta.shape
         delta_back = np.zeros((int(self.input_size), n_samples), dtype=NP_COMPLEX)
         delta_back = delta[self.input_size-2:2*self.input_size-2]
+        # delta_back = delta[:self.input_size]
         return delta_back
 
 class DropMask(NetworkLayer):
@@ -114,6 +115,7 @@ class DropMask(NetworkLayer):
         :param keep_ports: list or iterable of which ports to keep (drop_ports must be None if keep_ports is specified)
         :param drop_ports: list or iterable of which ports to drop (keep_ports must be None if drop_ports is specified)
         '''
+        self.ports = list(range(N))
         if (keep_ports is not None and drop_ports is not None) or (keep_ports is None and drop_ports is None):
             raise ValueError("specify exactly one of keep_ports or drop_ports")
         if keep_ports:
