@@ -84,6 +84,27 @@ class AddMask(NetworkLayer):
             delta_back[self.ports[i]] = delta[i*2]
         return delta_back
 
+class AddMaskDiamond(NetworkLayer):
+    '''adds N-2 0s for multilayer diamond mesh '''
+
+    def __init__(self, N: int):
+        self.ports = list(range(N))
+        super().__init__(N, len(self.ports))
+
+    def forward_pass(self, X: np.ndarray):
+        B = np.zeros_like(X, dtype=NP_COMPLEX)
+        B = B[:-2, :]
+        C = np.empty((X.shape[0]+B.shape[0], X.shape[1]), dtype=NP_COMPLEX)
+        C[:X.shape[0]-2,:] = B
+        C[X.shape[0]-2:,:] = X
+        return C
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        n_features, n_samples = delta.shape
+        delta_back = np.zeros((int(self.input_size), n_samples), dtype=NP_COMPLEX)
+        delta_back = delta[self.input_size-2:2*self.input_size-2]
+        return delta_back
+
 class DropMask(NetworkLayer):
     '''Drop specified ports entirely, reducing the size of the network for the next layer.'''
 

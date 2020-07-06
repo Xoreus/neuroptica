@@ -45,10 +45,10 @@ def change_dataset_shape(onn):
 
     return X, onn.y, Xt, onn.yt
 
-def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
+def get_dataset(onn, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
     while True:
-        print(f'RNG = {rng}, N = {ONN.N}, Digital Neural Network')
-        X, y, Xt, yt = cd.gaussian_dataset(targets=int(ONN.N-extra_channels), features=int(ONN.N-extra_channels), nsamples=SAMPLES*ONN.N, rng=rng)
+        print(f'RNG = {rng}, N = {onn.N}, Digital Neural Network')
+        X, y, Xt, yt = cd.gaussian_dataset(targets=int(onn.N-extra_channels), features=int(onn.N-extra_channels), nsamples=SAMPLES*onn.N, rng=rng)
         random.seed(rng)
 
         X = (X - np.min(X))/(np.max(X) - np.min(X))
@@ -58,10 +58,10 @@ def get_dataset(ONN, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
         print('Validation Accuracy: {:.1f}%'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
         rng += 1
         if dnn.get_current_accuracy(Xt, yt, net)*100 > lim:
-            ONN.X = X
-            ONN.y = y
-            ONN.Xt = Xt
-            ONN.yt = yt
+            onn.X = X
+            onn.y = y
+            onn.Xt = Xt
+            onn.yt = yt
             print('This dataset works!\n')
             return ONN, rng
 
@@ -77,7 +77,8 @@ def create_model(onn):
 def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
     t = time.time()
 
-    X, y, Xt, yt = change_dataset_shape(onn)
+    # X, y, Xt, yt = change_dataset_shape(onn)
+    X, y, Xt, yt = onn.X, onn.y, onn.Xt, onn.yt
     # initialize the ADAM optimizer and fit the ONN to the training data
     if loss_function == 'mse':
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
@@ -89,59 +90,59 @@ def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross 
     return onn, model
 
 if __name__ == '__main__':
-    ONN = ONN_Cls.ONN_Simulation()
-    ONN.BATCH_SIZE = 2**6
-    ONN.EPOCHS = 400
-    ONN.STEP_SIZE = 0.005
-    ONN.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
-    ONN.loss_diff = 0 # \sigma dB
-    ONN.rng = 2
-    ONN.zeta = 0.75
-    ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
-    ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
+    onn = ONN_Cls.ONN_Simulation()
+    onn.BATCH_SIZE = 2**6
+    onn.EPOCHS = 400
+    onn.STEP_SIZE = 0.005
+    onn.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
+    onn.loss_diff = 0 # \sigma dB
+    onn.rng = 2
+    onn.zeta = 0.75
+    onn.PT_Area = (onn.phase_uncert_phi[1] - onn.phase_uncert_phi[0])**2
+    onn.LPU_Area = (onn.loss_dB[1] - onn.loss_dB[0])*(onn.phase_uncert_phi[1] - onn.phase_uncert_phi[0])
 
-    ONN.loss_dB = [0]
+    onn.loss_dB = [0]
 
-    ONN.loss_diff = 0
-    ONN.phase_uncert_theta = [0]
-    ONN.phase_uncert_phi = [0]
+    onn.loss_diff = 0
+    onn.phase_uncert_theta = [0]
+    onn.phase_uncert_phi = [0]
 
     onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
     # onn_topo = ['E_P', 'R_I_P']
     # onn_topo = ['R_P']
     # onn_topo = ['C_Q_P']
     rng = 8111
-    ONN.N = 8*2*2
+    onn.N = 8*2*2
     FoM = {}
     for ii in range(1):
         ONN, rng = get_dataset(ONN, rng, lim=90)
-        for ONN.topo in onn_topo:
+        for onn.topo in onn_topo:
             while True:
-                ONN.get_topology_name()
+                onn.get_topology_name()
                 ONN, model = train_single_onn(ONN)
-                ONN.FOLDER = f'Analysis/Lossy_Training/N={ONN.N}_loss_diff'
-                ONN.FOLDER = f'Analysis/output_ports_pwer/N={ONN.N}'
-                if max(ONN.val_accuracy) > 87:
-                    ONN.createFOLDER()
+                onn.FOLDER = f'Analysis/Lossy_Training/N={onn.N}_loss_diff'
+                onn.FOLDER = f'Analysis/output_ports_pwer/N={onn.N}'
+                if max(onn.val_accuracy) > 87:
+                    onn.createFOLDER()
 
-                    ONN.loss_dB = np.linspace(0, 1, 41)
-                    ONN.phase_uncert_theta = np.linspace(0., 0.4, 41)
-                    ONN.phase_uncert_phi = np.linspace(0., 0.4, 41)
+                    onn.loss_dB = np.linspace(0, 1, 41)
+                    onn.phase_uncert_theta = np.linspace(0., 0.4, 41)
+                    onn.phase_uncert_phi = np.linspace(0., 0.4, 41)
 
                     model = ONN_Setups.ONN_creation(ONN)
-                    model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, 0, 0)
+                    model.set_all_phases_uncerts_losses(onn.phases, 0, 0, 0, 0)
 
                     ONN, model = test.test_LPU(ONN, model)
 
-                    ONN.pickle_save()
-                    ONN.saveAll(model)
-                    np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
+                    onn.pickle_save()
+                    onn.saveAll(model)
+                    np.savetxt(f'{onn.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
 
-                    ONN.loss_dB = [0]
+                    onn.loss_dB = [0]
 
-                    ONN.loss_diff = 0
-                    ONN.phase_uncert_theta = [0]
-                    ONN.phase_uncert_phi = [0]
+                    onn.loss_diff = 0
+                    onn.phase_uncert_theta = [0]
+                    onn.phase_uncert_phi = [0]
                     break
 
 

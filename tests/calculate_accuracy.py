@@ -12,11 +12,6 @@ import time
 def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
     t = time.time()
-    if 'C' in ONN.topo and 'Q' in ONN.topo:
-        Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
-    elif 'C' in ONN.topo and 'W' in ONN.topo:
-        Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
-            list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
     if show_progress: pbar = tqdm(total=len(ONN.phase_uncert_phi)*len(ONN.phase_uncert_theta))
     accuracy = []
@@ -43,11 +38,6 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
 def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     ONN.LPU_Area = (ONN.loss_dB[1] - ONN.loss_dB[0])*(ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])
     t = time.time()
-    if 'C' in ONN.topo and 'Q' in ONN.topo:
-        Xt = np.array([list(np.zeros(int((ONN.N-2)))) + list(samples) for samples in ONN.Xt])
-    elif 'C' in ONN.topo and 'W' in ONN.topo:
-        Xt = (np.array([list(np.zeros(int((ONN.N-2)/2))) + list(samples) +
-            list(np.zeros(int(np.ceil((ONN.N-2)/2)))) for samples in ONN.Xt]))
 
     if show_progress: pbar = tqdm(total=len(ONN.loss_dB)*len(ONN.phase_uncert_theta))
     accuracy = []
