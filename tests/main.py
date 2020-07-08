@@ -78,15 +78,14 @@ model = neu.Sequential([
 # If you want multi-layer Diamond Topology
 # model = neu.Sequential([
 #     neu.AddMaskDiamond(features),
-#     neu.DiamondLayer(features, include_phase_shifter_layer=False),
+#     neu.DiamondLayer(features),
 #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
 #     neu.Activation(neu.cReLU(features)),
 #     neu.AddMaskDiamond(features),
-#     neu.DiamondLayer(features, include_phase_shifter_layer=False),
+#     neu.DiamondLayer(features),
 #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
 #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-#     # neu.DropMask(features, keep_ports=range(classes),
-#     neu.DropMask(features, drop_ports=range(features - classes))
+#     neu.DropMask(features, keep_ports=range(classes),
 # ])
 
 # dataset = 'Gauss'
