@@ -54,7 +54,7 @@ def L2_norm(data):
 onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 onn.BATCH_SIZE = 2**6 
 onn.EPOCHS = 100
-onn.STEP_SIZE = 0.0005 # Learning Rate
+onn.STEP_SIZE = 0.005 # Learning Rate
 
 onn.ITERATIONS = 2 # number of times to retry same loss/PhaseUncert
 rng_og = 1 # starting RNG value
@@ -104,7 +104,7 @@ for onn.N in [features]:
                 onn.X = normalize_inputs(onn.X, onn.N)
                 onn.Xt = normalize_inputs(onn.Xt, onn.N)
             elif dataset == 'MNIST':
-                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=50) # this gives real valued vectors as input samples 
+                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=20) # this gives real valued vectors as input samples 
                 # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(half_square_length=2, nsamples=40) # this gives complex valued vectors
                 # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=classes, features=features, nsamples=40) # this gives real valued vectors as input samples
 
@@ -141,7 +141,7 @@ for onn.N in [features]:
                     max_acc = max(onn.val_accuracy) 
 
                 if max(onn.val_accuracy) > max_accuracy_req or onn.rng == max_number_of_tests-1:
-                    onn.loss_diff = ld # Set loss_diff
+                    onn.loss_diff = lossDiff # Set loss_diff
                     onn.loss_dB = np.linspace(0, 3, 3) # set loss/MZI range
                     onn.phase_uncert_theta = np.linspace(0., 0.75, 3) # set theta phase uncert range
                     onn.phase_uncert_phi = np.linspace(0., 0.75, 3) # set phi phase uncert range
