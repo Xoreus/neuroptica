@@ -58,10 +58,10 @@ onn.STEP_SIZE = 0.0005 # Learning Rate
 
 onn.ITERATIONS = 2 # number of times to retry same loss/PhaseUncert
 rng_og = 1 # starting RNG value
-max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
+max_number_of_tests = 2 # Max number of retries for a single model's training (keeps maximum accuracy model)
 max_accuracy_req = 50 # (%) Will stop retrying after accuracy above this is reached
 
-features = 17 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
+features = 16 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
 classes = 10 # How many classes? max for MNIST = 10
 
 eo_settings = {'alpha': 0.1, 'g':0.5 * np.pi, 'phi_b': -1 * np.pi} # If Electro-Optic Nonlinear Activation is used
@@ -93,10 +93,10 @@ dataset = 'MNIST'
 
 for onn.N in [features]:
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    loss_var = [0] # if loss_var is used in insertion loss/MZI
+    loss_training = [0] # loss used during training
 
-    for ld in loss_diff:
-        for lt in loss_var:
+    for lossDiff in loss_diff:
+        for lossTrain in loss_training:
             rng = rng_og
             np.random.seed(rng)
             if dataset == 'Gauss':
@@ -104,25 +104,25 @@ for onn.N in [features]:
                 onn.X = normalize_inputs(onn.X, onn.N)
                 onn.Xt = normalize_inputs(onn.Xt, onn.N)
             elif dataset == 'MNIST':
-                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=200) # this gives real valued vectors as input samples 
-                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(half_square_length=2, nsamples=40) # this gives complex valued vectors
+                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=50) # this gives real valued vectors as input samples 
+                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(half_square_length=2, nsamples=40) # this gives complex valued vectors
                 # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=classes, features=features, nsamples=40) # this gives real valued vectors as input samples
 
-                # To Add an extra channel and normalize power #
-                onn.X = normalize_inputs(onn.X, onn.N)
-                onn.Xt = normalize_inputs(onn.Xt, onn.N)
+                # add an extra channel (+1 ports) and normalize power #
+                # onn.X = normalize_inputs(onn.X, onn.N)
+                # onn.Xt = normalize_inputs(onn.Xt, onn.N)
                 
                 # To Simply Normalize input power from 0-1 #
-                # onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X))
-                # onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt))
+                onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X))
+                onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt))
 
-            onn.FOLDER = f'Analysis/FFT_MNIST/bs={onn.BATCH_SIZE}/N={onn.N}' # Name the folder to be created
+            onn.FOLDER = f'Analysis/N={onn.N}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 
             max_acc = 0
-            onn.loss_diff = ld
-            onn.loss_dB = [lt]
+            onn.loss_diff = lossDiff
+            onn.loss_dB = [lossTrain]
             for onn.rng in range(max_number_of_tests):
                 onn.phases = []
                 
@@ -133,8 +133,9 @@ for onn.N in [features]:
 
                 # model = ONN_Setups.ONN_creation(onn) # If ONN_Setups is used
 
-                onn, model = train.train_single_onn(onn, model, loss_function='cce')
+                onn, model = train.train_single_onn(onn, model, loss_function='cce') # cce for complex models, mse for simple single layer ONNs
 
+                # Save best model
                 if max(onn.val_accuracy) > max_acc:
                     best_model = model
                     max_acc = max(onn.val_accuracy) 

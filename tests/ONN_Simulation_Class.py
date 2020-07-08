@@ -19,6 +19,7 @@ import matplotlib as mpl
 class ONN_Simulation:
     def __init__(self):
         " Initialize the ONN simulation class with all the default sim variables"
+        # Training and Testing
         self.SAMPLES = 1000
         self.dataset_name = 'Gauss'
         self.N = 4
@@ -40,16 +41,20 @@ class ONN_Simulation:
         self.BATCH_SIZE = 2**6
         self.topo = 'R_P'
 
-        self.FOLDER = ''
+        self.FOLDER = 'Analysis'
 
+        # Datasets
         self.X = []
         self.y = []
         self.Xt = []
         self.yt = []
-
+        self.range_dB = 5
+        
+        # Phases and transformation Matrices
         self.phases = []
         self.trf_matrix = [] 
 
+        # Training and Simulation results
         self.losses = []
         self.val_accuracy = []
         self.trn_accuracy = []
@@ -112,17 +117,21 @@ class ONN_Simulation:
         # Normalize output in case this was not done
         Xn = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
         Xtn = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
-        np.savetxt(f'{self.FOLDER}/Datasets/X_normalized.txt', X, delimiter=',',fmt='%.3f')
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_normalized.txt', X, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/X_normalized.txt', Xn, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_normalized.txt', Xtn, delimiter=',',fmt='%.3f')
 
-        np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f') # Also output the power of the input vectors to help with experimental testing
+        # Also output the power of the input vectors to help with experimental testing
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f') 
         np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f')
 
-        # Also save the power of the normalized input samples in dB
-        Xn_p_n = 10*np.log10(np.abs(X)**2)
-        Xtn_p_n = 10*np.log10(np.abs(Xt)**2)
-        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_normalized_dB.txt', Xn_p_n, delimiter=',',fmt='%.3f') # Also output the power of the input vectors to help with experimental testing
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_normalized_dB.txt', Xtn_p_n, delimiter=',',fmt='%.3f')
+        # Also save the power of the normalized input samples in dB, normalized with range [-range_dB 0] dB. Required to take the second min, since first min is 0 or -inf dB.
+        Xn = 10*np.log10(np.abs(Xn)**2+sorted(set(np.abs(Xn).reshape(-1)))[1])
+        Xtn = 10*np.log10(np.abs(Xtn)**2+sorted(set(np.abs(Xtn).reshape(-1)))[1])
+        Xn = ((Xn - np.min(Xn))/(np.max(Xn) - np.min(Xn)) - 1)*self.range_dB
+        Xtn = ((Xtn - np.min(Xtn))/(np.max(Xtn) - np.min(Xtn)) - 1)*self.range_dB
+
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_normalized_[-{self.range_dB}-0]dB.txt', Xn, delimiter=',',fmt='%.3f') 
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_normalized_[-{self.range_dB}-0]dB.txt', Xtn, delimiter=',',fmt='%.3f')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
