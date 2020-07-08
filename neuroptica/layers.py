@@ -48,6 +48,9 @@ class NetworkLayer:
         """ Sets the phases changes phase uncerts (phi, theta) and changes the loss_dB """
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
         layers = []
+        if (None, None) in phases:
+            phases = [(None, None) for _ in range(sum(mzi_nums))]
+
         phases_mzi_layer = []
         idx = 0
         for ii in mzi_nums:

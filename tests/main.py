@@ -20,6 +20,7 @@ from sklearn import preprocessing
 sys.path.append('../')
 import neuroptica as neu
 import cmath
+import copy
 
 def normalize_inputs(data, num_inputs, P0=10):
     '''
@@ -51,29 +52,30 @@ def L2_norm(data):
     return np.array(data_nor)
 
 onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
-onn.BATCH_SIZE = 2**0 # How many samples to pass through at once
-onn.EPOCHS = 100 # How many times to pass the training dataset through the model
+onn.BATCH_SIZE = 2**6 
+onn.EPOCHS = 100
 onn.STEP_SIZE = 0.0005 # Learning Rate
-onn_topo = ['E_P']
 
 onn.ITERATIONS = 2 # number of times to retry same loss/PhaseUncert
-rng_og = 16 # starting RNG value
-max_number_of_tests = 5 # Max number of retries for a single model's training
+rng_og = 1 # starting RNG value
+max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
+max_accuracy_req = 50 # (%) Will stop retrying after accuracy above this is reached
 
-features = 10 # How many features? max for MNIST = 784
-classes = 10 # How many classes? max for MNIST = 10
+features = 6 # How many features? max for MNIST = 784
+classes = 4 # How many classes? max for MNIST = 10
 
 eo_settings = {'alpha': 0.1, 'g':0.5 * np.pi, 'phi_b': -1 * np.pi} # If Electro-Optic Nonlinear Activation is used
 
-model = neu.Sequential([
-    neu.ClementsLayer(features),
-    neu.Activation(neu.cReLU(features)),
-    neu.ClementsLayer(features),
-    neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    # neu.DropMask(features, drop_ports=range(features - classes))
-    neu.DropMask(features, keep_ports=range(classes))
-])
+# If you want regular Clements (multi-layer) topology
+# model = neu.Sequential([
+#     neu.ClementsLayer(features),
+#     neu.Activation(neu.cReLU(features)),
+#     neu.ClementsLayer(features),
+#     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+#     neu.DropMask(features, keep_ports=range(classes))
+# ])
 
+# If you want multi-layer Diamond Topology
 model = neu.Sequential([
     neu.AddMaskDiamond(features),
     neu.DiamondLayer(features, include_phase_shifter_layer=False),
@@ -103,40 +105,52 @@ for onn.N in [features]:
                 onn.X = normalize_inputs(onn.X, onn.N)
                 onn.Xt = normalize_inputs(onn.Xt, onn.N)
             elif dataset == 'MNIST':
-                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=onn.N, nsamples=20)  
-                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(N=2, nsamples=40)
-                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=classes, features=onn.N, nsamples=40)
+                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=200) # this gives real valued vectors as input samples 
+                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(half_square_length=2, nsamples=40) # this gives complex valued vectors
+                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=classes, features=features, nsamples=40) # this gives real valued vectors as input samples
+
+                # To Add an extra channel and normalize power #
+                # onn.N += 1
                 # onn.X = normalize_inputs(onn.X, onn.N)
                 # onn.Xt = normalize_inputs(onn.Xt, onn.N)
+                
+                # To Simply Normalize input power from 0-1 #
+                onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X))
+                onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt))
 
             onn.FOLDER = f'Analysis/FFT_MNIST/bs={onn.BATCH_SIZE}/N={onn.N}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 
-            for onn.topo in onn_topo:
-                max_acc = 0
-                onn.loss_diff = ld
-                onn.loss_dB = [lt]
-                onn.get_topology_name()
-                for onn.rng in range(max_number_of_tests):
-                    onn.phases = []
-                    # model = ONN_Setups.ONN_creation(onn) # If ONN_Setups is used
-                    onn, model = train.train_single_onn(onn, model, loss_function='cce')
+            max_acc = 0
+            onn.loss_diff = ld
+            onn.loss_dB = [lt]
+            for onn.rng in range(max_number_of_tests):
+                onn.phases = []
+                
+                # Reset the phases to create new model
+                current_phases = model.get_all_phases()
+                current_phases = [[(None, None) for _ in layer] for layer in current_phases]
+                model.set_all_phases_uncerts_losses(current_phases)
 
-                    if max(onn.val_accuracy) > max_acc:
-                        best_model = model
-                        max_acc = max(onn.val_accuracy) 
+                # model = ONN_Setups.ONN_creation(onn) # If ONN_Setups is used
 
-                    if max(onn.val_accuracy) > 0 or onn.rng == max_number_of_tests-1:
-                        onn.loss_diff = ld # Set loss_diff
-                        onn.loss_dB = np.linspace(0, 3, 3) # set loss/MZI range
-                        onn.phase_uncert_theta = np.linspace(0., 0.75, 3) # set theta phase uncert range
-                        onn.phase_uncert_phi = np.linspace(0., 0.75, 3) # set phi phase uncert range
-                        test.test_PT(onn, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
-                        test.test_LPU(onn, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
-                        onn.saveAll(best_model) # Save best model information
-                        onn.plotAll() # plot training and tests
-                        onn.pickle_save() # save pickled version of the onn class
-                        break
+                onn, model = train.train_single_onn(onn, model, loss_function='cce')
+
+                if max(onn.val_accuracy) > max_acc:
+                    best_model = model
+                    max_acc = max(onn.val_accuracy) 
+
+                if max(onn.val_accuracy) > max_accuracy_req or onn.rng == max_number_of_tests-1:
+                    onn.loss_diff = ld # Set loss_diff
+                    onn.loss_dB = np.linspace(0, 3, 3) # set loss/MZI range
+                    onn.phase_uncert_theta = np.linspace(0., 0.75, 3) # set theta phase uncert range
+                    onn.phase_uncert_phi = np.linspace(0., 0.75, 3) # set phi phase uncert range
+                    test.test_PT(onn, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
+                    test.test_LPU(onn, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
+                    onn.saveAll(best_model) # Save best model information
+                    onn.plotAll() # plot training and tests
+                    onn.pickle_save() # save pickled version of the onn class
+                    break
 
 

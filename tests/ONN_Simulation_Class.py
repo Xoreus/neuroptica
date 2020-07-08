@@ -6,7 +6,7 @@ saves the Phases of each ONN Setups in the order that they appear
 also saves the 3D accuracy array to a .mat file with accuracy[losses_dB, theta, phi]
 
 Author: Simon Geoffroy-Gagnon
-Edit: 2020.06.25
+Edit: 2020.07.07
 """
 import numpy as np
 import pandas as pd
@@ -38,7 +38,7 @@ class ONN_Simulation:
         self.loss_dB_test = [0]
 
         self.BATCH_SIZE = 2**6
-        self.topo = ''
+        self.topo = 'R_P'
 
         self.FOLDER = ''
 
@@ -56,11 +56,6 @@ class ONN_Simulation:
         self.accuracy = []
         self.accuracy_LPU = []
         self.accuracy_PT = []
-    def normalize_dataset(self):
-        " Normalize the dataset to be in range [0, 1]"
-        self.X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
-        self.Xt = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
-        return np.array(self.X), np.array(self.y), np.array(self.Xt), np.array(self.yt)
     def get_topology_name(self):
         " Get list of actual topology names instead of C_Q_P"
         if self.topo == 'R_D_P':
@@ -113,6 +108,15 @@ class ONN_Simulation:
         np.savetxt(f'{self.FOLDER}/Datasets/Xt.txt', self.Xt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/X.txt', self.X, delimiter=',',fmt='%.3f')
+
+        # Normalize output in case this was not done
+        X = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
+        Xt = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
+        np.savetxt(f'{self.FOLDER}/Datasets/X_normalized.txt', X, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_normalized.txt', X, delimiter=',',fmt='%.3f')
+
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f') # Also output the power of the input vectors to help with experimental testing
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,

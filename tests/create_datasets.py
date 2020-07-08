@@ -10,7 +10,7 @@ Edit: 2020.06.26
 import os
 from urllib.request import urlretrieve
 import matplotlib as mpl
-# mpl.use('Agg')
+# mpl.use('Agg') # If you cant plt.show() anything, use this
 mpl.use('TKAgg')
 import matplotlib
 matplotlib.rcParams['mathtext.fontset'] = 'stix'
@@ -99,7 +99,7 @@ def MNIST_dataset(classes=4, features=4, nsamples=100): # this is for unnormaliz
 
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
-def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST, 
+def FFT_MNIST(half_square_length=2, classes=10, nsamples=100): # FFT of MNIST, 
     " Download MNIST dataset "
     X_train = load_mnist_images('train-images-idx3-ubyte.gz').squeeze()
     y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
@@ -124,24 +124,23 @@ def FFT_MNIST(N=2, classes=10, nsamples=100): # FFT of MNIST,
     X_train = np.array([np.fft.fft2(X) for X in X_train])
     X_test = np.array([np.fft.fft2(X) for X in X_test])
 
+    # To show images of FFT'ed MNIST samples #
     # plt.imshow(np.absolute(X_train[1,:,:]), cmap='gray')
     # plt.show()
-
     # plt.imshow(np.absolute(np.fft.fftshift(X_train[1,:,:])), cmap='gray')
     # plt.show()
 
-    X = [[X[:N,:N], X[-N:,:N], X[-N:,-N:], X[:N, -N:]] for X in X_train]
+    X = [[X[:half_square_length,:half_square_length], X[-half_square_length:,:half_square_length], X[-half_square_length:,-half_square_length:], X[:half_square_length, -half_square_length:]] for X in X_train]
     y = pd.get_dummies(y_train, len(digits)).values
-    X = np.reshape(X, [int(nsamples*classes), 4*(N)**2])
-    Xt = [[X[:N,:N], X[-N:,:N], X[-N:,-N:], X[:N, -N:]] for X in X_test]
+    X = np.reshape(X, [int(nsamples*classes), 4*(half_square_length)**2])
+    Xt = [[X[:half_square_length,:half_square_length], X[-half_square_length:,:half_square_length], X[-half_square_length:,-half_square_length:], X[:half_square_length, -half_square_length:]] for X in X_test]
     yt = pd.get_dummies(y_test, len(digits)).values
-    Xt = np.reshape(Xt, [int(nsamples*0.2*classes), 4*(N)**2])
+    Xt = np.reshape(Xt, [int(nsamples*0.2*classes), (2*half_square_length)**2])
 
     return (np.array(X)), np.array(y), (np.array(Xt)), np.array(yt)
-    # return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
     
 def FFT_MNIST_PCA(features=10, classes=10, nsamples=100): # FFT of MNIST, 
-    " Download MNIST dataset "
+    " Download half_square_length dataset "
     X_train = load_mnist_images('train-images-idx3-ubyte.gz').squeeze()
     y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
     X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').squeeze()
@@ -176,7 +175,6 @@ def FFT_MNIST_PCA(features=10, classes=10, nsamples=100): # FFT of MNIST,
     yt = pd.get_dummies(y_test, len(digits)).values
 
     return (np.array(X)), np.array(y), (np.array(Xt)), np.array(yt)
-    # return np.absolute(np.array(X)), np.array(y), np.absolute(np.array(Xt)), np.array(yt)
     
 def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
@@ -312,8 +310,4 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
 
 if __name__ == '__main__':
-    # plot_OG_iris()
-    # plot_agmented_iris()
     FFT_MNIST()
-
-
