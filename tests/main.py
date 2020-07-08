@@ -61,33 +61,33 @@ rng_og = 1 # starting RNG value
 max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
 max_accuracy_req = 50 # (%) Will stop retrying after accuracy above this is reached
 
-features = 6 # How many features? max for MNIST = 784
-classes = 4 # How many classes? max for MNIST = 10
+features = 17 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
+classes = 10 # How many classes? max for MNIST = 10
 
 eo_settings = {'alpha': 0.1, 'g':0.5 * np.pi, 'phi_b': -1 * np.pi} # If Electro-Optic Nonlinear Activation is used
 
 # If you want regular Clements (multi-layer) topology
-# model = neu.Sequential([
-#     neu.ClementsLayer(features),
-#     neu.Activation(neu.cReLU(features)),
-#     neu.ClementsLayer(features),
-#     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-#     neu.DropMask(features, keep_ports=range(classes))
-# ])
+model = neu.Sequential([
+    neu.ClementsLayer(features),
+    neu.Activation(neu.cReLU(features)),
+    neu.ClementsLayer(features),
+    neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    neu.DropMask(features, keep_ports=range(classes))
+])
 
 # If you want multi-layer Diamond Topology
-model = neu.Sequential([
-    neu.AddMaskDiamond(features),
-    neu.DiamondLayer(features, include_phase_shifter_layer=False),
-    neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    neu.Activation(neu.cReLU(features)),
-    neu.AddMaskDiamond(features),
-    neu.DiamondLayer(features, include_phase_shifter_layer=False),
-    neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    # neu.DropMask(features, keep_ports=range(classes),
-    neu.DropMask(features, drop_ports=range(features - classes))
-])
+# model = neu.Sequential([
+#     neu.AddMaskDiamond(features),
+#     neu.DiamondLayer(features, include_phase_shifter_layer=False),
+#     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+#     neu.Activation(neu.cReLU(features)),
+#     neu.AddMaskDiamond(features),
+#     neu.DiamondLayer(features, include_phase_shifter_layer=False),
+#     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+#     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+#     # neu.DropMask(features, keep_ports=range(classes),
+#     neu.DropMask(features, drop_ports=range(features - classes))
+# ])
 
 # dataset = 'Gauss'
 dataset = 'MNIST'
@@ -105,18 +105,17 @@ for onn.N in [features]:
                 onn.X = normalize_inputs(onn.X, onn.N)
                 onn.Xt = normalize_inputs(onn.Xt, onn.N)
             elif dataset == 'MNIST':
-                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=200) # this gives real valued vectors as input samples 
-                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(half_square_length=2, nsamples=40) # this gives complex valued vectors
+                # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=classes, features=features, nsamples=200) # this gives real valued vectors as input samples 
+                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST(half_square_length=2, nsamples=40) # this gives complex valued vectors
                 # onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=classes, features=features, nsamples=40) # this gives real valued vectors as input samples
 
                 # To Add an extra channel and normalize power #
-                # onn.N += 1
-                # onn.X = normalize_inputs(onn.X, onn.N)
-                # onn.Xt = normalize_inputs(onn.Xt, onn.N)
+                onn.X = normalize_inputs(onn.X, onn.N)
+                onn.Xt = normalize_inputs(onn.Xt, onn.N)
                 
                 # To Simply Normalize input power from 0-1 #
-                onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X))
-                onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt))
+                # onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X))
+                # onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt))
 
             onn.FOLDER = f'Analysis/FFT_MNIST/bs={onn.BATCH_SIZE}/N={onn.N}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
