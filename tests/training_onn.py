@@ -47,23 +47,23 @@ def change_dataset_shape(onn):
 
 def get_dataset(onn, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
     while True:
-        print(f'RNG = {rng}, N = {onn.N}, Digital Neural Network')
-        X, y, Xt, yt = cd.gaussian_dataset(targets=int(onn.N-extra_channels), features=int(onn.N-extra_channels), nsamples=SAMPLES*onn.N, rng=rng)
+        print(f'RNG = {rng}, N = {onn.features}, Digital Neural Network')
+        X, y, Xt, yt = cd.gaussian_dataset(targets=int(onn.classes), features=int(onn.features), nsamples=SAMPLES*onn.features, rng=rng)
         random.seed(rng)
 
         X = (X - np.min(X))/(np.max(X) - np.min(X))
         Xt = (Xt - np.min(Xt))/(np.max(Xt) - np.min(Xt))
 
         net, weights = dnn.create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=0)
-        print('Validation Accuracy: {:.1f}%'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
+        print('Validation Accuracy: {:.1f}%\n'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
         rng += 1
         if dnn.get_current_accuracy(Xt, yt, net)*100 > lim:
             onn.X = X
             onn.y = y
             onn.Xt = Xt
             onn.yt = yt
-            print('This dataset works!\n')
-            return ONN, rng
+            print('This dataset is linearly separable!\n')
+            return onn, rng
 
 def create_model(onn):
     X, y, Xt, yt = onn.normalize_dataset()
@@ -73,6 +73,7 @@ def create_model(onn):
     model = ONN_Setups.ONN_creation(onn)
 
     return model
+
 
 def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
     t = time.time()

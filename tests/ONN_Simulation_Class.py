@@ -11,6 +11,7 @@ Edit: 2020.07.07
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.ndimage.filters import gaussian_filter
 import os
 import scipy.io
 import pickle
@@ -50,7 +51,8 @@ class ONN_Simulation:
         self.yt = []
         self.range_dB = 5
         
-        # Phases and transformation Matrices
+        # Model, Phases and transformation Matrices
+        self.model = []
         self.phases = []
         self.trf_matrix = [] 
 
@@ -141,12 +143,16 @@ class ONN_Simulation:
         return simSettings
     def saveSelf(self):
         ''' save .mat strutcure of this class' variables '''
-        scipy.io.savemat(f"{self.FOLDER}/{self.topo}.mat", mdict={f'{self.topo}':self})
+        model = self.model
+        self.model = []
+        self_dict = {f'{self.topo}':self}
+        scipy.io.savemat(f"{self.FOLDER}/Topologies/{self.topo}.mat", mdict={f'{self.topo}':self})
+        self.model = model
     def saveAll(self, model):
         self.saveSimDataset()
         self.saveSimData(model)
         self.plotAll()
-        self.saveSelf()
+        self.saveSelf() # Only useful if wanting a .mat file
     def plotAll(self):
         fig, ax1 = plt.subplots()
         color = 'tab:blue'
@@ -169,19 +175,43 @@ class ONN_Simulation:
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
 
-        plt.pcolor(self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        cbar = plt.colorbar()
+        # plt.contour(self.loss_dB, self.phase_uncert_theta, gaussian_filter(self.accuracy_LPU, 5.), 4, colors='w')
+        plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*np.max(self.accuracy_LPU)], colors='w')
+        plt.xlabel('Loss/MZI (dB)')
+        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)')
+        cbar.set_label('Accuracy (\%)')
+        plt.tight_layout()
+        plt.savefig(f'{self.FOLDER}/LPU_ACC_Contour_{self.topo}.pdf')
+        plt.clf()
+
+        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
         plt.xlabel('Loss/MZI (dB)')
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)')
         cbar = plt.colorbar()
         cbar.set_label('Accuracy (\%)')
+        plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/LPU_ACC_{self.topo}.pdf')
         plt.clf()
 
-        plt.pcolor(self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        cbar = plt.colorbar()
+        # plt.contour(self.loss_dB, self.phase_uncert_theta, gaussian_filter(self.accuracy_LPU, 5.), 4, colors='w')
+        plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*np.max(self.accuracy_LPU)], colors='w')
+        plt.xlabel(r'$\sigma_\theta$ (Rad)')
+        plt.ylabel(r'$\sigma_{\phi}$ (Rad)')
+        cbar.set_label('Accuracy (\%)')
+        plt.tight_layout()
+        plt.savefig(f'{self.FOLDER}/PT_ACC_Contour_{self.topo}.pdf')
+        plt.clf()
+
+        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
         plt.xlabel(r'$\sigma_\theta$ (Rad)')
         plt.ylabel(r'$\sigma_{\phi}$ (Rad)')
         cbar = plt.colorbar()
         cbar.set_label('Accuracy (\%)')
+        plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/PT_ACC_{self.topo}.pdf')
         plt.clf()
     def createFOLDER(self):
@@ -189,10 +219,14 @@ class ONN_Simulation:
             os.makedirs(self.FOLDER)
         if not os.path.isdir(self.FOLDER + '/Datasets'):
             os.makedirs(self.FOLDER + '/Datasets')
+        if not os.path.isdir(self.FOLDER + '/Topologies'):
+            os.makedirs(self.FOLDER + '/Topologies')
     def pickle_save(self):
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'wb') as p:
             pickle.dump(self, p)
-    def pickle_load(self):
+    def pickle_load(self, onn_folder = None):
+        if onn_folder is not None:
+            self.FOLDER = onn_folder
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:
             self = pickle.load(p)
             return self 

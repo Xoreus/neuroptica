@@ -1,5 +1,5 @@
 """
-This code creates different datasets to be used for training an Optical Neural Network (4x4).
+This code creates different datasets to be used for training an Optical Neural Network.
 MNIST - takes N digits and normalizes them from 0 to 1
 IRIS - takes the iris dataset, adds a flower, and augments the remaining flowers using their respective distributions
 GAUSSIAN - just takes the sklearn function to create multiple gaussian distributions
@@ -34,10 +34,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
 import plot_scatter_matrix 
-
-# Set random seed to always get same data
-rng = 5
-random.seed(rng)
 
 def download(filename, source='http://yann.lecun.com/exdb/mnist/'):
     print("Downloading %s" % filename)

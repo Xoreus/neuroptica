@@ -18,7 +18,7 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     for loss_dB in ONN.loss_dB[:1]:
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
-            if show_progress: pbar.set_description(fr'theta PU = {phase_uncert_theta:.2f}/{ONN.phase_uncert_theta[-1]:.2f}', refresh=True)
+            if show_progress: pbar.set_description(f'Theta phase uncert = {phase_uncert_theta:.2f}/{ONN.phase_uncert_theta[-1]:.2f}', refresh=True)
             acc_phi = []
             for phase_uncert_phi in ONN.phase_uncert_phi:
                 acc = []
@@ -67,3 +67,11 @@ def get_accuracy(onn, model, Xt, yt, loss_diff, show_progress=True):
        return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
     else:
        return get_accuracy_PT(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
+
+def accuracy(onn, model, Xt, yt):
+    model.set_all_phases_uncerts_losses(onn.phases)
+    Y_hat = model.forward_pass(Xt.T)
+    pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+    gt = np.array([np.argmax(tru) for tru in yt])
+    acc = np.sum((pred == gt))/yt.shape[0]*100
+    return acc

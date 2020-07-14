@@ -16,7 +16,7 @@ for ii = 1:length(model_names)
 end
 
 for ii = 1:length(model_names)
-    filename = [FOLDER, '/Data_Fitting/', model_names{ii}(1:end-4), '.txt'];
+    filename = [FOLDER, '/', model_names{ii}(1:end-4), '.txt'];
     delimiterIn = ',';
     headerlinesIn = 1;
     if exist(filename, 'file')

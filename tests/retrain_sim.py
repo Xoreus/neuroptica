@@ -26,7 +26,7 @@ onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
 for onn.N in [8]:
     for onn.topo in onn_topo:
         onn.get_topology_name()
-        onn.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0'
+        onn.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=16'
         onn.X = np.loadtxt(onn.FOLDER + '/Datasets/X.txt',delimiter=',')
         onn.y = np.loadtxt(onn.FOLDER + '/Datasets/y.txt',delimiter=',')
         onn.Xt = np.loadtxt(onn.FOLDER + '/Datasets/Xt.txt',delimiter=',')

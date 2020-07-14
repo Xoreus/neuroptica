@@ -10,7 +10,7 @@ clc; close all; clear;
 
 fig_of_merit_value = 0.75;
 print_fig_of_merit = 0;
-showContour = 0;
+showContour = 1;
 printMe = 1;
 
 % 96x96 sims
@@ -21,11 +21,11 @@ printMe = 1;
 % 32x32 sims
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=32/N=32_1';
 %     16x16 sims
-%         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16/N=16_0'; % Show FoM lines
+        F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16'; % Show FoM lines
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16/N=16_2-new';
 % 8x8 Sims
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0';
-% F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis/N=8/N=8_0';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/N=8/N=8_0';
 % F = '/home/simon/Documents/neuoptica/tests/Analysis/N=8/N=8_0-newRange';
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0-newRange-lp';
 
@@ -70,20 +70,22 @@ printMe = 1;
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/iris/N=4/N=4';
 
 % Perfectly trained, Loss w/ Gamma RV, 8x8
-F = '/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_minLoss=0dB_lossStdDev=0dB';
-F = '/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_minLoss=0.25dB_lossStdDev=0dB';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_minLoss=0dB_lossStdDev=0dB';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/3l/N=16';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_minLoss=0.25dB_lossStdDev=0dB';
 
 % BIG ass sims N=96
-F = '/home/simon/Documents/neuroptica/tests/Analysis/N=96_3';
-F = '/home/simon/Documents/neuroptica/tests/Analysis/5layers/N=10';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/N=96_3';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/5layers/N=10';
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
 
-if 1 && 0
+if 1 && 1
     phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
 end
-if 1 && 0
+if 1 && 1
     loss_phaseUncert(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
 end
 if 1 && 0

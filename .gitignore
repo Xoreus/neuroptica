@@ -150,3 +150,6 @@ dmypy.json
 
 # Ignore .zip files
 *.zip
+
+# Ignore .ps scripts
+*.ps

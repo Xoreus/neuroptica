@@ -31,8 +31,8 @@ for t = 1:length(topo)
         C = contour(simulation.loss_dB, simulation.phase_uncert_phi, same_phaseUncert, ...
             [sim.max_accuracy*fig_of_merit_value sim.max_accuracy*fig_of_merit_value], 'k' , 'linewidth',4);
         % Create legend for contour map
-        lgd = ['Above ', num2str(sim.max_accuracy*fig_of_merit_value, 4), '\% accuracy'];
-        
+        lgd = ['Above ', '75' , '\% accuracy'];
+        % num2str(sim.max_accuracy*fig_of_merit_value, 4)
         legend(lgd, 'fontsize', fontsz*0.8, 'interpreter','latex');
     end
     % Calculate "area" of contour map as a figure of merit
@@ -72,12 +72,13 @@ for t = 1:length(topo)
         if strcmp(sim.topo, 'R_D_I_P')
             simulation.topology = 'Reck + DMM + Inv. Reck';
         end
-        title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+%         title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
+        title(sprintf('FoM in $\\mathrm{Rad} \\cdot \\mathrm{dB}$'), 'fontsize', fontsz, 'interpreter','latex')
     end
 
     if printMe
         pMe([sprintf('../Crop_Me/%s_lossPhaseUncert_N=%d.pdf', simulation.topo, simulation.N)])
     end
-    fprintf('%s LPU FoM = %.6f\n', simulation.topology, area_of_merit)
+    fprintf('%s LPU FoM = %.6f\n', simulation.topo, area_of_merit)
 end
 end
