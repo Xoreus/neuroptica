@@ -13,7 +13,6 @@ import acc_colormap
 import digital_NN_main as dnn
 import create_datasets as cd
 import test_trained_onns as test
-
 import sys
 sys.path.append('../../neuroptica')
 import neuroptica as neu
@@ -29,7 +28,6 @@ matplotlib.rcParams['mathtext.rm'] = 'Bitstream Vera Sans'
 matplotlib.rcParams['mathtext.it'] = 'Bitstream Vera Sans:italic'
 matplotlib.rcParams['mathtext.bf'] = 'Bitstream Vera Sans:bold'
 import matplotlib.pyplot as plt
-
 
 def change_dataset_shape(onn):
     if 'C' in onn.topo and 'Q' in onn.topo:
@@ -73,7 +71,6 @@ def create_model(onn):
     model = ONN_Setups.ONN_creation(onn)
 
     return model
-
 
 def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
     t = time.time()

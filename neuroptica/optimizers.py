@@ -3,7 +3,6 @@ starting with "InSitu" use the on-chip interferometric gradient calculation rout
 "Training of photonic neural networks through in situ backpropagation and gradient measurement".'''
 
 from typing import Tuple, Type
-
 import numpy as np
 from numpy import pi
 
@@ -141,6 +140,7 @@ class InSituAdam(Optimizer):
                     self.m[component] = np.zeros(component.dof)
                     self.v[component] = np.zeros(component.dof)
                     self.g[component] = np.zeros(component.dof)
+        print('\n')
 
     def fit(self, data: np.ndarray, labels: np.ndarray, val_data: np.ndarray,
             val_labels: np.ndarray, epochs=1000, batch_size=32,

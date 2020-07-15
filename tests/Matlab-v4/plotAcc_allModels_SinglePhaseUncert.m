@@ -17,7 +17,7 @@ for t = topo
     accuracy = sim.(t{1}).accuracy_LPU;
     for p_idx = 1
         
-        legend_{end+1} = simulation.topology;
+        legend_{end+1} = simulation.topo;
         same_phaseUncert = [];
         
         accuracy = squeeze(accuracy);
@@ -48,11 +48,11 @@ h = gca;
 set(h, 'YTickLabelMode','auto')
 set(h, 'XTickLabelMode','auto')
 % axis square
-savefig([FOLDER, sprintf('/Matlab_Figs/AllModels_loss.fig')])
-saveas(gcf, [FOLDER, sprintf('/Matlab_Pngs/AllModels_loss.png')])
+% savefig([FOLDER, sprintf('/Matlab_Figs/AllModels_loss.fig')])
+% saveas(gcf, [FOLDER, sprintf('/Matlab_Pngs/AllModels_loss.png')])
 
 if printMe
-    pMe([FOLDER, '/singlePhaseUncert.pdf'])
+    pMe(['../Crop_Me', '/singlePhaseUncert.pdf'])
 end
 
 end

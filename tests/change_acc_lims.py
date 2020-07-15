@@ -12,36 +12,35 @@ import ONN_Setups
 import acc_colormap
 
 if __name__ == '__main__':
-    ONN = ONN_Cls.ONN_Simulation()
-    topos = ['E_P']
-    for ONN.N in [8]:
-        for ONN.topo in topos:
-            print(f'N={ONN.N}, topo={ONN.topo}')
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_minLoss=0dB_lossStdDev=0dB'
-            ONN = ONN.pickle_load()
-            ONN.range_dB = 5
-            model = ONN_Setups.ONN_creation(ONN)
-            ONN.model = model
+    onn = ONN_Cls.ONN_Simulation()
+    onn_topo = ['B_C_Q_P', 'E_P', 'R_I_P', 'R_P']
+    for onn.N in [16]:
+        for onn.topo in onn_topo:
+            print(f'N={onn.N}, topo={onn.topo}')
+            onn.FOLDER = f'Analysis/N={onn.N}'
+            onn = onn.pickle_load()
+            onn.range_dB = 5
+            model = ONN_Setups.ONN_creation(onn)
+            onn.model = model
 
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=8'
-            ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/PerfectTraining/N=8/N=8_minLoss=0dB_lossStdDev=0dB'
-            ONN.createFOLDER()
-            ONN.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
-            ONN.loss_diff = 0.0 # \sigma dB
+            onn.FOLDER = f'Analysis/N={onn.N}'
+            onn.createFOLDER()
+            onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+            onn.loss_diff = 0.0 # \sigma dB
 
-            ONN.loss_dB = np.linspace(0, 2, 41)
+            onn.loss_dB = np.linspace(0, 2, 41)
 
-            ONN.phase_uncert_theta = np.linspace(0., 0.5, 41)
-            ONN.phase_uncert_phi = np.linspace(0., 0.5, 41)
+            onn.phase_uncert_theta = np.linspace(0., 0.5, 41)
+            onn.phase_uncert_phi = np.linspace(0., 0.5, 41)
 
 
-            model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, 0, 0)
-            ONN, model = test.test_onn(ONN, model)
+            model.set_all_phases_uncerts_losses(onn.phases, 0, 0, 0, 0)
+            onn, model = test.test_onn(onn, model)
 
-            ONN.saveAll(model)
+            onn.saveAll(model)
             
-            acc_colormap.colormap_me(ONN)
-            ONN.saveSimDataset()
-            ONN.saveAccuracyData()
-            ONN.pickle_save()
+            acc_colormap.colormap_me(onn)
+            onn.saveSimDataset()
+            onn.saveAccuracyData()
+            onn.pickle_save()
 

@@ -4,14 +4,12 @@
 % Author: Simon Geoffroy-Gagnon
 % Edit: 2020.03.17
 
-% SINGLE TRAINING NALYSIS
-
 clc; close all; clear;
 
 fig_of_merit_value = 0.75;
 print_fig_of_merit = 0;
 showContour = 1;
-printMe = 1;
+printMe = 0;
 
 % 96x96 sims
 %     F = '/home/simon/Documents/neuroptica/tests/Analysis/N=96/N=96_1';
@@ -21,10 +19,10 @@ printMe = 1;
 % 32x32 sims
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=32/N=32_1';
 %     16x16 sims
-        F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16'; % Show FoM lines
+%         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16'; % Show FoM lines
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16/N=16_2-new';
 % 8x8 Sims
-% F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/N=8/N=8_0';
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/N=8/N=8_0';
 % F = '/home/simon/Documents/neuoptica/tests/Analysis/N=8/N=8_0-newRange';
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0-newRange-lp';
@@ -44,9 +42,9 @@ printMe = 1;
 %         F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_2_100.000_2';
 
 % IL_Sensitivity_PhaseNoise THESIS
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/IL_Sensitivity_PhaseNoise/N=8_0'; % 0 IL
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0-newRange';
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0_0.5dB-loss';
+%     F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0'; % 0 IL
+%     F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/N=8/N=8_0-newRange';
+%     F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/N=8/N=8_0_0.5dB-loss';
 %     F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_0_0.25dB-loss';
 
 % DIAMOND DMM DIFFERENCE THESIS
@@ -78,14 +76,17 @@ printMe = 1;
 % BIG ass sims N=96
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/N=96_3';
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/5layers/N=10';
+
+F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16';
+
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
 
-if 1 && 1
+if 1 && 0
     phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
 end
-if 1 && 1
+if 1 && 0
     loss_phaseUncert(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
 end
 if 1 && 0
@@ -97,7 +98,7 @@ end
 if 1 && 0
     plotAcc_singleModel_Loss_lineplot(F, sim, topo, printMe)
 end
-if 1 && 0
+if 1 && 1
     plotAcc_allModels_SinglePhaseUncert(F, sim, topo, printMe)
 end
 cd('../Matlab-v4')

@@ -149,7 +149,7 @@ def main():
     loss_training = [0] # loss used during training
 
     for lossDiff in loss_diff:
-        for lossTrain in loss_training:
+        for trainLoss in training_loss:
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 

@@ -20,21 +20,21 @@ def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None,
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
     layer_dict = {
             'R':neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
-            'I':neu.flipped_ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
+            'I':neu.flipped_ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),# Flipped Reck layer with N*(N-1)/2 MZIs in an upside down triangle
 
-            'A':neu.AddMask(2*onn.N),
+            'A':neu.AddMask(2*onn.N),# Add 0s between every channel to account for empty tapered input waveguides the DMM sections
             'M':neu.DMM_layer(2*onn.N, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
-            'D':neu.DropMask(N=2*onn.N, keep_ports=range(0, 2*onn.N, 2)),
+            'D':neu.DropMask(N=2*onn.N, keep_ports=range(0, 2*onn.N, 2)),# Drop every other channel from the output of the DMM section
 
-            'N':neu.Activation(Nonlinearity),
-            'P':neu.Activation(neu.AbsSquared(onn.N)),
-            'B':neu.Activation(neu.Abs(onn.N)),
-
+            'N':neu.Activation(Nonlinearity), # Nonlinearity can be neu.cReLU(), ect..
+            'P':neu.Activation(neu.AbsSquared(onn.N)), # Photodetector
+            
+            'B':neu.AddMaskDiamond(onn.N), # Add 0s to the top half of the Diamond input
             'C':neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases), # Diamond Mesh
             'Q':neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
             # 'W':neu.DropMask(2*onn.N - 2, drop_ports=[0, onn.N+1]), # Central Diamond Topology
 
-            'E':neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
+            'E':neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases), # Clements layer, N*(N-1)/2 MZIs setup in a rectangular topology
             }
 
     Model = neu.Sequential([layer_dict[layer] for layer in layers])
