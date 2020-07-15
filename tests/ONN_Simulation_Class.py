@@ -116,24 +116,14 @@ class ONN_Simulation:
         np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%.3f')
         np.savetxt(f'{self.FOLDER}/Datasets/X.txt', self.X, delimiter=',',fmt='%.3f')
 
-        # Normalize output in case this was not done
-        Xn = (self.X - np.min(self.X))/(np.max(self.X) - np.min(self.X))
-        Xtn = (self.Xt - np.min(self.Xt))/(np.max(self.Xt) - np.min(self.Xt))
-        np.savetxt(f'{self.FOLDER}/Datasets/X_normalized.txt', Xn, delimiter=',',fmt='%.3f')
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_normalized.txt', Xtn, delimiter=',',fmt='%.3f')
-
         # Also output the power of the input vectors to help with experimental testing
         np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f') 
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.Xt)**2, delimiter=',',fmt='%.3f')
 
-        # Also save the power of the normalized input samples in dB, normalized with range [-range_dB 0] dB. Required to take the second min, since first min is 0 or -inf dB.
-        Xn = 10*np.log10(np.abs(Xn)**2+sorted(set(np.abs(Xn).reshape(-1)))[1])
-        Xtn = 10*np.log10(np.abs(Xtn)**2+sorted(set(np.abs(Xtn).reshape(-1)))[1])
-        Xn = ((Xn - np.min(Xn))/(np.max(Xn) - np.min(Xn)) - 1)*self.range_dB
-        Xtn = ((Xtn - np.min(Xtn))/(np.max(Xtn) - np.min(Xtn)) - 1)*self.range_dB
-
-        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_normalized_[-{self.range_dB}-0]dB.txt', Xn, delimiter=',',fmt='%.3f') 
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_normalized_[-{self.range_dB}-0]dB.txt', Xtn, delimiter=',',fmt='%.3f')
+        Xn = 10*np.log10(np.abs(self.X)**2)
+        Xtn = 10*np.log10(np.abs(self.Xt)**2)
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB', Xn, delimiter=',',fmt='%.4f') 
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB', Xtn, delimiter=',',fmt='%.4f')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
@@ -154,63 +144,83 @@ class ONN_Simulation:
         self.plotAll()
         self.saveSelf() # Only useful if wanting a .mat file
     def plotAll(self):
-        fig, ax1 = plt.subplots()
+        labels_size = 20
+        legend_size = 14
+        tick_size = 12
+
+        # Plot loss and accuracy values throughout training
+        fig, ax = plt.subplots()
+        ax.tick_params(axis='both', which='major', labelsize=tick_size)
+        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
         color = 'tab:blue'
-        ax1.set_xlabel('Epochs')
-        ax1.set_ylabel('$\mathcal{L}$', color=color)
-        lns1 = ax1.plot(self.losses, color='tab:blue', label='Losses')
-        ax1.tick_params(axis='y', labelcolor=color)
-        ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+        ax.set_xlabel('Epochs', fontsize=labels_size)
+        ax.set_ylabel('$\mathcal{L}$', color=color, fontsize=labels_size)
+        lns1 = ax.plot(self.losses, color='tab:blue', label='Losses')
+        ax.tick_params(axis='y', labelcolor=color)
+        ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
         color = 'tab:red'
-        ax2.set_ylabel('Accuracy (\%)', color=color)  # we already handled the x-label with ax1
+        ax2.set_ylabel('Accuracy (\%)', color=color, fontsize=labels_size)  # we already handled the x-label with ax
         ax2.set_ylim([0, 100])
         lns2 = ax2.plot(self.val_accuracy, color='tab:red', label='Validation Accuracy')
         lns3 = ax2.plot(self.trn_accuracy, color='k', label='Training Accuracy')
         lns = lns1+lns2+lns3
         labs = [l.get_label() for l in lns]
-        ax1.legend(lns, labs, loc=0)
+        ax2.legend(lns, labs, loc=0, fontsize=legend_size)
         ax2.tick_params(axis='y', labelcolor=color)
         fig.tight_layout() 
-        # plt.legend(['Validation Accuracy','Training Accuracy'])
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
 
+        # Plot Loss + Phase uncert accuracies along with contour of high accuracy region
         plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        ax = plt.gca()
+        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
+        ax.tick_params(axis='both', which='major', labelsize=tick_size)
         cbar = plt.colorbar()
-        # plt.contour(self.loss_dB, self.phase_uncert_theta, gaussian_filter(self.accuracy_LPU, 5.), 4, colors='w')
         plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*np.max(self.accuracy_LPU)], colors='w')
-        plt.xlabel('Loss/MZI (dB)')
-        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)')
-        cbar.set_label('Accuracy (\%)')
+        plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
+        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
+        cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/LPU_ACC_Contour_{self.topo}.pdf')
         plt.clf()
 
+        # Plot Loss + Phase uncert accuracies
         plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
-        plt.xlabel('Loss/MZI (dB)')
-        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)')
+        ax = plt.gca()
+        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
+        ax.tick_params(axis='both', which='major', labelsize=tick_size)
+        plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
+        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar = plt.colorbar()
-        cbar.set_label('Accuracy (\%)')
+        cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/LPU_ACC_{self.topo}.pdf')
         plt.clf()
 
+        # Plot Phase uncert accuracies along with contour of high accuracy region
         plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        ax = plt.gca()
+        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
+        ax.tick_params(axis='both', which='major', labelsize=tick_size)
         cbar = plt.colorbar()
-        # plt.contour(self.loss_dB, self.phase_uncert_theta, gaussian_filter(self.accuracy_LPU, 5.), 4, colors='w')
         plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*np.max(self.accuracy_LPU)], colors='w')
-        plt.xlabel(r'$\sigma_\theta$ (Rad)')
-        plt.ylabel(r'$\sigma_{\phi}$ (Rad)')
-        cbar.set_label('Accuracy (\%)')
+        plt.xlabel(r'$\sigma_\theta$ (Rad)', fontsize=labels_size)
+        plt.ylabel(r'$\sigma_{\phi}$ (Rad)', fontsize=labels_size)
+        cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/PT_ACC_Contour_{self.topo}.pdf')
         plt.clf()
 
+        # Colormap of Phi + Theta phase uncertainty
         plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
-        plt.xlabel(r'$\sigma_\theta$ (Rad)')
-        plt.ylabel(r'$\sigma_{\phi}$ (Rad)')
+        ax = plt.gca()
+        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
+        ax.tick_params(axis='both', which='major', labelsize=tick_size)
+        plt.xlabel(r'$\sigma_\theta$ (Rad)', fontsize=labels_size)
+        plt.ylabel(r'$\sigma_{\phi}$ (Rad)', fontsize=labels_size)
         cbar = plt.colorbar()
-        cbar.set_label('Accuracy (\%)')
+        cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/PT_ACC_{self.topo}.pdf')
         plt.clf()

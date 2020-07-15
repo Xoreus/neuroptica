@@ -77,8 +77,8 @@ printMe = 0;
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/N=96_3';
 % F = '/home/simon/Documents/neuroptica/tests/Analysis/5layers/N=10';
 
-F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16';
-
+F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0';
+F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0_lossy';
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
@@ -95,7 +95,7 @@ end
 if 1 && 0
     plotAcc_LPU_lineplot(F, sim, topo, 1, printMe)
 end
-if 1 && 0
+if 1 && 1
     plotAcc_singleModel_Loss_lineplot(F, sim, topo, printMe)
 end
 if 1 && 1

@@ -24,26 +24,27 @@ import copy
 def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
-    onn.BATCH_SIZE = 2**6 
+    onn.BATCH_SIZE = 2**5 
     onn.EPOCHS = 400
-    onn.STEP_SIZE = 0.0025 # Learning Rate
-    onn.SAMPLES = 80 # Per Class
+    onn.STEP_SIZE = 0.0005 # Learning Rate
+    onn.SAMPLES = 30 # Per Class
 
-    onn.ITERATIONS = 30 # number of times to retry same loss/PhaseUncert
+    onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 0 # starting RNG value
     onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 40 # (%) Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 0 # 86.25 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 16 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 4 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
+    onn.classes = 4 # How many classes? max for MNIST = 10
+    # onn.features = 4 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
+    # onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     onn.range_dB = 10
     onn.range_linear = 20
 
     onn.FOLDER = f'Analysis/N={onn.N}' # Name the folder to be created
-    onn.topo = 'E_P'
-
+    onn.topo = 'E_P' # Name of the model
     return onn
 
 def dataset(onn, dataset='MNIST', half_square_length=2):
@@ -62,17 +63,23 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
         onn.N = (2*half_square_length)**2
     elif dataset == 'FFT_PCA':
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=onn.classes, features=onn.features, nsamples=onn.SAMPLES) # this gives real valued vectors as input samples
+    else: 
+        print("Dataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', or 'FFT_PCA'.")
     return onn
 
 def normalize_dataset(onn, normalization='Normalized', experimental=False):
-    ''' Constant Power: Sends extra power to extra channel
-        Normalized: Normalize input power --> [0, onn.range_linear]
+    ''' Constant_Power: Sends extra power to extra channel
+        Normalize_Power: Normalize input power --> [0, onn.range_linear]
     '''
-    if normalization == 'Constant Power':
+    if normalization == 'Constant_Power':
+        print("Going with 1 extra channel and normalizing power")
         # add an extra channel (+1 ports) and normalize power #
-        onn.X = normalize_inputs(on.X, onn.N)
-        onn.Xt = normalize_inputs(onn.Xt, onn.N)
+        onn.N += 1
         onn.features += 1
+        onn.X = normalize_inputs(onn.X, onn.N)
+        # print(onn.X)
+        onn.Xt = normalize_inputs(onn.Xt, onn.N)
+        print(f"Number of channels: {onn.features}")
     elif normalization == 'Normalized':              
         # To Simply Normalize input power from [0-1]*onn.range_linear #
         if not experimental:
@@ -94,7 +101,7 @@ def normalize_dataset(onn, normalization='Normalized', experimental=False):
             onn.Xt = 10**(onn.Xt/10)
     return onn
 
-def normalize_inputs(data, num_inputs, P0=10):
+def normalize_inputs(data, num_inputs, P0=100):
     ''' Reshapes the inputs to fit into the specified mesh size and normalizes input data to
     have the same total power input by injecting extra power to an "unused" input port.
     :param X: the input data
@@ -103,10 +110,13 @@ def normalize_inputs(data, num_inputs, P0=10):
     '''
     _, input_size = data.shape
     injection_port = input_size
-    data = (data - np.min(data))/(np.max(data) - np.min(data))
+    # data = (data - np.min(data))/(np.max(data) - np.min(data))*10
+    data = [x**2 for x in data]
+    P0 = max(np.sum([x for x in data], axis=1))
+    # print(f"Power Required: {P0:.3f}, or {10*np.log10(P0):.3f} dB")
     data_normalized = np.array(np.pad(data, ((0, 0), (0, num_inputs - input_size)), mode="constant"))
     for i, x in enumerate(data_normalized):
-        data_normalized[i][injection_port] = np.sqrt(P0 - np.sum(x**2))
+        data_normalized[i][injection_port] = np.sqrt(P0 - np.sum(x))
     return data_normalized
 
 def create_model(features, classes):
@@ -151,7 +161,7 @@ def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
     onn = dataset(onn, dataset='MNIST')
-    onn = normalize_dataset(onn, normalization='Normalized', experimental=True)
+    onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False)
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
