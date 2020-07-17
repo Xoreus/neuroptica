@@ -120,10 +120,13 @@ class ONN_Simulation:
         np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f') 
         np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.Xt)**2, delimiter=',',fmt='%.3f')
 
+        self.X[self.X == 0] = sorted(set(np.abs(self.X).reshape(-1)))[1]
+        self.Xt[self.Xt == 0] = sorted(set(np.abs(self.Xt).reshape(-1)))[1]
+
         Xn = 10*np.log10(np.abs(self.X)**2)
         Xtn = 10*np.log10(np.abs(self.Xt)**2)
-        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB', Xn, delimiter=',',fmt='%.4f') 
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB', Xtn, delimiter=',',fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB.txt', Xn, delimiter=',',fmt='%.4f') 
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB.txt', Xtn, delimiter=',',fmt='%.4f')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,

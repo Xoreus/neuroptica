@@ -8,6 +8,7 @@ Edit: 2020.07.14
 import numpy as np
 import calculate_accuracy as calc_acc
 import cmath
+from sklearn.preprocessing import MinMaxScaler as mms
 import ONN_Simulation_Class as ONN_Cls
 import ONN_Setups
 import acc_colormap
@@ -27,23 +28,22 @@ def init_onn_settings():
     onn.BATCH_SIZE = 2**5 
     onn.EPOCHS = 400
     onn.STEP_SIZE = 0.0005 # Learning Rate
-    onn.SAMPLES = 30 # Per Class
+    onn.SAMPLES = 200 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
-    onn.rng_og = 0 # starting RNG value
+    onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 0 # 86.25 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 75 # 86.25 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 4 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
-    onn.classes = 4 # How many classes? max for MNIST = 10
-    # onn.features = 4 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
-    # onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 10 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     onn.range_dB = 10
-    onn.range_linear = 20
+    onn.MinMaxScaling = (0.31623, 3.1623)
+    onn.MinMaxScaling = (0.5623, 1.7783) # For power = [-5 dB, +5 dB]
 
-    onn.FOLDER = f'Analysis/N={onn.N}' # Name the folder to be created
+    onn.FOLDER = f'Analysis/3l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_higherSample#' # Name the folder to be created
     onn.topo = 'E_P' # Name of the model
     return onn
 
@@ -64,17 +64,28 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
     elif dataset == 'FFT_PCA':
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=onn.classes, features=onn.features, nsamples=onn.SAMPLES) # this gives real valued vectors as input samples
     else: 
-        print("Dataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', or 'FFT_PCA'.")
+        print("\nDataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', or 'FFT_PCA'.\n")
     return onn
 
 def normalize_dataset(onn, normalization='Normalized', experimental=False):
     ''' Constant_Power: Sends extra power to extra channel
         Normalize_Power: Normalize input power --> [0, onn.range_linear]
     '''
+    if normalization == 'Absolute':
+        onn.X = np.abs(onn.X)
+        onn.Xt = np.abs(onn.Xt)
+
+    if normalization == 'MinMaxScaling':
+        print(f"Scaling with range: {onn.MinMaxScaling}.")
+        scaler = mms(feature_range=onn.MinMaxScaling)
+        onn.X = scaler.fit_transform(onn.X)
+        onn.Xt = scaler.fit_transform(onn.Xt)
+
     if normalization == 'Constant_Power':
         print("Going with 1 extra channel and normalizing power")
         # add an extra channel (+1 ports) and normalize power #
         onn.N += 1
+
         onn.features += 1
         onn.X = normalize_inputs(onn.X, onn.N)
         # print(onn.X)
@@ -123,6 +134,14 @@ def create_model(features, classes):
     ''' create ONN model based on neuroptica layer '''
     eo_settings = {'alpha': 0.1, 'g':0.5 * np.pi, 'phi_b': -1 * np.pi} # If Electro-Optic Nonlinear Activation is used
 
+    # Some nonlinearities, to be used withing neu.Activation()
+    eo_activation = neu.ElectroOpticActivation(features, **eo_settings)
+    cReLU = neu.cReLU(features)
+    zReLU = neu.zReLU(features)
+    bpReLU = neu.bpReLU(features, cutoff=1, alpha=0)
+    modReLU = neu.modReLU(features, cutoff=1)
+    sigmoid = neu.Sigmoid(features)
+
     # If you want multi-layer Diamond Topology
     # model = neu.Sequential([
     #     neu.AddMaskDiamond(features),
@@ -137,31 +156,42 @@ def create_model(features, classes):
     # ])
 
     # If you want regular Clements (multi-layer) topology
-    model = neu.Sequential([
-        neu.ClementsLayer(features),
-        neu.Activation(neu.cReLU(features)),
-        neu.ClementsLayer(features),
-        neu.Activation(neu.cReLU(features)),
-        neu.ClementsLayer(features),
-        neu.Activation(neu.cReLU(features)),
-        neu.ClementsLayer(features),
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes))
-    ])
-
-    # If you want regular Clements (single-layer) topology
     # model = neu.Sequential([
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(neu.cReLU(features)),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(neu.cReLU(features)),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(neu.cReLU(features)),
     #     neu.ClementsLayer(features),
     #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     #     neu.DropMask(features, keep_ports=range(classes))
     # ])
+
+    # If you want regular Clements (single-layer) topology
+    model = neu.Sequential([
+        neu.ClementsLayer(features),
+        neu.Activation(cReLU), 
+        neu.ClementsLayer(features),
+        neu.Activation(cReLU), 
+        neu.ClementsLayer(features),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes))
+    ])
     return model
 
 def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
     onn = dataset(onn, dataset='MNIST')
-    onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False)
+
+    # All choices for normalization
+    # onn = normalize_dataset(onn, normalization='Normalized', experimental=False)
+    onn = normalize_dataset(onn, normalization='MinMaxScaling', experimental=False)
+    # onn = normalize_dataset(onn, normalization='Absolute', experimental=False)
+    # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False)
+    # onn = normalize_dataset(onn, normalization='None', experimental=False)
+
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
