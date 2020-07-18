@@ -25,10 +25,10 @@ import copy
 def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
-    onn.BATCH_SIZE = 2**5 
-    onn.EPOCHS = 400
+    onn.BATCH_SIZE = 2**4 
+    onn.EPOCHS = 600
     onn.STEP_SIZE = 0.0005 # Learning Rate
-    onn.SAMPLES = 200 # Per Class
+    onn.SAMPLES = 300 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
@@ -42,8 +42,9 @@ def init_onn_settings():
     onn.range_dB = 10
     onn.MinMaxScaling = (0.31623, 3.1623)
     onn.MinMaxScaling = (0.5623, 1.7783) # For power = [-5 dB, +5 dB]
+    onn.MinMaxScaling = (0.1, 10) # For power = [-10 dB, +10 dB]
 
-    onn.FOLDER = f'Analysis/3l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_higherSample#' # Name the folder to be created
+    onn.FOLDER = f'Analysis/3l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_20dBRange' # Name the folder to be created
     onn.topo = 'E_P' # Name of the model
     return onn
 
@@ -76,7 +77,7 @@ def normalize_dataset(onn, normalization='Normalized', experimental=False):
         onn.Xt = np.abs(onn.Xt)
 
     if normalization == 'MinMaxScaling':
-        print(f"Scaling with range: {onn.MinMaxScaling}.")
+        print(f"Min Max Scaling with range: {onn.MinMaxScaling}.")
         scaler = mms(feature_range=onn.MinMaxScaling)
         onn.X = scaler.fit_transform(onn.X)
         onn.Xt = scaler.fit_transform(onn.Xt)
@@ -224,12 +225,11 @@ def main():
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         onn.rng == onn.max_number_of_tests-1):
+                    print(f'\nBest Accuracy: {max_acc:.3f}%. Using this model for simulations.')
                     onn.loss_diff = lossDiff # Set loss_diff
                     onn.loss_dB = np.linspace(0, 2, 3) # set loss/MZI range
                     onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
                     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
-
-                    print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(onn, model, onn.Xt, onn.yt)))
 
                     test.test_PT(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
                     test.test_LPU(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
