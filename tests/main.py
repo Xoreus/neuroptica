@@ -1,6 +1,6 @@
 ''' phase_uncert_thetar simulating Optical Neural Network
 
-using Neuroptica and linearly separable datasets or MNIST
+Using Neuroptica and linearly separable datasets or MNIST
 
 Author: Simon Geoffroy-Gagnon
 Edit: 2020.07.14
@@ -28,21 +28,24 @@ def init_onn_settings():
     onn.BATCH_SIZE = 2**4 
     onn.EPOCHS = 600
     onn.STEP_SIZE = 0.0005 # Learning Rate
-    onn.SAMPLES = 300 # Per Class
+    onn.SAMPLES = 500 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 75 # 86.25 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10 # How many features? max for MNIST = 784 # Add +1 if using normalize_input()
+    onn.features = 10 # How many features? max for MNIST = 784 
     onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     onn.range_dB = 10
-    onn.MinMaxScaling = (0.31623, 3.1623)
+
+    # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
+    # it is important to note that the ONN takes in FIELD, not POWER #
+    # As such, we scale it to the sqrt() of the dB power #
     onn.MinMaxScaling = (0.5623, 1.7783) # For power = [-5 dB, +5 dB]
-    onn.MinMaxScaling = (0.1, 10) # For power = [-10 dB, +10 dB]
+    onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
 
     onn.FOLDER = f'Analysis/3l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_20dBRange' # Name the folder to be created
     onn.topo = 'E_P' # Name of the model
@@ -68,7 +71,7 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
         print("\nDataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', or 'FFT_PCA'.\n")
     return onn
 
-def normalize_dataset(onn, normalization='Normalized', experimental=False):
+def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
     ''' Constant_Power: Sends extra power to extra channel
         Normalize_Power: Normalize input power --> [0, onn.range_linear]
     '''
@@ -77,9 +80,12 @@ def normalize_dataset(onn, normalization='Normalized', experimental=False):
         onn.Xt = np.abs(onn.Xt)
 
     if normalization == 'MinMaxScaling':
-        print(f"Min Max Scaling with range: {onn.MinMaxScaling}.")
+        # print(f"Min Max Scaling with range: [{onn.MinMaxScaling[0]:.3f}, {onn.MinMaxScaling[1]:.3f}].")
         scaler = mms(feature_range=onn.MinMaxScaling)
+        print(f'Original Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}]')
         onn.X = scaler.fit_transform(onn.X)
+        print(f'Scaled Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}]')
+        print(f'Power range: [{10*np.log10(np.min(onn.X)**2):.5f}, {10*np.log10(np.max(onn.X)**2):.5f}] dB')
         onn.Xt = scaler.fit_transform(onn.Xt)
 
     if normalization == 'Constant_Power':
@@ -234,7 +240,20 @@ def main():
                     test.test_PT(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
                     test.test_LPU(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
                     onn.saveAll(best_model) # Save best model information
-                    onn.plotAll() # plot training and tests
+                    onn.plotAll(backprop_legend_location=5) # plot training and tests
+                    ''' Backprop Legend Location Codes:
+                    'best' 	        0
+                    'upper right' 	1
+                    'upper left' 	2
+                    'lower left' 	3
+                    'lower right' 	4
+                    'right'         	5
+                    'center left' 	6
+                    'center right' 	7
+                    'lower center' 	8
+                    'upper center' 	9
+                    'center'    	10
+                    '''
                     onn.pickle_save() # save pickled version of the onn class
                     break
 

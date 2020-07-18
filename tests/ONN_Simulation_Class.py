@@ -146,7 +146,7 @@ class ONN_Simulation:
         self.saveSimData(model)
         self.plotAll()
         self.saveSelf() # Only useful if wanting a .mat file
-    def plotAll(self):
+    def plotAll(self, backprop_legend_location=0):
         labels_size = 20
         legend_size = 14
         tick_size = 12
@@ -168,7 +168,7 @@ class ONN_Simulation:
         lns3 = ax2.plot(self.trn_accuracy, color='k', label='Training Accuracy')
         lns = lns1+lns2+lns3
         labs = [l.get_label() for l in lns]
-        ax2.legend(lns, labs, loc=0, fontsize=legend_size)
+        ax2.legend(lns, labs, loc=backprop_legend_location, fontsize=legend_size)
         ax2.tick_params(axis='y', labelcolor=color)
         fig.tight_layout() 
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
