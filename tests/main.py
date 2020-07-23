@@ -3,7 +3,7 @@
 Using Neuroptica and linearly separable datasets or MNIST
 
 Author: Simon Geoffroy-Gagnon
-Edit: 2020.07.14
+Edit: 2020.07.20
 '''
 import numpy as np
 import calculate_accuracy as calc_acc
@@ -26,20 +26,18 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
     onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 600
-    onn.STEP_SIZE = 0.0005 # Learning Rate
-    onn.SAMPLES = 500 # Per Class
+    onn.EPOCHS = 200
+    onn.STEP_SIZE = 0.00051 # Learning Rate
+    onn.SAMPLES = 300 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 50 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10 # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 8  # How many features? max for MNIST = 784 
+    onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features
-
-    onn.range_dB = 10
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
     # it is important to note that the ONN takes in FIELD, not POWER #
@@ -47,8 +45,10 @@ def init_onn_settings():
     onn.MinMaxScaling = (0.5623, 1.7783) # For power = [-5 dB, +5 dB]
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
 
-    onn.FOLDER = f'Analysis/3l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_20dBRange' # Name the folder to be created
+    onn.FOLDER = f'Analysis/2l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_bpReLU' # Name the folder to be created
     onn.topo = 'E_P' # Name of the model
+
+
     return onn
 
 def dataset(onn, dataset='MNIST', half_square_length=2):
@@ -74,6 +74,7 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
 def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
     ''' Constant_Power: Sends extra power to extra channel
         Normalize_Power: Normalize input power --> [0, onn.range_linear]
+        MinMaxScaling: Normalize input power to [Min, Max]
     '''
     if normalization == 'Absolute':
         onn.X = np.abs(onn.X)
@@ -117,6 +118,10 @@ def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
             onn.Xt = 10*np.log10(np.abs(onn.Xt)**2+sorted(set(np.abs(onn.Xt).reshape(-1)))[1])
             onn.Xt = ((onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt)) - onn.dB_shift)*onn.range_dB
             onn.Xt = 10**(onn.Xt/10)
+    elif normalization == 'Center':
+        onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X)) - 0.5
+        onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt)) - 0.5
+        
     return onn
 
 def normalize_inputs(data, num_inputs, P0=100):
@@ -145,16 +150,19 @@ def create_model(features, classes):
     eo_activation = neu.ElectroOpticActivation(features, **eo_settings)
     cReLU = neu.cReLU(features)
     zReLU = neu.zReLU(features)
-    bpReLU = neu.bpReLU(features, cutoff=1, alpha=0)
+    bpReLU = neu.bpReLU(features, cutoff=1, alpha=0.1)
     modReLU = neu.modReLU(features, cutoff=1)
     sigmoid = neu.Sigmoid(features)
+    
+    nlaf = modReLU # Pick the Non Linear Activation Function
+
 
     # If you want multi-layer Diamond Topology
     # model = neu.Sequential([
     #     neu.AddMaskDiamond(features),
     #     neu.DiamondLayer(features),
     #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(neu.cReLU(features)),
+    #     neu.Activation(nlaf),
     #     neu.AddMaskDiamond(features),
     #     neu.DiamondLayer(features),
     #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
@@ -165,27 +173,53 @@ def create_model(features, classes):
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
     #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.cReLU(features)),
+    #     neu.Activation(nlaf),
     #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.cReLU(features)),
+    #     neu.Activation(nlaf),
     #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.cReLU(features)),
+    #     neu.Activation(nlaf),
     #     neu.ClementsLayer(features),
     #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     #     neu.DropMask(features, keep_ports=range(classes))
     # ])
 
-    # If you want regular Clements (single-layer) topology
+    # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
-        neu.ClementsLayer(features),
-        neu.Activation(cReLU), 
-        neu.ClementsLayer(features),
-        neu.Activation(cReLU), 
-        neu.ClementsLayer(features),
+        neu.ReckLayer(features),
+        neu.Activation(nlaf),
+        neu.ReckLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
         neu.DropMask(features, keep_ports=range(classes))
     ])
     return model
+
+def save_onn(onn, model, lossDiff=0):
+    onn.loss_diff = lossDiff # Set loss_diff
+    # For simulation purposes, defines range of loss and phase uncert
+    onn.loss_dB = np.linspace(0, 2, 3) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
+
+    test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
+    print(onn.loss_dB)
+    test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
+    onn.saveAll(model) # Save best model information
+    onn.plotAll() # plot training and tests
+    onn.plotBackprop(backprop_legend_location=0)
+    ''' Backprop Legend Location Codes:
+    'best' 	        0
+    'upper right' 	1
+    'upper left' 	2
+    'lower left' 	3
+    'lower right' 	4
+    'right'         	5
+    'center left' 	6
+    'center right' 	7
+    'lower center' 	8
+    'upper center' 	9
+    'center'    	10
+    '''
+    onn.pickle_save() # save pickled version of the onn class
 
 def main():
     onn = init_onn_settings()
@@ -195,6 +229,7 @@ def main():
     # All choices for normalization
     # onn = normalize_dataset(onn, normalization='Normalized', experimental=False)
     onn = normalize_dataset(onn, normalization='MinMaxScaling', experimental=False)
+    # onn = normalize_dataset(onn, normalization='Center')
     # onn = normalize_dataset(onn, normalization='Absolute', experimental=False)
     # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False)
     # onn = normalize_dataset(onn, normalization='None', experimental=False)
@@ -228,33 +263,12 @@ def main():
                     onn.model = model
                     best_onn = onn
                     max_acc = max(onn.val_accuracy) 
+                    onn.plotBackprop(backprop_legend_location=0)
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         onn.rng == onn.max_number_of_tests-1):
                     print(f'\nBest Accuracy: {max_acc:.3f}%. Using this model for simulations.')
-                    onn.loss_diff = lossDiff # Set loss_diff
-                    onn.loss_dB = np.linspace(0, 2, 3) # set loss/MZI range
-                    onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
-                    onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
-
-                    test.test_PT(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
-                    test.test_LPU(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
-                    onn.saveAll(best_model) # Save best model information
-                    onn.plotAll(backprop_legend_location=5) # plot training and tests
-                    ''' Backprop Legend Location Codes:
-                    'best' 	        0
-                    'upper right' 	1
-                    'upper left' 	2
-                    'lower left' 	3
-                    'lower right' 	4
-                    'right'         	5
-                    'center left' 	6
-                    'center right' 	7
-                    'lower center' 	8
-                    'upper center' 	9
-                    'center'    	10
-                    '''
-                    onn.pickle_save() # save pickled version of the onn class
+                    save_onn(best_onn, best_model)
                     break
 
 if __name__ == '__main__':

@@ -146,7 +146,7 @@ class ONN_Simulation:
         self.saveSimData(model)
         self.plotAll()
         self.saveSelf() # Only useful if wanting a .mat file
-    def plotAll(self, backprop_legend_location=0):
+    def plotBackprop(self, backprop_legend_location=0):
         labels_size = 20
         legend_size = 14
         tick_size = 12
@@ -173,6 +173,11 @@ class ONN_Simulation:
         fig.tight_layout() 
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
+
+    def plotAll(self):
+        labels_size = 20
+        legend_size = 14
+        tick_size = 12
 
         # Plot Loss + Phase uncert accuracies along with contour of high accuracy region
         plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
