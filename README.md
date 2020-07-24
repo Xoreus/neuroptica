@@ -6,7 +6,7 @@ This is a readme for the Original Neuroptica code.
 
 ## Installation
 
-The easiest way to get started with `neuroptica` is to install directly from the Python package manager:
+The easiest way to get started with the original `neuroptica` package is to install directly from the Python package manager:
 
 ```
 pip install neuroptica
@@ -16,6 +16,11 @@ Alternately, you can clone the repository source code and edit it as needed with
 
 ```
 git clone https://github.com/fancompute/neuroptica.git
+```
+
+Or clone this modified Neuroptica repository with
+```
+git clone https://gitlab.com/simongg/neuroptica.git
 ```
 
 and in your program or notebook, add

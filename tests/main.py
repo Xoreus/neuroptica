@@ -33,10 +33,10 @@ def init_onn_settings():
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 50 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 8  # How many features? max for MNIST = 784 
-    onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 10  # How many features? max for MNIST = 784 
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
@@ -46,8 +46,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
 
     onn.FOLDER = f'Analysis/2l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_bpReLU' # Name the folder to be created
-    onn.topo = 'E_P' # Name of the model
-
+    onn.topo = 'ONN' # Name of the model
 
     return onn
 
@@ -264,6 +263,7 @@ def main():
                     best_onn = onn
                     max_acc = max(onn.val_accuracy) 
                     onn.plotBackprop(backprop_legend_location=0)
+                    onn.pickle_save() # save pickled version of the onn class
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         onn.rng == onn.max_number_of_tests-1):
