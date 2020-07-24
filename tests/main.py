@@ -27,16 +27,16 @@ def init_onn_settings():
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
     onn.BATCH_SIZE = 2**4 
     onn.EPOCHS = 200
-    onn.STEP_SIZE = 0.00051 # Learning Rate
-    onn.SAMPLES = 300 # Per Class
+    onn.STEP_SIZE = 0.0005 # Learning Rate
+    onn.SAMPLES = 100 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
+    onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_accuracy_req = 75 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10  # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 6  # How many features? max for MNIST = 784 
+    onn.classes = 3 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
@@ -45,7 +45,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (0.5623, 1.7783) # For power = [-5 dB, +5 dB]
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
 
-    onn.FOLDER = f'Analysis/2l_cReLU_{onn.features}x{onn.classes}/N={onn.N}_bpReLU' # Name the folder to be created
+    onn.FOLDER = f'Analysis/{onn.features}x{onn.classes}' # Name the folder to be created
     onn.topo = 'ONN' # Name of the model
 
     return onn
@@ -200,7 +200,6 @@ def save_onn(onn, model, lossDiff=0):
     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
 
     test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
-    print(onn.loss_dB)
     test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
     onn.saveAll(model) # Save best model information
     onn.plotAll() # plot training and tests
@@ -225,13 +224,13 @@ def main():
     np.random.seed(onn.rng)
     onn = dataset(onn, dataset='MNIST')
 
-    # All choices for normalization
-    # onn = normalize_dataset(onn, normalization='Normalized', experimental=False)
-    onn = normalize_dataset(onn, normalization='MinMaxScaling', experimental=False)
-    # onn = normalize_dataset(onn, normalization='Center')
-    # onn = normalize_dataset(onn, normalization='Absolute', experimental=False)
-    # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False)
-    # onn = normalize_dataset(onn, normalization='None', experimental=False)
+    # All choices for normalization ##########
+    # onn = normalize_dataset(onn, normalization='Normalized', experimental=False) # dataset -> [0, 1]
+    onn = normalize_dataset(onn, normalization='MinMaxScaling', experimental=False) # dataset -> [Min, Max]
+    # onn = normalize_dataset(onn, normalization='Center') # dataset -> [-0.5, 0.5]
+    # onn = normalize_dataset(onn, normalization='Absolute', experimental=False) # dataset -> abs(dataset)
+    # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False) # dataset -> dataset + 1 port
+    # onn = normalize_dataset(onn, normalization='None', experimental=False) # dataet -> dataset
 
     model = create_model(onn.features, onn.classes)
 

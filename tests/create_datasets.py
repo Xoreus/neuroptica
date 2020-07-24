@@ -62,14 +62,17 @@ def load_mnist_labels(filename):
     # The labels are vectors of integers now, that's exactly what we want.
     return data
 
-def MNIST_dataset(classes=4, features=4, nsamples=100): # this is for unnormalized MNIST: [1,3,6,7]):
+def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this is for unnormalized MNIST: [1,3,6,7]):
     " Download MNIST dataset "
     X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1)
     y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
     X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
     y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
 
-    digits = random.sample(range(10), classes)
+    if classes != 4:
+        digits = random.sample(range(10), classes)
+
+    print(f"Classes: {digits}")
 
     train_mask = np.isin(y_train, digits)
     test_mask = np.isin(y_test, digits)
