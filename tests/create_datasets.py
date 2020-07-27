@@ -175,7 +175,7 @@ def FFT_MNIST_PCA(features=10, classes=10, nsamples=100): # FFT of MNIST,
 
     return (np.array(X)), np.array(y), (np.array(Xt)), np.array(yt)
     
-def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
+def iris_dataset_augment(divide_mean=1.25, save=False, nsamples=1):
     " IRIS DATASET MAKER "
     iris = datasets.load_iris()
 
@@ -222,6 +222,47 @@ def iris_dataset(divide_mean=1.25, save=False, nsamples=1):
     y = pd.get_dummies(list(target)).values
 
     X = iris_new
+
+    X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
+    return np.array(X), np.array(y), np.array(Xt), np.array(yt)
+
+def iris_dataset(nsamples=1):
+    " IRIS DATASET MAKER "
+    iris = datasets.load_iris()
+
+    # Get first mean and covariance matrix
+    mean1 = iris.data[0:50].mean(axis=0)
+    cov1 = np.cov(iris.data[0:50].T)
+    # Get second mean and covariance matrix
+    mean2 = iris.data[50:100].mean(axis=0)
+    cov2 = np.cov(iris.data[50:100].T)
+    # Get third mean and covariance matrix
+    mean3 = iris.data[100:150].mean(axis=0)
+    cov3 = np.cov(iris.data[100:150].T)
+
+    delta_means = []
+    for ii in range(len(iris.data[0])):
+        delta_mean1 = abs((mean1[ii] - mean2[ii])/2)
+        delta_mean2 = abs((mean2[ii] - mean3[ii])/2)
+        delta_mean3 = abs((mean3[ii] - mean1[ii])/2)
+
+    # Augment other flowers
+    augment_flower1 = np.random.multivariate_normal(mean1, cov1, int(nsamples))
+    augment_flower2 = np.random.multivariate_normal(mean2, cov2, int(nsamples))
+    augment_flower3 = np.random.multivariate_normal(mean3, cov3, int(nsamples))
+
+    target = []
+    iris = np.vstack([iris.data[:50], augment_flower1,
+                          iris.data[50:100], augment_flower2,
+                          iris.data[100:150], augment_flower3])
+                          
+
+    target = np.hstack([np.ones(50+int(nsamples))*0, np.ones(50+int(nsamples))*1,
+                        np.ones(50+int(nsamples))*2])
+
+    y = pd.get_dummies(list(target)).values
+
+    X = iris
 
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)

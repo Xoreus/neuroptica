@@ -173,7 +173,6 @@ class ONN_Simulation:
         fig.tight_layout() 
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
-
     def plotAll(self):
         labels_size = 20
         legend_size = 14

@@ -6,10 +6,12 @@ Author: Simon Geoffroy-Gagnon
 Edit: 2020.07.20
 '''
 import numpy as np
+import matplotlib.pyplot as plt
 import calculate_accuracy as calc_acc
 import cmath
 from sklearn.preprocessing import MinMaxScaler as mms
 import ONN_Simulation_Class as ONN_Cls
+from plot_scatter_matrix import plot_scatter_matrix
 import ONN_Setups
 import acc_colormap
 import training_onn as train
@@ -26,17 +28,17 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
     onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 200
+    onn.EPOCHS = 1800
     onn.STEP_SIZE = 0.0005 # Learning Rate
-    onn.SAMPLES = 100 # Per Class
+    onn.SAMPLES = 300 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
-    onn.rng_og = 1 # starting RNG value
+    onn.rng_og = 0 # starting RNG value
     onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 75 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 5 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 6  # How many features? max for MNIST = 784 
-    onn.classes = 3 # How many classes? max for MNIST = 10
+    onn.features = 4  # How many features? max for MNIST = 784 
+    onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
@@ -44,8 +46,9 @@ def init_onn_settings():
     # As such, we scale it to the sqrt() of the dB power #
     onn.MinMaxScaling = (0.5623, 1.7783) # For power = [-5 dB, +5 dB]
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
+    onn.range_linear = 1
 
-    onn.FOLDER = f'Analysis/{onn.features}x{onn.classes}' # Name the folder to be created
+    onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}' # Name the folder to be created
     onn.topo = 'ONN' # Name of the model
 
     return onn
@@ -66,8 +69,12 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
         onn.N = (2*half_square_length)**2
     elif dataset == 'FFT_PCA':
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=onn.classes, features=onn.features, nsamples=onn.SAMPLES) # this gives real valued vectors as input samples
+    elif dataset == 'Iris': # Gives real valued vectors, 4 features 3 classes
+        onn.X, onn.y, onn.Xt, onn.yt = create_datasets.iris_dataset(nsamples=onn.SAMPLES)
+    elif dataset == 'Iris_augment':# Gives real valued vectors, 4 features 4 classes
+        onn.X, onn.y, onn.Xt, onn.yt = create_datasets.iris_dataset_augment(divide_mean=1.25, nsamples=onn.SAMPLES)
     else: 
-        print("\nDataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', or 'FFT_PCA'.\n")
+        print("\nDataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', 'FFT_PCA', 'Iris', or 'Iris_augment'.\n")
     return onn
 
 def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
@@ -75,17 +82,19 @@ def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
         Normalize_Power: Normalize input power --> [0, onn.range_linear]
         MinMaxScaling: Normalize input power to [Min, Max]
     '''
+    print(f'Original Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}]')
     if normalization == 'Absolute':
         onn.X = np.abs(onn.X)
         onn.Xt = np.abs(onn.Xt)
 
     if normalization == 'MinMaxScaling':
         # print(f"Min Max Scaling with range: [{onn.MinMaxScaling[0]:.3f}, {onn.MinMaxScaling[1]:.3f}].")
+
+        # Testing purposes
+        # onn.MinMaxScaling = (np.min(onn.X), np.max(onn.X))
+
         scaler = mms(feature_range=onn.MinMaxScaling)
-        print(f'Original Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}]')
         onn.X = scaler.fit_transform(onn.X)
-        print(f'Scaled Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}]')
-        print(f'Power range: [{10*np.log10(np.min(onn.X)**2):.5f}, {10*np.log10(np.max(onn.X)**2):.5f}] dB')
         onn.Xt = scaler.fit_transform(onn.Xt)
 
     if normalization == 'Constant_Power':
@@ -121,6 +130,8 @@ def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
         onn.X = (onn.X - np.min(onn.X))/(np.max(onn.X) - np.min(onn.X)) - 0.5
         onn.Xt = (onn.Xt - np.min(onn.Xt))/(np.max(onn.Xt) - np.min(onn.Xt)) - 0.5
         
+    print(f'Using {normalization} scaling, Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}]')
+    print(f'Power range: [{10*np.log10(np.min(onn.X)**2):.5f}, {10*np.log10(np.max(onn.X)**2):.5f}] dB')
     return onn
 
 def normalize_inputs(data, num_inputs, P0=100):
@@ -153,7 +164,7 @@ def create_model(features, classes):
     modReLU = neu.modReLU(features, cutoff=1)
     sigmoid = neu.Sigmoid(features)
     
-    nlaf = modReLU # Pick the Non Linear Activation Function
+    nlaf = cReLU # Pick the Non Linear Activation Function
 
 
     # If you want multi-layer Diamond Topology
@@ -184,6 +195,8 @@ def create_model(features, classes):
 
     # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
+        neu.ReckLayer(features),
+        neu.Activation(nlaf),
         neu.ReckLayer(features),
         neu.Activation(nlaf),
         neu.ReckLayer(features),
@@ -222,15 +235,16 @@ def save_onn(onn, model, lossDiff=0):
 def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
-    onn = dataset(onn, dataset='MNIST')
+    onn = dataset(onn, dataset='Iris_augment')
 
     # All choices for normalization ##########
     # onn = normalize_dataset(onn, normalization='Normalized', experimental=False) # dataset -> [0, 1]
-    onn = normalize_dataset(onn, normalization='MinMaxScaling', experimental=False) # dataset -> [Min, Max]
+    onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     # onn = normalize_dataset(onn, normalization='Center') # dataset -> [-0.5, 0.5]
     # onn = normalize_dataset(onn, normalization='Absolute', experimental=False) # dataset -> abs(dataset)
     # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False) # dataset -> dataset + 1 port
     # onn = normalize_dataset(onn, normalization='None', experimental=False) # dataet -> dataset
+
 
     model = create_model(onn.features, onn.classes)
 
@@ -268,6 +282,10 @@ def main():
                         onn.rng == onn.max_number_of_tests-1):
                     print(f'\nBest Accuracy: {max_acc:.3f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model)
+
+                    # To plot scattermatrix of dataset
+                    # axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
+                    # plt.savefig(onn.FOLDER + '/scatterplot.pdf')
                     break
 
 if __name__ == '__main__':
