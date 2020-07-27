@@ -35,7 +35,7 @@ def init_onn_settings():
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 0 # starting RNG value
     onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 76 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 78 # Will stop retrying after accuracy above this is reached
 
     onn.features = 4  # How many features? max for MNIST = 784 
     onn.classes = 4 # How many classes? max for MNIST = 10
@@ -242,7 +242,6 @@ def main():
     # onn = normalize_dataset(onn, normalization='Absolute', experimental=False) # dataset -> abs(dataset)
     # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False) # dataset -> dataset + 1 port
     # onn = normalize_dataset(onn, normalization='None', experimental=False) # dataet -> dataset
-
 
     model = create_model(onn.features, onn.classes)
 
