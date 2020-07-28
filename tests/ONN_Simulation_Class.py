@@ -111,9 +111,9 @@ class ONN_Simulation:
         scipy.io.savemat(f"{self.FOLDER}/acc_{self.topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
     def saveSimDataset(self):
         ''' Save simulation's datasset, both in plot and txt form '''
-        np.savetxt(f'{self.FOLDER}/Datasets/y.txt', self.y, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/y.txt', self.y, delimiter=',',fmt='%d')
         np.savetxt(f'{self.FOLDER}/Datasets/Xt.txt', self.Xt, delimiter=',',fmt='%.3f')
-        np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%d')
         np.savetxt(f'{self.FOLDER}/Datasets/X.txt', self.X, delimiter=',',fmt='%.3f')
 
         # Also output the power of the input vectors to help with experimental testing
@@ -127,6 +127,17 @@ class ONN_Simulation:
         Xtn = 10*np.log10(np.abs(self.Xt)**2)
         np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB.txt', Xn, delimiter=',',fmt='%.4f') 
         np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB.txt', Xtn, delimiter=',',fmt='%.4f')
+    def save_correct_classified_samples(self, model):
+        ''' Save only the correct validation samples for a dataset'''
+        Y_hat = model.forward_pass(self.Xt.T)
+        pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+        gt = np.array([np.argmax(tru) for tru in self.yt])
+        Xt_correct = self.Xt[gt == pred] 
+        yt_correct = self.yt[gt == pred] 
+        np.savetxt(f"{self.FOLDER}/Datasets/Xt_correct.txt", Xt_correct, fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/Xt_correct_power.txt", 10*np.log10(Xt_correct**2), fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/yt_correct.txt", yt_correct, fmt='%d', delimiter=', ')
+
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,

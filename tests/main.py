@@ -134,7 +134,7 @@ def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
     print(f'Power range: [{10*np.log10(np.min(onn.X)**2):.5f}, {10*np.log10(np.max(onn.X)**2):.5f}] dB')
     return onn
 
-def normalize_inputs(data, num_inputs, P0=100):
+def normalize_inputs(data, num_inputs, P0=10):
     ''' Reshapes the inputs to fit into the specified mesh size and normalizes input data to
     have the same total power input by injecting extra power to an "unused" input port.
     :param X: the input data
@@ -274,6 +274,7 @@ def main():
                     max_acc = max(onn.val_accuracy) 
                     onn.plotBackprop(backprop_legend_location=0)
                     onn.pickle_save() # save pickled version of the onn class
+                    onn.save_correct_classified_samples(best_model)
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         onn.rng == onn.max_number_of_tests-1):
