@@ -28,8 +28,9 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
     onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 1500
-    onn.STEP_SIZE = 0.0005 # Learning Rate
+    onn.EPOCHS = 1400
+    onn.STEP_SIZE= 0.0005 # Learning Rate
+
     onn.SAMPLES = 100 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
@@ -234,6 +235,7 @@ def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
     onn = dataset(onn, dataset='Iris_augment')
+    # onn = dataset(onn, dataset='Iris')
 
     # All choices for normalization ##########
     # onn = normalize_dataset(onn, normalization='Normalized', experimental=False) # dataset -> [0, 1]
@@ -280,6 +282,7 @@ def main():
                         onn.rng == onn.max_number_of_tests-1):
                     print(f'\nBest Accuracy: {max_acc:.3f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model)
+                    onn.saveForwardPropagation(best_model)
 
                     # To plot scattermatrix of dataset
                     # axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)

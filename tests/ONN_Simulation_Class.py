@@ -134,10 +134,10 @@ class ONN_Simulation:
         gt = np.array([np.argmax(tru) for tru in self.yt])
         Xt_correct = self.Xt[gt == pred] 
         yt_correct = self.yt[gt == pred] 
+        print(f"Correct Classes Total: {np.sum(yt_correct, axis=0)}")
         np.savetxt(f"{self.FOLDER}/Datasets/Xt_correct.txt", Xt_correct, fmt='%.3f', delimiter=', ')
         np.savetxt(f"{self.FOLDER}/Datasets/Xt_correct_power.txt", 10*np.log10(Xt_correct**2), fmt='%.3f', delimiter=', ')
         np.savetxt(f"{self.FOLDER}/Datasets/yt_correct.txt", yt_correct, fmt='%d', delimiter=', ')
-
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
@@ -152,6 +152,10 @@ class ONN_Simulation:
         self_dict = {f'{self.topo}':self}
         scipy.io.savemat(f"{self.FOLDER}/Topologies/{self.topo}.mat", mdict={f'{self.topo}':self})
         self.model = model
+    def saveForwardPropagation(self, model):
+        y_hat = model.forward_pass(self.Xt.T)
+        np.savetxt(f'{self.FOLDER}/Datasets/yhat_t_power.txt', y_hat.T, fmt='%.5f', delimiter=', ')
+        np.savetxt(f'{self.FOLDER}/Datasets/yhat_t_power_dB.txt', 10*np.log10(y_hat/10).T, fmt='%.5f', delimiter=', ')
     def saveAll(self, model):
         self.saveSimDataset()
         self.saveSimData(model)
