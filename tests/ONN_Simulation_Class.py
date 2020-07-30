@@ -134,10 +134,19 @@ class ONN_Simulation:
         gt = np.array([np.argmax(tru) for tru in self.yt])
         Xt_correct = self.Xt[gt == pred] 
         yt_correct = self.yt[gt == pred] 
-        print(f"Correct Classes Total: {np.sum(yt_correct, axis=0)}")
-        np.savetxt(f"{self.FOLDER}/Datasets/Xt_correct.txt", Xt_correct, fmt='%.3f', delimiter=', ')
-        np.savetxt(f"{self.FOLDER}/Datasets/Xt_correct_power.txt", 10*np.log10(Xt_correct**2), fmt='%.3f', delimiter=', ')
-        np.savetxt(f"{self.FOLDER}/Datasets/yt_correct.txt", yt_correct, fmt='%d', delimiter=', ')
+
+        Y_hat = model.forward_pass(self.X.T)
+        pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+        gt = np.array([np.argmax(tru) for tru in self.y])
+        X_correct = self.X[gt == pred] 
+        y_correct = self.y[gt == pred] 
+        Y = np.vstack([yt_correct, y_correct])
+
+
+        print(f"Correct Classes Total: {np.sum(Y, axis=0)}")
+        np.savetxt(f"{self.FOLDER}/Datasets/X_correct.txt", np.vstack([Xt_correct, X_correct]), fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/X_correct_power.txt", np.vstack([10*np.log10(Xt_correct**2), 10*np.log10(X_correct**2)]), fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/y_correct.txt", Y, fmt='%d', delimiter=', ')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
@@ -257,8 +266,10 @@ class ONN_Simulation:
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'wb') as p:
             pickle.dump(self, p)
     def pickle_load(self, onn_folder = None):
+
         if onn_folder is not None:
             self.FOLDER = onn_folder
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:
             self = pickle.load(p)
             return self 
+

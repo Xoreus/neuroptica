@@ -6,14 +6,10 @@ Author: Simon Geoffroy-Gagnon
 Edit: 2020.07.20
 '''
 import numpy as np
-import matplotlib.pyplot as plt
-import calculate_accuracy as calc_acc
-import cmath
 from sklearn.preprocessing import MinMaxScaler as mms
 import ONN_Simulation_Class as ONN_Cls
 from plot_scatter_matrix import plot_scatter_matrix
 import ONN_Setups
-import acc_colormap
 import training_onn as train
 import test_trained_onns as test
 import create_datasets
@@ -21,16 +17,14 @@ from sklearn import preprocessing
 import sys
 sys.path.append('../')
 import neuroptica as neu
-import cmath
-import copy
 
 def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
-    onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 1400
-    onn.STEP_SIZE= 0.0005 # Learning Rate
 
+    onn.BATCH_SIZE = 2**4 
+    onn.EPOCHS = 500
+    onn.STEP_SIZE= 0.0005 # Learning Rate
     onn.SAMPLES = 100 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
@@ -72,8 +66,14 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.FFT_MNIST_PCA(classes=onn.classes, features=onn.features, nsamples=onn.SAMPLES) # this gives real valued vectors as input samples
     elif dataset == 'Iris': # Gives real valued vectors, 4 features 3 classes
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.iris_dataset(nsamples=onn.SAMPLES)
+        onn.classes = 3
+        onn.features = 4
+        onn.N = 4
     elif dataset == 'Iris_augment':# Gives real valued vectors, 4 features 4 classes
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.iris_dataset_augment(divide_mean=1.25, nsamples=onn.SAMPLES)
+        onn.classes = 4
+        onn.features = 4
+        onn.N = 4
     else: 
         print("\nDataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', 'FFT_PCA', 'Iris', or 'Iris_augment'.\n")
     return onn
@@ -235,7 +235,7 @@ def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
     onn = dataset(onn, dataset='Iris_augment')
-    # onn = dataset(onn, dataset='Iris')
+    onn = dataset(onn, dataset='Iris')
 
     # All choices for normalization ##########
     # onn = normalize_dataset(onn, normalization='Normalized', experimental=False) # dataset -> [0, 1]
@@ -280,9 +280,12 @@ def main():
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         onn.rng == onn.max_number_of_tests-1):
-                    print(f'\nBest Accuracy: {max_acc:.3f}%. Using this model for simulations.')
+                    print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model)
-                    onn.saveForwardPropagation(best_model)
+                    best_onn.saveForwardPropagation(best_model)
+                    current_phases = best_model.get_all_phases()
+                    best_model.set_all_phases_uncerts_losses(current_phases)
+                    best_onn.save_correct_classified_samples(best_model)
 
                     # To plot scattermatrix of dataset
                     # axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
