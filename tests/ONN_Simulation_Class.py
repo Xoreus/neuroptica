@@ -97,15 +97,21 @@ class ONN_Simulation:
 
         # Save best transformation matrix
         best_trf_matrix = np.array(self.best_trf_matrix)
-        with open(f'{self.FOLDER}/TransformationMatrix_{self.topo}_.txt', "w") as myfile:
+        with open(f'{self.FOLDER}/TransformationMatrix_{self.topo}.txt', "w") as f:
             for trf in best_trf_matrix:
-                np.savetxt(myfile, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
-                myfile.write('\n')
+                np.savetxt(f, trf, fmt='%.4f%+.4fj, '*len(trf[0]), delimiter=', ')
+                f.write('\n')
 
         # Save best phases as well
         best_phases_flat = [item for sublist in self.phases for item in sublist]
         df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
-        df.to_csv(f'{self.FOLDER}/Phases_Best_{self.topo}.txt')
+        with open(f'{self.FOLDER}/best_phases_matlab_{self.topo}.txt', "w") as f:
+            f.write("Theta=[\n")
+            f.write(df.Theta.to_string(index=False))
+            f.write("]\n\nPhi=[\n")
+            f.write(df.Phi.to_string(index=False))
+            f.write("]")
+        df.to_csv(f'{self.FOLDER}/best_phases_highPrecision_{self.topo}.txt')
     def saveAccuracyData(self):
         ''' save the accuracy computed from calculate_accuracy '''
         scipy.io.savemat(f"{self.FOLDER}/acc_{self.topo}_N={self.N}.mat", mdict={'accuracy':self.accuracy})
@@ -134,6 +140,7 @@ class ONN_Simulation:
         gt = np.array([np.argmax(tru) for tru in self.yt])
         Xt_correct = self.Xt[gt == pred] 
         yt_correct = self.yt[gt == pred] 
+        np.savetxt(f'{self.FOLDER}/Datasets/YHat_t_correct.txt', Y_hat.T, delimiter=', ', fmt='%.4f')
 
         Y_hat = model.forward_pass(self.X.T)
         pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
@@ -141,7 +148,6 @@ class ONN_Simulation:
         X_correct = self.X[gt == pred] 
         y_correct = self.y[gt == pred] 
         Y = np.vstack([yt_correct, y_correct])
-
 
         print(f"Correct Classes Total: {np.sum(Y, axis=0)}")
         np.savetxt(f"{self.FOLDER}/Datasets/X_correct.txt", np.vstack([Xt_correct, X_correct]), fmt='%.3f', delimiter=', ')
@@ -272,4 +278,3 @@ class ONN_Simulation:
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:
             self = pickle.load(p)
             return self 
-

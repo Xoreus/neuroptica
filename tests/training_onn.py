@@ -74,7 +74,6 @@ def create_model(onn):
 
 def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross entropy, mse: mean square error
     t = time.time()
-
     # X, y, Xt, yt = change_dataset_shape(onn)
     X, y, Xt, yt = onn.X, onn.y, onn.Xt, onn.yt
     # initialize the ADAM optimizer and fit the ONN to the training data

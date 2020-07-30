@@ -1,4 +1,4 @@
-function [U, DMMI, D] = optical_matrix_builder(thetas, phis)
+function [U, D] = optical_matrix_builder(thetas, phis)
 % optical_matrix_builder
 % This code uses the general optical
 % matrix equation, U = D6*D5*D4*D3*D2*D1.
@@ -21,10 +21,6 @@ theta3 = thetas(3);  % top corner
 theta4 = thetas(4); % bottom corner
 theta5 = thetas(5); % middle
 theta6 = thetas(6); % top corner
-theta7 = thetas(7);
-theta8 = thetas(8);
-theta9 = thetas(9);
-theta10 = thetas(10);
 
 %%%%%%%%%% External Phase shifter after the second DC of the MZIs
 phi1 = phis(1);   % From 0 to 2pi
@@ -32,11 +28,7 @@ phi2 = phis(2);
 phi3 = phis(3);    
 phi4 = phis(4); 
 phi5 = phis(5);    
-phi6 = phis(6);   
-phi7 = phis(7);
-phi8 = phis(8); 
-phi9 = phis(9);    
-phi10 = phis(10); 
+phi6 = phis(6);  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -87,25 +79,11 @@ D6 = [D6(1,1) D6(1,2)  0 0;
       0        0       1 0;
       0        0       0 1];
 
-%%%%%%%%% Diagonal Matrix %%%%%%%%%%%%%
-D7 = exp(1j*(theta7+pi)/2)*[exp(1j*phi7), 0; 0, 1]*...
-    [sin(theta7/2), cos(theta7/2); cos(theta7/2), -sin(theta7/2)];
 
-D8 = exp(1j*(theta8+pi)/2)*[exp(1j*phi8), 0; 0, 1]*...
-    [sin(theta8/2), cos(theta8/2); cos(theta8/2), -sin(theta8/2)];
-
-D9 = exp(1j*(theta9+pi)/2)*[exp(1j*phi9), 0; 0, 1]*...
-    [sin(theta9/2), cos(theta9/2); cos(theta9/2), -sin(theta9/2)];
-
-D10 = exp(1j*(theta10+pi)/2)*[exp(1j*phi10), 0; 0, 1]*...
-    [sin(theta10/2), cos(theta10/2); cos(theta10/2), -sin(theta10/2)];
-
-% Diagonal Matrix
-DMMI=[D7(1,1) 0 0 0 ;0 D8(1,1) 0 0; 0 0 D9(1,1) 0; 0 0 0 D10(1,1)] ;
 
 % 4x4 matrix
 U = D6*D5*D4*D3*D2*D1;
 
 % ONN Weight Matrix
-D = DMMI*U;
+D = U;
 end

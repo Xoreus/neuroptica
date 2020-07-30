@@ -43,7 +43,6 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
     onn.range_linear = 1
 
-    onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}' # Name the folder to be created
     onn.topo = 'ONN' # Name of the model
 
     return onn
@@ -197,8 +196,8 @@ def create_model(features, classes):
     # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
         neu.ReckLayer(features),
-        neu.Activation(nlaf),
-        neu.ReckLayer(features),
+        # neu.Activation(nlaf),
+        # neu.ReckLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
         neu.DropMask(features, keep_ports=range(classes))
     ])
@@ -234,7 +233,7 @@ def save_onn(onn, model, lossDiff=0):
 def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
-    onn = dataset(onn, dataset='Iris_augment')
+    # onn = dataset(onn, dataset='Iris_augment')
     onn = dataset(onn, dataset='Iris')
 
     # All choices for normalization ##########
@@ -252,6 +251,7 @@ def main():
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
+            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 
