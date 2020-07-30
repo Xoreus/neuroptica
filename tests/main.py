@@ -276,6 +276,8 @@ def main():
                     max_acc = max(onn.val_accuracy) 
                     onn.plotBackprop(backprop_legend_location=0)
                     onn.pickle_save() # save pickled version of the onn class
+                    current_phases = best_model.get_all_phases()
+                    best_model.set_all_phases_uncerts_losses(current_phases)
                     onn.save_correct_classified_samples(best_model)
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or

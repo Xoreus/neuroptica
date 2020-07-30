@@ -13,6 +13,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.ndimage.filters import gaussian_filter
 import os
+from cm_maker import plot_confusion_matrix
 import scipy.io
 import pickle
 import matplotlib as mpl
@@ -138,6 +139,16 @@ class ONN_Simulation:
         Y_hat = model.forward_pass(self.Xt.T)
         pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
         gt = np.array([np.argmax(tru) for tru in self.yt])
+
+        ax = plot_confusion_matrix(pred, gt, list(range(self.classes)),
+                          normalize=False,
+                          title=None,
+                          cmap=plt.cm.Blues)
+        bottom, top = ax.get_ylim()
+        # ax.set_ylim(bottom + 0.5, top - 0.5)
+        plt.tight_layout()
+        plt.savefig(f'{self.FOLDER}/cm.pdf')
+
         Xt_correct = self.Xt[gt == pred] 
         yt_correct = self.yt[gt == pred] 
         np.savetxt(f'{self.FOLDER}/Datasets/YHat_t_correct.txt', Y_hat.T, delimiter=', ', fmt='%.4f')
