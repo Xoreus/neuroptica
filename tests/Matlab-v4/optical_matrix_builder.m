@@ -1,34 +1,34 @@
-function [U, D] = optical_matrix_builder(thetas, phis)
+function [U, D] = optical_matrix_builder(Theta, Phi)
 % optical_matrix_builder
 % This code uses the general optical
 % matrix equation, U = D6*D5*D4*D3*D2*D1.
 %
-% Inputs: thetas - 1 by 10 array of thetas, controlling the power splitting
+% Inputs: thetas - 1 by 6 array of thetas, controlling the power splitting
 %                  ratio of the MZIs, Theta = [0, pi]. 
-%         phis - 1 by 10 array of phis, controlling the outgoing phase of
+%         phis - 1 by 6 array of phis, controlling the outgoing phase of
 %                the upper output arm of every MZI. Phi = [0, 2*pi]
 % Outputs: U - a unitary matrix based on the channel mixing by the MZIs 1-6
-%          DMMI - a diagonal matrix based on MZI 7-10
+%         
 %
 % Author: Simon Geoffroy-Gagnon, addapted from code by Farhad Shokraneh
 % Edited: 2019/03/23
 %%
 
 % From 0 to pi --- 0 goes at bar, pi goes at cross
-theta1 = thetas(1);   % top corner 
-theta2 = thetas(2);  % middle
-theta3 = thetas(3);  % top corner
-theta4 = thetas(4); % bottom corner
-theta5 = thetas(5); % middle
-theta6 = thetas(6); % top corner
+theta1 = Theta(1);   % top corner 
+theta2 = Theta(2);  % middle
+theta3 = Theta(3);  % top corner
+theta4 = Theta(4); % bottom corner
+theta5 = Theta(5); % middle
+theta6 = Theta(6); % top corner
 
 %%%%%%%%%% External Phase shifter after the second DC of the MZIs
-phi1 = phis(1);   % From 0 to 2pi
-phi2 = phis(2);
-phi3 = phis(3);    
-phi4 = phis(4); 
-phi5 = phis(5);    
-phi6 = phis(6);  
+phi1 = Phi(1);   % From 0 to 2pi
+phi2 = Phi(2);
+phi3 = Phi(3);    
+phi4 = Phi(4); 
+phi5 = Phi(5);    
+phi6 = Phi(6);  
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%

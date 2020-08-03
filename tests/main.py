@@ -23,14 +23,14 @@ def init_onn_settings():
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
     onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 500
+    onn.EPOCHS = 600
     onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 100 # Per Class
+    onn.SAMPLES = 200 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
-    onn.rng_og = 0 # starting RNG value
-    onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 78 # Will stop retrying after accuracy above this is reached
+    onn.rng_og = 1 # starting RNG value
+    onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
 
     onn.features = 4  # How many features? max for MNIST = 784 
     onn.classes = 4 # How many classes? max for MNIST = 10
@@ -196,8 +196,8 @@ def create_model(features, classes):
     # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
         neu.ReckLayer(features),
-        # neu.Activation(nlaf),
-        # neu.ReckLayer(features),
+        neu.Activation(nlaf),
+        neu.ReckLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
         neu.DropMask(features, keep_ports=range(classes))
     ])
@@ -210,8 +210,8 @@ def save_onn(onn, model, lossDiff=0):
     onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
 
-    test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
-    test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
+    onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
+    onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
     onn.saveAll(model) # Save best model information
     onn.plotAll() # plot training and tests
     onn.plotBackprop(backprop_legend_location=0)
@@ -251,7 +251,7 @@ def main():
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
-            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}' # Name the folder to be created
+            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_test' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 

@@ -418,6 +418,7 @@ class cReLU(ComplexNonlinearity):
     def forward_pass(self, X: np.ndarray):
         X_re = np.real(X)
         X_im = np.imag(X)
+        # print(((X_re > 0) * X_re + 1j * (X_im > 0) * X_im).T)
         return (X_re > 0) * X_re + 1j * (X_im > 0) * X_im
 
     def df_dRe(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:

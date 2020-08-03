@@ -104,14 +104,18 @@ class ONN_Simulation:
                 f.write('\n')
 
         # Save best phases as well
+        # print(self.phases)
         best_phases_flat = [item for sublist in self.phases for item in sublist]
+        theta = [ph[0] for ph in best_phases_flat]
+        phi = [ph[1] for ph in best_phases_flat]
+        # print(f'\n'.join('{:.9f}'.format(k) for k in theta))
         df = pd.DataFrame(best_phases_flat, columns=['Theta','Phi'])
         with open(f'{self.FOLDER}/best_phases_matlab_{self.topo}.txt', "w") as f:
             f.write("Theta=[\n")
-            f.write(df.Theta.to_string(index=False))
-            f.write("]\n\nPhi=[\n")
-            f.write(df.Phi.to_string(index=False))
-            f.write("]")
+            f.write(f'\n'.join('{:.9f}'.format(k) for k in theta))
+            f.write("];\n\nPhi=[\n")
+            f.write(f'\n'.join('{:.9f}'.format(k) for k in phi))
+            f.write("];")
         df.to_csv(f'{self.FOLDER}/best_phases_highPrecision_{self.topo}.txt')
     def saveAccuracyData(self):
         ''' save the accuracy computed from calculate_accuracy '''
@@ -283,7 +287,6 @@ class ONN_Simulation:
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'wb') as p:
             pickle.dump(self, p)
     def pickle_load(self, onn_folder = None):
-
         if onn_folder is not None:
             self.FOLDER = onn_folder
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'rb') as p:

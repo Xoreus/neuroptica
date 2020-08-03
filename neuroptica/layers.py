@@ -503,6 +503,9 @@ class ReckLayer(OpticalMeshNetworkLayer):
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
         self.input_prev = X
         self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+        # print(X.T)
+        # print(self.mesh.get_transfer_matrix())
+        # print(self.output_prev.T)
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:

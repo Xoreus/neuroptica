@@ -59,6 +59,9 @@ class Sequential(BaseModel):
         for layer in self.layers:
             if isinstance(layer, OpticalMeshNetworkLayer):
                 X_out = layer.forward_pass(X_out)
+                # print(layer.mesh.get_transfer_matrix())
+                # print(list(layer.mesh.all_tunable_params()))
+                # print(X_out.T)
             else:
                 X_out = layer.forward_pass(X_out)
         return X_out
