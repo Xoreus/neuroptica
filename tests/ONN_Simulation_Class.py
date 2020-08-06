@@ -123,21 +123,16 @@ class ONN_Simulation:
     def saveSimDataset(self):
         ''' Save simulation's datasset, both in plot and txt form '''
         np.savetxt(f'{self.FOLDER}/Datasets/y.txt', self.y, delimiter=',',fmt='%d')
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt.txt', self.Xt, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt.txt', self.Xt, delimiter=',',fmt='%.6f')
         np.savetxt(f'{self.FOLDER}/Datasets/yt.txt', self.yt, delimiter=',',fmt='%d')
-        np.savetxt(f'{self.FOLDER}/Datasets/X.txt', self.X, delimiter=',',fmt='%.3f')
+        np.savetxt(f'{self.FOLDER}/Datasets/X.txt', self.X, delimiter=',',fmt='%.6f')
 
         # Also output the power of the input vectors to help with experimental testing
-        np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.3f') 
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.Xt)**2, delimiter=',',fmt='%.3f')
-
-        self.X[self.X == 0] = sorted(set(np.abs(self.X).reshape(-1)))[1]
-        self.Xt[self.Xt == 0] = sorted(set(np.abs(self.Xt).reshape(-1)))[1]
-
-        Xn = 10*np.log10(np.abs(self.X)**2)
-        Xtn = 10*np.log10(np.abs(self.Xt)**2)
-        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB.txt', Xn, delimiter=',',fmt='%.4f') 
-        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB.txt', Xtn, delimiter=',',fmt='%.4f')
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power.txt', np.abs(self.X)**2, delimiter=',',fmt='%.6f') 
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power.txt', np.abs(self.Xt)**2, delimiter=',',fmt='%.6f')
+        
+        np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB.txt', 10*np.log10(np.abs(self.X)**2), delimiter=',',fmt='%.6f') 
+        np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB.txt', 10*np.log10(np.abs(self.Xt)**2), delimiter=',',fmt='%.6f')
     def save_correct_classified_samples(self, model):
         ''' Save only the correct validation samples for a dataset'''
         Y_hat = model.forward_pass(self.Xt.T)
@@ -166,7 +161,7 @@ class ONN_Simulation:
 
         print(f"Correct Classes Total: {np.sum(Y, axis=0)}")
         np.savetxt(f"{self.FOLDER}/Datasets/X_correct.txt", np.vstack([Xt_correct, X_correct]), fmt='%.3f', delimiter=', ')
-        np.savetxt(f"{self.FOLDER}/Datasets/X_correct_power.txt", np.vstack([10*np.log10(Xt_correct**2), 10*np.log10(X_correct**2)]), fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/X_correct_power_dB.txt", np.vstack([10*np.log10(Xt_correct**2), 10*np.log10(X_correct**2)]), fmt='%.3f', delimiter=', ')
         np.savetxt(f"{self.FOLDER}/Datasets/y_correct.txt", Y, fmt='%d', delimiter=', ')
     def create_dict(self):
         " Creates a dict of the simulation variables"

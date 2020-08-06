@@ -25,7 +25,7 @@ def init_onn_settings():
     onn.BATCH_SIZE = 2**4 
     onn.EPOCHS = 600
     onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 200 # Per Class
+    onn.SAMPLES = 50 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
@@ -196,8 +196,8 @@ def create_model(features, classes):
     # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
         neu.ReckLayer(features),
-        neu.Activation(nlaf),
-        neu.ReckLayer(features),
+        # neu.Activation(nlaf),
+        # neu.ReckLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
         neu.DropMask(features, keep_ports=range(classes))
     ])
@@ -234,7 +234,8 @@ def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
     # onn = dataset(onn, dataset='Iris_augment')
-    onn = dataset(onn, dataset='Iris')
+    # onn = dataset(onn, dataset='Iris')
+    onn = dataset(onn, dataset='Gauss')
 
     # All choices for normalization ##########
     # onn = normalize_dataset(onn, normalization='Normalized', experimental=False) # dataset -> [0, 1]
