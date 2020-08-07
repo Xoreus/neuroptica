@@ -23,13 +23,13 @@ def init_onn_settings():
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
     onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 600
+    onn.EPOCHS = 400
     onn.STEP_SIZE= 0.0005 # Learning Rate
     onn.SAMPLES = 50 # Per Class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_number_of_tests = 2 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
 
     onn.features = 4  # How many features? max for MNIST = 784 
@@ -206,9 +206,9 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0, 2, 3) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0, 4, 6) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 2, 6) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 2, 6) # set phi phase uncert range
 
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
@@ -233,17 +233,12 @@ def save_onn(onn, model, lossDiff=0):
 def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
-    # onn = dataset(onn, dataset='Iris_augment')
-    # onn = dataset(onn, dataset='Iris')
-    onn = dataset(onn, dataset='Gauss')
 
-    # All choices for normalization ##########
-    # onn = normalize_dataset(onn, normalization='Normalized', experimental=False) # dataset -> [0, 1]
+    # onn = dataset(onn, dataset='Iris_augment')
+    onn = dataset(onn, dataset='Iris')
+    # onn = dataset(onn, dataset='Gauss')
+
     onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
-    # onn = normalize_dataset(onn, normalization='Center') # dataset -> [-0.5, 0.5]
-    # onn = normalize_dataset(onn, normalization='Absolute', experimental=False) # dataset -> abs(dataset)
-    # onn = normalize_dataset(onn, normalization='Constant_Power', experimental=False) # dataset -> dataset + 1 port
-    # onn = normalize_dataset(onn, normalization='None', experimental=False) # dataet -> dataset
 
     model = create_model(onn.features, onn.classes)
 
@@ -279,7 +274,7 @@ def main():
                     onn.pickle_save() # save pickled version of the onn class
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases)
-                    onn.save_correct_classified_samples(best_model)
+                    # onn.save_correct_classified_samples(best_model)
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         onn.rng == onn.max_number_of_tests-1):
@@ -289,6 +284,7 @@ def main():
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases)
                     best_onn.save_correct_classified_samples(best_model)
+                    best_onn.save_correct_classified_samples(best_model, zeta=0.1)
 
                     # To plot scattermatrix of dataset
                     # axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)

@@ -35,7 +35,7 @@ class ONN_Simulation:
         self.phase_uncert_phi = np.linspace(0., 2.5, 21)
         self.same_phase_uncert = False
         self.rng = 1
-        self.zeta = 0.75
+        self.zeta = 0.1
 
         self.loss_dB = np.linspace(0, 3, 31)
         self.loss_dB_test = [0]
@@ -133,11 +133,19 @@ class ONN_Simulation:
         
         np.savetxt(f'{self.FOLDER}/Datasets/X_Power_dB.txt', 10*np.log10(np.abs(self.X)**2), delimiter=',',fmt='%.6f') 
         np.savetxt(f'{self.FOLDER}/Datasets/Xt_Power_dB.txt', 10*np.log10(np.abs(self.Xt)**2), delimiter=',',fmt='%.6f')
-    def save_correct_classified_samples(self, model):
-        ''' Save only the correct validation samples for a dataset'''
+    def save_correct_classified_samples(self, model, zeta=0):
+        ''' Save only the correct validation samples for a dataset
+        Uses the zeta parameter from Shokraneh et al's paper in 2019'''
+
         Y_hat = model.forward_pass(self.Xt.T)
         pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
         gt = np.array([np.argmax(tru) for tru in self.yt])
+
+        sorted_y_hat = [sorted(Y) for Y in Y_hat.T]    
+        diff_gt_zeta = [True if Y[-1] - Y[-2] > zeta else False for Y in sorted_y_hat]
+
+        correct_class = pred == gt 
+        corr = [diff_gt_zeta[idx]*correct_class[idx] for idx, _ in enumerate(correct_class)]
 
         ax = plot_confusion_matrix(pred, gt, list(range(self.classes)),
                           normalize=False,
@@ -148,21 +156,32 @@ class ONN_Simulation:
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/cm.pdf')
 
-        Xt_correct = self.Xt[gt == pred] 
-        yt_correct = self.yt[gt == pred] 
-        np.savetxt(f'{self.FOLDER}/Datasets/YHat_t_correct.txt', Y_hat.T, delimiter=', ', fmt='%.4f')
+        Xt_correct = self.Xt[corr]
+        yt_correct = self.yt[corr]
+        np.savetxt(f'{self.FOLDER}/Datasets/YHat_t_correct_{zeta:.2f}W_difference.txt', Y_hat.T, delimiter=', ', fmt='%.4f')
 
         Y_hat = model.forward_pass(self.X.T)
         pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
         gt = np.array([np.argmax(tru) for tru in self.y])
-        X_correct = self.X[gt == pred] 
-        y_correct = self.y[gt == pred] 
+
+        sorted_y_hat = [sorted(Y) for Y in Y_hat.T]    
+        diff_gt_zeta = [True if Y[-1] - Y[-2] > zeta else False for Y in sorted_y_hat]
+
+        correct_class = pred == gt 
+        # print(correct_class)
+        # print(diff_gt_zeta)
+        corr = [diff_gt_zeta[idx]*correct_class[idx] for idx, _ in enumerate(correct_class)]
+        # print(corr)
+        # print(f"sum of correct classifications: {sum(corr)}")
+
+        X_correct = self.X[corr] 
+        y_correct = self.y[corr] 
         Y = np.vstack([yt_correct, y_correct])
 
-        print(f"Correct Classes Total: {np.sum(Y, axis=0)}")
-        np.savetxt(f"{self.FOLDER}/Datasets/X_correct.txt", np.vstack([Xt_correct, X_correct]), fmt='%.3f', delimiter=', ')
-        np.savetxt(f"{self.FOLDER}/Datasets/X_correct_power_dB.txt", np.vstack([10*np.log10(Xt_correct**2), 10*np.log10(X_correct**2)]), fmt='%.3f', delimiter=', ')
-        np.savetxt(f"{self.FOLDER}/Datasets/y_correct.txt", Y, fmt='%d', delimiter=', ')
+        print(f"Correct Classes Total (zeta = {zeta} W): {np.sum(Y, axis=0)}")
+        np.savetxt(f"{self.FOLDER}/Datasets/X_correct_{zeta:.2f}W_difference.txt", np.vstack([Xt_correct, X_correct]), fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/X_correct_power_dB_{zeta:.2f}W_difference.txt", np.vstack([10*np.log10(Xt_correct**2), 10*np.log10(X_correct**2)]), fmt='%.3f', delimiter=', ')
+        np.savetxt(f"{self.FOLDER}/Datasets/y_correct_{zeta:.2f}W_difference.txt", Y, fmt='%d', delimiter=', ')
     def create_dict(self):
         " Creates a dict of the simulation variables"
         simSettings = {'N':self.N, 'EPOCHS':self.EPOCHS, 'STEP_SIZE':self.STEP_SIZE, 'SAMPLES':self.SAMPLES,
