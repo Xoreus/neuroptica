@@ -7,7 +7,7 @@
 clc; close all; clear;
 
 fig_of_merit_value = 0.75;
-print_fig_of_merit = 0;
+print_fig_of_merit = 1;
 showContour = 1;
 printMe = 0;
 
@@ -79,6 +79,7 @@ printMe = 0;
 
 F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0';
 F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0_lossy';
+F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16';
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
@@ -86,7 +87,7 @@ warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
 if 1 && 0
     phiTheta(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe); % Plots colormap of acc with phi vs theta phase uncert at specific loss/MZI
 end
-if 1 && 0
+if 1 && 1
     loss_phaseUncert(F, sim, topo, fig_of_merit_value, showContour, print_fig_of_merit, printMe) % plots colormap of acc with phase uncert vs loss/MZI
 end
 if 1 && 0
@@ -95,10 +96,10 @@ end
 if 1 && 0
     plotAcc_LPU_lineplot(F, sim, topo, 1, printMe)
 end
-if 1 && 1
+if 1 && 0
     plotAcc_singleModel_Loss_lineplot(F, sim, topo, printMe)
 end
-if 1 && 1
+if 1 && 0
     plotAcc_allModels_SinglePhaseUncert(F, sim, topo, printMe)
 end
 cd('../Matlab-v4')

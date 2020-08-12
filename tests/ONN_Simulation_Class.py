@@ -178,7 +178,7 @@ class ONN_Simulation:
         y_correct = self.y[corr] 
         Y = np.vstack([yt_correct, y_correct])
 
-        print(f"Correct Classes Total (zeta = {zeta} W): {np.sum(Y, axis=0)}")
+        print(f"Correct Classes Total (zeta = {zeta} W): {np.sum(Y, axis=0)}, Validation Accuracy: {np.sum(yt_correct)/(len(self.yt))*100:.2f}%")
         np.savetxt(f"{self.FOLDER}/Datasets/X_correct_{zeta:.2f}W_difference.txt", np.vstack([Xt_correct, X_correct]), fmt='%.3f', delimiter=', ')
         np.savetxt(f"{self.FOLDER}/Datasets/X_correct_power_dB_{zeta:.2f}W_difference.txt", np.vstack([10*np.log10(Xt_correct**2), 10*np.log10(X_correct**2)]), fmt='%.3f', delimiter=', ')
         np.savetxt(f"{self.FOLDER}/Datasets/y_correct_{zeta:.2f}W_difference.txt", Y, fmt='%d', delimiter=', ')

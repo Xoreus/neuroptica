@@ -23,18 +23,20 @@ def init_onn_settings():
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
     onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 400
+    onn.EPOCHS = 40
     onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 50 # Per Class
+    onn.SAMPLES = 50
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 2 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 80 # Will stop retrying after accuracy above this is reached
+    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 4  # How many features? max for MNIST = 784 
-    onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 16  # How many features? max for MNIST = 784 
+    onn.classes = 16 # How many classes? max for MNIST = 10
     onn.N = onn.features
+
+    onn.zeta = 0.1
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
     # it is important to note that the ONN takes in FIELD, not POWER #
@@ -238,7 +240,8 @@ def main():
     onn = dataset(onn, dataset='Iris')
     # onn = dataset(onn, dataset='Gauss')
 
-    onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
+    # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
+    onn = normalize_dataset(onn, normalization='None') # dataset -> [Min, Max]
 
     model = create_model(onn.features, onn.classes)
 
@@ -284,7 +287,8 @@ def main():
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases)
                     best_onn.save_correct_classified_samples(best_model)
-                    best_onn.save_correct_classified_samples(best_model, zeta=0.1)
+                    best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
+                    best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)
 
                     # To plot scattermatrix of dataset
                     # axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)

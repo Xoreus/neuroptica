@@ -29,12 +29,13 @@ onn.range_linear = 20
 
 onn.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
 onn_topo = ['B_C_Q_P', 'E_P', 'R_I_P', 'R_P']
+onn_topo = ['E_P', 'R_P']
 
 dataset = 'Gauss'
 # dataset = 'MNIST'
 
 np.random.seed(onn.rng)
-for onn.N in [6]:
+for onn.N in [16]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]
@@ -48,7 +49,7 @@ for onn.N in [6]:
                 onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(N=onn.N, nsamples=1000)
                 
 
-            onn.FOLDER = f'Analysis/PRA/N={onn.N}'
+            onn.FOLDER = f'Analysis/IPC/N={onn.N}'
             onn.createFOLDER()
             onn.saveSimDataset()
 
@@ -75,9 +76,9 @@ for onn.N in [6]:
                     if (max(onn.val_accuracy) > onn.max_accuracy_req or
                             onn.rng == onn.max_number_of_tests-1):
                         onn.loss_diff = lossDiff # Set loss_diff
-                        onn.loss_dB = np.linspace(0, 4, 31) # set loss/MZI range
-                        onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
-                        onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
+                        onn.loss_dB = np.linspace(0, 1, 21) # set loss/MZI range
+                        onn.phase_uncert_theta = np.linspace(0., 1, 21) # set theta phase uncert range
+                        onn.phase_uncert_phi = np.linspace(0., 1, 21) # set phi phase uncert range
 
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(onn, model, onn.Xt, onn.yt)))
 
