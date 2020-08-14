@@ -20,7 +20,7 @@ onn.BATCH_SIZE = 2**6
 onn.EPOCHS = 500
 onn.STEP_SIZE = 0.005
 onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
-onn.rng = 5 # starting RNG value
+onn.rng = 8 # starting RNG value
 onn.max_accuracy_req = 98 # (%) Will stop retrying after accuracy above this is reached
 onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
 
@@ -35,7 +35,7 @@ dataset = 'Gauss'
 # dataset = 'MNIST'
 
 np.random.seed(onn.rng)
-for onn.N in [16]:
+for onn.N in [8]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]

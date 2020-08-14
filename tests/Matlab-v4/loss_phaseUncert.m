@@ -73,7 +73,7 @@ for t = 1:length(topo)
             simulation.topology = 'Reck + DMM + Inv. Reck';
         end
 %         title(sprintf('%d$\\times$%d %s', simulation.N, simulation.N, simulation.topology), 'fontsize', fontsz, 'interpreter','latex')
-        title(sprintf('FoM in $\\mathrm{Rad} \\cdot \\mathrm{dB}$'), 'fontsize', fontsz, 'interpreter','latex')
+%         title(sprintf('FoM in $\\mathrm{Rad} \\cdot \\mathrm{dB}$'), 'fontsize', fontsz, 'interpreter','latex')
     end
 
     if printMe

@@ -32,8 +32,8 @@ def init_onn_settings():
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 16  # How many features? max for MNIST = 784 
-    onn.classes = 16 # How many classes? max for MNIST = 10
+    onn.features = 8  # How many features? max for MNIST = 784 
+    onn.classes = 8 # How many classes? max for MNIST = 10
     onn.N = onn.features
 
     onn.zeta = 0.1
@@ -237,8 +237,8 @@ def main():
     np.random.seed(onn.rng)
 
     # onn = dataset(onn, dataset='Iris_augment')
-    onn = dataset(onn, dataset='Iris')
-    # onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='Iris')
+    onn = dataset(onn, dataset='Gauss')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None') # dataset -> [Min, Max]

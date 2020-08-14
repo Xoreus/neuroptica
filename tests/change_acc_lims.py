@@ -15,10 +15,10 @@ if __name__ == '__main__':
     onn = ONN_Cls.ONN_Simulation()
     onn_topo = ['B_C_Q_P', 'E_P', 'R_I_P', 'R_P']
     onn_topo = ['E_P', 'R_P']
-    for onn.N in [16]:
+    for onn.N in [8]:
         for onn.topo in onn_topo:
             print(f'N={onn.N}, topo={onn.topo}')
-            onn.FOLDER = f'Analysis/IPC/N=16'
+            onn.FOLDER = f'Analysis/IPC/N=8'
             onn = onn.pickle_load()
             onn.range_dB = 5
             model = ONN_Setups.ONN_creation(onn)
@@ -29,10 +29,10 @@ if __name__ == '__main__':
             onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
             onn.loss_diff = 0.0 # \sigma dB
 
-            onn.loss_dB = np.linspace(0, 1, 41)
+            onn.loss_dB = np.linspace(0, 2.5, 41)
 
-            onn.phase_uncert_theta = np.linspace(0., 0.3, 41)
-            onn.phase_uncert_phi = np.linspace(0., 0.3, 41)
+            onn.phase_uncert_theta = np.linspace(0., 0.5, 41)
+            onn.phase_uncert_phi = np.linspace(0., 0.5, 41)
 
 
             model.set_all_phases_uncerts_losses(onn.phases, 0, 0, 0, 0)

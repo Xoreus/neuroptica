@@ -7,8 +7,8 @@
 clc; close all; clear;
 
 fig_of_merit_value = 0.75;
-print_fig_of_merit = 1;
-showContour = 1;
+print_fig_of_merit = 0;
+showContour = 0;
 printMe = 0;
 
 % 96x96 sims
@@ -80,6 +80,7 @@ printMe = 0;
 F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0';
 F = '/home/simon/Documents/neuroptica/tests/Analysis/Thesis_Sims/IL_Sensitivity_PhaseNoise/N=8_0_lossy';
 F = '/home/simon/Documents/neuroptica/tests/Analysis/N=16';
+% F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8';
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)
 warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')
