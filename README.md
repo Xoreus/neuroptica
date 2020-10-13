@@ -27,10 +27,29 @@ For an overview of `neuroptica`, read the [documentation](https://neuroptica.rea
 
 - [Planar data classification using electro-optic activation functions](https://github.com/fancompute/neuroptica-notebooks/blob/master/neuroptica_demo.ipynb)
 
+This updated repository contains a few additions, namely an ONN simulation class which takes in all simulation data, saves the training data and best phases, and plots various simulations. See below what this ONN simulation class can output.
+- Some examples of what this Neuroptica package can do:
 ![Phi Theta error Simulation of a trained 96x96 Diamond Mesh](img/PT_ACC_C_Q_P_N=96-1.png   "Diamond mesh accuracy plot")
 ![Phi Theta error Simulation of a trained 96x96 Reck Mesh](img/PT_ACC_R_P_N=96-1.png    "Reck mesh accuracy plot")
 ![Phi Theta error Simulation of a trained 96x96 Clements Mesh](img/PT_ACC_E_P_N=96-1.png    "Clements mesh accuracy plot")
 
+Finally, one can run tests/main.py to train and test a small ONN, just to get a feel for how the code works.
+
+Here is a list of the more useful code within the test folder:
+
+[ONN_Simulation_Class.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/ONN_Simulation_Class.py) -- contains the ONN simulation class, which holds various variables related to the training and simulating of a single ONN mesh.
+
+[linsep_main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/linsep_main.py) -- code to automatically generate linearly separable, multivariate Gaussian datasets of arbitrary sizes (which achieves 100% classification accuracy with a digital neural network) and trains an Optical Neural Network with said dataset. 
+
+[test_trained_onns.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/test_trained_onns.py) -- after the training period is completed, this function is run to test the ONNs by calculating their accuracy while varying some imperfections.
+
+[calculate_accuracy.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/calculate_accuracy.py) -- code to calculate accuracy if an ONN while varying the insertion loss and/or the phase uncertainties phi and theta.
+
+[ONN_Setups.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/ONN_Setups.py) -- function that creates different meshes based on simple string of letters: R_R_P is Reck - Reck - Photodetector, for example.
+
+[create_datasets.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/create_datasets.py) -- creates various datasets, such as the Multivariate Gaussian dataset, the Iris dataset or the MNIST dataset (with the use of PCA)
+
+[change_acc_lims.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/change_acc_lims.py) -- changes the colormap limits and recreates them, which is useful when trying out new mesh sizes.
 
 ## Authors
 `Neuroptica: Towards a Practical Implementation of Photonic Neural Networks` was written by [Simon Geoffroy-Gagnon](https://s-g-gagnon.research.mcgill.ca/), with help from Farhad Shorkaneh.
