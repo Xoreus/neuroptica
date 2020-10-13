@@ -5,7 +5,6 @@
 `Neuroptica: Towards a Practical Implementation of Photonic Neural Networks` was used to create and study Optical Neural Networks for [The diamond mesh, a phase-error- and loss-tolerant field-programmable MZI-based optical processor for optical neural networks](https://www.osapublishing.org/oe/abstract.cfm?uri=oe-28-16-23495) and many conference papers. The code itself was cloned from the original `Neuroptica` repository and subsequently modified in order to create the different meshes and figures seen in the papers. 
 
 
-```
 You can clone this modified Neuroptica repository:
 ```
 git clone https://gitlab.com/simongg/neuroptica.git
