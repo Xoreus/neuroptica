@@ -27,10 +27,10 @@ For an overview of `neuroptica`, read the [documentation](https://neuroptica.rea
 
 - [Planar data classification using electro-optic activation functions](https://github.com/fancompute/neuroptica-notebooks/blob/master/neuroptica_demo.ipynb)
 
-![Phi Theta error Simulation of a trained 96x96 Diamond Mesh](img/ PT_ACC_C_Q_P_N=96.pdf  "Diamond mesh accuracy plot")
-![Insertion Loss + Phase error Simulation of a trained 96x96 Diamond Mesh](img/ LPU_ACC_C_Q_P_N=96.pdf  "Diamond mesh accuracy plot")
-![Phi Theta error Simulation of a trained 96x96 Reck Mesh](img/ PT_R_P_N=96.pdf  "Reck mesh accuracy plot")
-![Phi Theta error Simulation of a trained 96x96 Reck Mesh](img/ LPU_ACC_R_P_N=96.pdf  "Reck mesh accuracy plot")
+![Phi Theta error Simulation of a trained 96x96 Diamond Mesh](img/DiamondMesh.png  "Diamond mesh accuracy plot")
+![Insertion Loss + Phase error Simulation of a trained 96x96 Reck Mesh](img/LPU_ACC_R_P_N=96.pdf   "Diamond mesh accuracy plot")
+![Phi Theta error Simulation of a trained 96x96 Clements Mesh](img/PT_ACC_E_P_N=96.pdf   "Reck mesh accuracy plot")
+![Insertion Loss + Phase error Simulation of a trained 96x96 Reck Mesh](img/LPU_ACC_R_P_N=96.pdf  "Reck mesh accuracy plot")
 
 
 ## Authors
