@@ -26,8 +26,8 @@ for jj = 1
 %      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6_new';
 %      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6_500';
 %      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6_highLoss';
-     F= '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_16_stdDev'
-    
+%      F= '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_16_stdDev'
+     F='/home/simon/Documents/neuroptica/tests/Analysis/PRA/N=4';
     [sim, topo] = load_ONN_data(F);
     makeMatlabDirs(F)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')

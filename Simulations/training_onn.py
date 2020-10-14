@@ -43,7 +43,7 @@ def change_dataset_shape(onn):
 
     return X, onn.y, Xt, onn.yt
 
-def get_dataset(onn, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
+def get_dataset(onn, rng, linear_sep_acc_limit=97, SAMPLES=80, EPOCHS=30, extra_channels=0):
     while True:
         print(f'RNG = {rng}, N = {onn.features}, Digital Neural Network')
         X, y, Xt, yt = cd.gaussian_dataset(targets=int(onn.classes), features=int(onn.features), nsamples=SAMPLES*onn.features, rng=rng)
@@ -55,7 +55,7 @@ def get_dataset(onn, rng, lim=99, SAMPLES=80, EPOCHS=30, extra_channels=0):
         net, weights = dnn.create_train_dnn(X, y, Xt, yt, EPOCHS, hnum=0)
         print('Validation Accuracy: {:.1f}%\n'.format(dnn.get_current_accuracy(Xt, yt, net)*100))
         rng += 1
-        if dnn.get_current_accuracy(Xt, yt, net)*100 > lim:
+        if dnn.get_current_accuracy(Xt, yt, net)*100 > linear_sep_acc_limit:
             onn.X = X
             onn.y = y
             onn.Xt = Xt
@@ -107,12 +107,12 @@ if __name__ == '__main__':
     onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
     # onn_topo = ['E_P', 'R_I_P']
     # onn_topo = ['R_P']
-    # onn_topo = ['C_Q_P']
+    # onn_topo = ['B_C_Q_P']
     rng = 8111
     onn.N = 8*2*2
     FoM = {}
     for ii in range(1):
-        ONN, rng = get_dataset(ONN, rng, lim=90)
+        ONN, rng = get_dataset(ONN, rng, linear_sep_acc_limit=90)
         for onn.topo in onn_topo:
             while True:
                 onn.get_topology_name()
@@ -141,5 +141,3 @@ if __name__ == '__main__':
                     onn.phase_uncert_theta = [0]
                     onn.phase_uncert_phi = [0]
                     break
-
-

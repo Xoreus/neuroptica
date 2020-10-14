@@ -3,7 +3,7 @@
 Using Neuroptica and linearly separable datasets or MNIST
 
 Author: Simon Geoffroy-Gagnon
-Edit: 2020.07.20
+Edit: 2020.09.04
 '''
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler as mms
@@ -22,21 +22,21 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
-    onn.BATCH_SIZE = 2**4 
-    onn.EPOCHS = 40
+    onn.BATCH_SIZE = 2**4 # # of input samples per batch
+    onn.EPOCHS = 400 # Epochs for ONN training
     onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 50
+    onn.SAMPLES = 50 # # of samples per class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
-    onn.rng_og = 1 # starting RNG value
+    onn.rng_og = 2 # starting RNG value
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
 
     onn.features = 8  # How many features? max for MNIST = 784 
     onn.classes = 8 # How many classes? max for MNIST = 10
-    onn.N = onn.features
+    onn.N = onn.features # number of ports in device
 
-    onn.zeta = 0.1
+    onn.zeta = 0.1 # Min diff between max (correct) sample and second sample
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
     # it is important to note that the ONN takes in FIELD, not POWER #
@@ -56,7 +56,7 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
              FFT MNIST, for the central square of the FFT'ed MNIST
              FFT+PCA,  for the FFT'ed MNIST with PCA'''
     if dataset == 'Gauss':
-        onn, _ = train.get_dataset(onn, onn.rng, SAMPLES=onn.SAMPLES, EPOCHS=60)
+        onn, onn.rng = train.get_dataset(onn, onn.rng, SAMPLES=onn.SAMPLES, EPOCHS=60, linear_sep_acc_limit=95) # EPOCHS here refers to the number of epochs for digital NN to see if linearly separable
     elif dataset == 'MNIST':
         onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=onn.classes, features=onn.features, nsamples=onn.SAMPLES) # this gives real valued vectors as input samples 
     elif dataset == 'FFT_MNIST':
@@ -198,10 +198,8 @@ def create_model(features, classes):
     # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
         neu.ReckLayer(features),
-        # neu.Activation(nlaf),
-        # neu.ReckLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes))
+        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
     ])
     return model
 
@@ -241,7 +239,7 @@ def main():
     onn = dataset(onn, dataset='Gauss')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
-    onn = normalize_dataset(onn, normalization='None') # dataset -> [Min, Max]
+    onn = normalize_dataset(onn, normalization='None')
 
     model = create_model(onn.features, onn.classes)
 
@@ -257,7 +255,7 @@ def main():
             max_acc = 0 # Reset maximum accuracy achieved
             onn.loss_diff = lossDiff
             onn.loss_dB = [trainLoss]
-            for onn.rng in range(onn.max_number_of_tests):
+            for test_number in range(onn.max_number_of_tests):
                 onn.phases = [] # Reset Saved Phases
                 
                 # Reset the phases to create new model
@@ -277,10 +275,9 @@ def main():
                     onn.pickle_save() # save pickled version of the onn class
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases)
-                    # onn.save_correct_classified_samples(best_model)
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
-                        onn.rng == onn.max_number_of_tests-1):
+                        test_number == onn.max_number_of_tests-1):
                     print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model)
                     best_onn.saveForwardPropagation(best_model)

@@ -12,7 +12,7 @@ fontsz = 64;
 newPaper = false;
 sigma = 0.5;
 
-for lossy = [0.5]
+for lossy = [0]
 
     
     Ns = [4,6,8,10,12,16,32,64];

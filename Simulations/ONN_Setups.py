@@ -15,7 +15,7 @@ import numpy as np
 np.set_printoptions(precision=3)
 np.set_printoptions(suppress=True)
 def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None, None)]):
-    """  Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, W = drop mask, keep ports in middle of diamond """
+    """  Create the Topology based on the layers and N provided. R = Reck, I = Inverted Reck, A = add mask(2N), M = DMM layer, D = Drop Mask, N = Nonlinearity, P = Photodetector, B = sqrt(Photodetector), C = diamond layer, Q = Drop mask, keep bottom ports of diamond, ect... Dict keys do not follow any good distribution unfortunately """
     layers = onn.topo.replace('_', '')
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
     layer_dict = {
@@ -29,7 +29,7 @@ def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None,
             'N':neu.Activation(Nonlinearity), # Nonlinearity can be neu.cReLU(), ect..
             'P':neu.Activation(neu.AbsSquared(onn.N)), # Photodetector
             
-            'B':neu.AddMaskDiamond(onn.N), # Add 0s to the top half of the Diamond input
+            'B':neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
             'C':neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases), # Diamond Mesh
             'Q':neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
             # 'W':neu.DropMask(2*onn.N - 2, drop_ports=[0, onn.N+1]), # Central Diamond Topology
