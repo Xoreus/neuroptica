@@ -17,6 +17,8 @@ from cm_maker import plot_confusion_matrix
 import scipy.io
 import pickle
 import matplotlib as mpl
+from matplotlib.ticker import FormatStrFormatter
+np.seterr(divide = 'ignore') 
 
 class ONN_Simulation:
     def __init__(self):
@@ -74,7 +76,7 @@ class ONN_Simulation:
             Topo = 'Reck + Inverted Reck'
         elif self.topo == 'R_D_I_P':
             Topo = 'Reck + DMM + Inverted Reck'
-        elif self.topo == 'C_Q_P':
+        elif self.topo == 'B_C_Q_P':
             Topo = 'Diamond'
         elif self.topo == 'C_W_P':
             Topo = 'Central Diamond'
@@ -200,10 +202,10 @@ class ONN_Simulation:
         y_hat = model.forward_pass(self.Xt.T)
         np.savetxt(f'{self.FOLDER}/Datasets/yhat_t_power.txt', y_hat.T, fmt='%.5f', delimiter=', ')
         np.savetxt(f'{self.FOLDER}/Datasets/yhat_t_power_dB.txt', 10*np.log10(y_hat/10).T, fmt='%.5f', delimiter=', ')
-    def saveAll(self, model):
+    def saveAll(self, model, cmap='magma'):
         self.saveSimDataset()
         self.saveSimData(model)
-        self.plotAll()
+        self.plotAll(cmap=cmap)
         self.saveSelf() # Only useful if wanting a .mat file
     def plotBackprop(self, backprop_legend_location=0):
         labels_size = 20
@@ -232,63 +234,89 @@ class ONN_Simulation:
         fig.tight_layout() 
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
-    def plotAll(self):
-        labels_size = 20
-        legend_size = 14
-        tick_size = 12
-
-        # Plot Loss + Phase uncert accuracies along with contour of high accuracy region
-        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
-        ax = plt.gca()
-        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
-        ax.tick_params(axis='both', which='major', labelsize=tick_size)
-        cbar = plt.colorbar()
-        plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*np.max(self.accuracy_LPU)], colors='w')
-        plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
-        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
-        cbar.set_label('Accuracy (\%)', fontsize=legend_size)
-        plt.tight_layout()
-        plt.savefig(f'{self.FOLDER}/LPU_ACC_Contour_{self.topo}.pdf')
-        plt.clf()
+    def plotAll(self, cmap='magma'):
+        labels_size = 24
+        legend_size = 15
+        tick_size = 14
+        contour_color = (0.36, 0.54, 0.66)
+        tick_fmt = '%.2f'
 
         # Plot Loss + Phase uncert accuracies
-        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+
         ax = plt.gca()
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
         ax.tick_params(axis='both', which='major', labelsize=tick_size)
+
         plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar = plt.colorbar()
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
-        plt.savefig(f'{self.FOLDER}/LPU_ACC_{self.topo}.pdf')
+        plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_{self.topo}_N={self.N}.pdf')
+        plt.clf()
+
+        # Plot Loss + Phase uncert accuracies along with contour of high accuracy region
+        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+
+        ax = plt.gca()
+        ax.tick_params(axis='both', which='minor', labelsize=tick_size)
+        ax.tick_params(axis='both', which='major', labelsize=tick_size)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
+        cbar = plt.colorbar()
+        cs = plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*np.max(self.accuracy_LPU)], colors=[contour_color])
+        proxy = [plt.Rectangle((0,0),1,1,fc = contour_color)]
+        plt.legend(proxy, [f'Above {self.zeta}\% Accuracy'])
+        plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
+        plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
+        cbar.set_label('Accuracy (\%)', fontsize=legend_size)
+        plt.title(f'FoM in Rad$\\cdot$dB', fontsize=labels_size)
+        plt.tight_layout()
+        plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()
 
         # Plot Phase uncert accuracies along with contour of high accuracy region
-        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+
         ax = plt.gca()
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
         ax.tick_params(axis='both', which='major', labelsize=tick_size)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
         cbar = plt.colorbar()
-        plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*np.max(self.accuracy_LPU)], colors='w')
+        cs = plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*np.max(self.accuracy_PT)], colors=[contour_color])
+        proxy = [plt.Rectangle((0,0),1,1,fc = contour_color)]
+        plt.legend(proxy, [f'Above {self.zeta}\% Accuracy'])
         plt.xlabel(r'$\sigma_\theta$ (Rad)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\phi}$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
+        plt.title(f'FoM in Rad$^2$', fontsize=labels_size)
         plt.tight_layout()
-        plt.savefig(f'{self.FOLDER}/PT_ACC_Contour_{self.topo}.pdf')
+        plt.savefig(f'{self.FOLDER}/Plots/PT_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()
 
         # Colormap of Phi + Theta phase uncertainty
-        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1), vmax=100, cmap='magma', rasterized=True)
+        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+
         ax = plt.gca()
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
         ax.tick_params(axis='both', which='major', labelsize=tick_size)
+        ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+        ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
+
         plt.xlabel(r'$\sigma_\theta$ (Rad)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\phi}$ (Rad)', fontsize=labels_size)
         cbar = plt.colorbar()
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
-        plt.savefig(f'{self.FOLDER}/PT_ACC_{self.topo}.pdf')
+        plt.savefig(f'{self.FOLDER}/Plots/PT_ACC_{self.topo}_N={self.N}.pdf')
         plt.clf()
     def createFOLDER(self):
         if not os.path.isdir(self.FOLDER):
@@ -297,6 +325,8 @@ class ONN_Simulation:
             os.makedirs(self.FOLDER + '/Datasets')
         if not os.path.isdir(self.FOLDER + '/Topologies'):
             os.makedirs(self.FOLDER + '/Topologies')
+        if not os.path.isdir(self.FOLDER + '/Plots'):
+            os.makedirs(self.FOLDER + '/Plots')
     def pickle_save(self):
         with open(f'{self.FOLDER}/{self.topo}.pkl', 'wb') as p:
             pickle.dump(self, p)

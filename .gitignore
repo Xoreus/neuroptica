@@ -155,4 +155,4 @@ dmypy.json
 *.ps
 
 # Ignore everything in tests/analysis
-tests/Analysis/**
+Simulations/Analysis/**

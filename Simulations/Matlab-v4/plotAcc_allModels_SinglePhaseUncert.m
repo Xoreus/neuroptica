@@ -6,12 +6,12 @@
 % Author: Simon Geoffroy-Gagnon
 % Edit: 20.02.2020
 
-function plotAcc_allModels_SinglePhaseUncert(FOLDER, sim, topo, printMe)
+function plotAcc_allModels_SinglePhaseUncert(~, sim, topo, printMe)
 fontsz = 64;
 step_sz = 1;
+stop_at = 8;
 legend_ = {};
-figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
-
+figure('Renderer', 'painters', 'Position', [200 200 1200 800])
 for t = topo
     simulation = sim.(t{1});
     accuracy = sim.(t{1}).accuracy_LPU;
@@ -23,12 +23,13 @@ for t = topo
         accuracy = squeeze(accuracy);
         same_phaseUncert = accuracy(:, 1:step_sz:end);
         
-        plot(simulation.loss_dB(1:step_sz:end), same_phaseUncert(p_idx, 1:end), 'linewidth', 3)
+        plot(simulation.loss_dB(1:step_sz:end - stop_at), same_phaseUncert(p_idx, 1:end - stop_at), 'linewidth', 3)
         
         hold on
     end
 end
 hold off
+legend_ = {'Reck','Clements','Diamond'};
 legend(legend_, 'fontsize', fontsz*0.8,  'interpreter','latex', 'location', 'best');
 
 

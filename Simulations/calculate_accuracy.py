@@ -8,6 +8,7 @@ Edit: 2020.03.04
 import numpy as np
 from tqdm import tqdm
 import time
+from  onnClassTraining import change_dataset_shape
 
 def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
@@ -63,6 +64,9 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     return np.squeeze(np.swapaxes(np.array(accuracy), 0, 2))
 
 def get_accuracy(onn, model, Xt, yt, loss_diff, show_progress=True):
+    # test for old Diamond mesh w/o dataset shape changer included
+    if 'C' in onn.topo and 'B' not in onn.topo:
+        _, _, Xt, yt = change_dataset_shape(onn)
     if onn.same_phase_uncert:
        return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)
     else:

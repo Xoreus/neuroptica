@@ -22,7 +22,7 @@ onn.rng = 5
 onn.zeta = 0
 
 # onn_topo = ['R_P', 'C_Q_P']
-onn_topo = ['R_P', 'C_Q_P', 'E_P', 'R_I_P']
+onn_topo = ['R_P', 'B_C_Q_P', 'E_P']
 for onn.N in [8]:
     for onn.topo in onn_topo:
         onn.get_topology_name()
