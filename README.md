@@ -29,8 +29,7 @@ For an overview of `neuroptica`, read the [documentation](https://neuroptica.rea
 This updated repository contains a few additions, namely an ONN simulation class which takes in all simulation data, saves the training data and best phases, and plots various simulations. See below what this ONN simulation class can output.
 - Some examples of what this Neuroptica package can do:
 ![Phi Theta error Simulation of a trained 96x96 Diamond Mesh](img/PT_ACC_C_Q_P_N=96-1.png   "Diamond mesh accuracy plot")
-![Phi Theta error Simulation of a trained 96x96 Reck Mesh](img/PT_ACC_R_P_N=96-1.png    "Reck mesh accuracy plot")
-![Phi Theta error Simulation of a trained 96x96 Clements Mesh](img/PT_ACC_E_P_N=96-1.png    "Clements mesh accuracy plot")
+![Insertion Loss + Phase error Simulation of a trained 96x96 Reck Mesh](img/LPU_ACC_R_P_N=32-1.png    "Reck mesh accuracy plot")
 
 Finally, one can run tests/main.py to train and test a small ONN, just to get a feel for how the code works.
 
