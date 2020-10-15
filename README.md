@@ -35,9 +35,8 @@ This updated repository contains a few additions, namely an ONN simulation class
 ![Phi Theta error Simulation of a trained 96x96 Diamond Mesh](img/PT_ACC_C_Q_P_N=96-1.png   "Diamond mesh accuracy plot")
 ![Insertion Loss + Phase error Simulation of a trained 96x96 Reck Mesh](img/LPU_ACC_R_P_N=32-1.png    "Reck mesh accuracy plot")
 
-Finally, one can run tests/main.py to train and test a small ONN, just to get a feel for how the code works.
 
-Here is a list of the more useful code within the test folder:
+Here is a list of the more useful code within the Simulation folder:
 
 [ONN_Simulation_Class.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/ONN_Simulation_Class.py) -- contains the ONN simulation class, which holds various variables related to the training and simulating of a single ONN mesh.
 
