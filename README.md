@@ -28,7 +28,7 @@ For an overview of `neuroptica`, read the [documentation](https://neuroptica.rea
 
 - [linsep_main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/linsep_main.py) gives a good overview of how to program using this new `Neuroptica` repository. This code creates an ONN, then finds a linearly separable multivariate Gaussian dataset before training the ONN on this dataset.
 
-` Finally, [main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/main.py) is where most of the work is done, and is the best file to learn how neuroptica works.
+- Finally, [main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/main.py) is where most of the work is done, and is the best file to learn how neuroptica works.
 
 This updated repository contains a few additions, namely an ONN simulation class which takes in all simulation data, saves the training data and best phases, and plots various simulations. See below what this ONN simulation class can output.
 - Some examples of what this Neuroptica package can do:
