@@ -1,10 +1,8 @@
-
-# -*- coding: utf-8 -*-
 """
 Created on Thu Apr 11 16:42:03 2019
 
 @author: simon
-Edited: 04.10.2019
+Edited: 2019-04-05
 
 Creates a confusion matrix from general data
 """
@@ -34,13 +32,8 @@ def plot_confusion_matrix(y_true, y_pred, classes,
 
     # Compute confusion matrix
     cm = confusion_matrix(y_true, y_pred)
-    # Only use the labels that appear in the data
-    # classes = classes[unique_labels(y_true, y_pred)]
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
-        #print("Normalized confusion matrix")
-   # else:
-        #print('Confusion matrix, without normalization')
 
 
     fig, ax = plt.subplots()
@@ -69,46 +62,3 @@ def plot_confusion_matrix(y_true, y_pred, classes,
                     color="white" if cm[i, j] > thresh else "black")
     fig.tight_layout()
     return ax
-
-
-if __name__ == '__main__':
-    FOLDER = '../4x4_ONN/'
-    gt_pred = np.array(random.choices(np.genfromtxt(FOLDER + 'gt_pred.csv', delimiter=','), k=50))
-
-    zero = random.choices([(x, y) for (x,y) in gt_pred if x == 1], k=13)
-    one = random.choices([(x, y) for (x,y) in gt_pred if x == 2], k=13)
-    two = random.choices([(x, y) for (x,y) in gt_pred if x == 3], k=12)
-    three = random.choices([(x, y) for (x,y) in gt_pred if x == 4], k=12)
-
-    gt_pred = np.array(zero+one+two+three)
-
-    gt = [int(x) for x in gt_pred[:,0]]
-    pred = [int(x) for x in gt_pred[:,1]]
-
-
-    #gt_50 = zero + one + two + three 
-
-    #print(len(gt_50))
-
-
-    #zero = [x for x in pred if x == 1]
-    #one = [x for x in pred if x == 2]
-    #two = [x for x in pred if x == 3]
-    #three = [x for x in pred if x == 4]
-    #
-    ##pred_50 = random.choices(zero+one+two+three, k=50)
-    #
-    #pred_50 = random.choices(zero, k=13) + random.choices(one, k=13) + random.choices(two, k=12) + random.choices(three, k=12) 
-    #
-    #cm = confusion_matrix(gt, pred)
-    ##print(sum(np.diag(cm)))
-    #print(np.diag(cm))
-
-    #ax = plot_confusion_matrix(gt_50, pred_50, [x for x in range(4)])
-    ax = plot_confusion_matrix(gt, pred, [x for x in range(4)])
-    bottom, top = ax.get_ylim()
-    ax.set_ylim(bottom + 0.5, top - 0.5)
-    plt.savefig('Figures/cm_98.9%_50_samples_experimental_data.png')
-    #ax2 = plot_confusion_matrix(cm, [x for x in range(4)], normalize=True)
-    plt.show()
-    #plt.savefig('Figures/normalized_cm_{}.pdf'.format(color))

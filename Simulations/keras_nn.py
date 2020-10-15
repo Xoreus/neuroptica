@@ -1,3 +1,9 @@
+''' Creates a Keras fully connected NN for testing purposes
+
+Author: Simon Geoffroy-Gagnon
+Edit: 2020-04-01
+'''
+
 import create_datasets
 from keras.layers import Dense # Dense layers are "fully connected" layers
 from keras.models import Sequential # Documentation: https://keras.io/models/sequential/

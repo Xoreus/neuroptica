@@ -9,14 +9,11 @@ import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import training_onn as train
 import test_trained_onns as test
-import acc_colormap
-
 
 onn = ONN_Cls.ONN_Simulation()
 onn.BATCH_SIZE = 2**6
 onn.EPOCHS = 300
 onn.STEP_SIZE = 0.005
-
 
 onn.rng = 5
 onn.zeta = 0
@@ -47,7 +44,6 @@ for onn.N in [8]:
                 onn.phase_uncert_phi = np.linspace(0, 0.5, 41)
                 test.test_LPU(onn, model)
                 test.test_PT(onn, model)
-
 
                 onn.saveAll(model)
                 onn.pickle_save()

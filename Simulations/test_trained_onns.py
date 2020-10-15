@@ -8,16 +8,12 @@ Edit: 2020.03.28
 import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
-import onnClassTraining
-import acc_colormap
 import ONN_Setups
 import digital_NN_main as dnn
 import create_datasets as cd
-import random
 import os
 import matplotlib
 import training_onn
-import glob
 if 1:
     matplotlib.rcParams['mathtext.fontset'] = 'stix'
     matplotlib.rcParams['font.family'] = 'STIXGeneral'
@@ -40,12 +36,8 @@ def test_LPU(onn, X, y, model, show_progress=True):
     onn.LPU_FoM = np.sum((np.array(onn.accuracy_LPU) >  onn.zeta*np.max(onn.accuracy_LPU))*onn.LPU_Area)
     return onn, model
 
-def colormap_me(onn):
-    acc_colormap.colormap_me(onn)
-
 def test_onn(onn, model, show_progress=True):
     onn, model = test_PT(onn, onn.Xt, onn.yt, model, show_progress=show_progress)
     onn, model = test_LPU(onn, onn.Xt, onn.yt, model, show_progress=show_progress)
-    acc_colormap.colormap_me(onn)
     return onn, model
 

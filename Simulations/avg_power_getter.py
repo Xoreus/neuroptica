@@ -11,7 +11,6 @@ import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
-import acc_colormap
 import N_Finder
 from collections import defaultdict
 

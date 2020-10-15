@@ -1,5 +1,7 @@
 ''' changes the loss and phase uncert limits for testing different topology sizes
 using Neuroptica and linearly separable datasets
+Limits (loss_dB and phase_uncert_*) decrease as the mesh size increases! No good 
+way to see by how much yet though.
 
 Author: Simon Geoffroy-Gagnon
 Edit: 2020.07.11
@@ -9,7 +11,6 @@ import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import test_trained_onns as test
 import ONN_Setups 
-import acc_colormap
 
 if __name__ == '__main__':
     onn = ONN_Cls.ONN_Simulation()
@@ -38,8 +39,6 @@ if __name__ == '__main__':
         onn, model = test.test_onn(onn, model)
 
         onn.saveAll(model)
-        
-        acc_colormap.colormap_me(onn)
         onn.saveSimDataset()
         onn.saveAccuracyData()
         onn.pickle_save()

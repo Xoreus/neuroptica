@@ -11,7 +11,6 @@ Edit: 2020.03.22
 import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
-import acc_colormap
 import training_onn as train
 import test_trained_onns as test
 import ONN_Setups

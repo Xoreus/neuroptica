@@ -9,7 +9,6 @@ import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import ONN_Setups
-import acc_colormap
 import digital_NN_main as dnn
 import create_datasets as cd
 import test_trained_onns as test

@@ -9,7 +9,6 @@ import numpy as np
 import calculate_accuracy as calc_acc
 import ONN_Simulation_Class as ONN_Cls
 import onnClassTraining
-import acc_colormap
 import digital_NN_main as dnn
 import create_datasets as cd
 import random
@@ -70,7 +69,6 @@ def test_onn(folder, ONN, lim=98.5):
             print(ONN.topology, ONN.LPU_FoM, 'Rad*dB')
 
             ONN.createFOLDER()
-            acc_colormap.colormap_me(ONN)
             ONN.saveAll(model)
             np.savetxt(f'{ONN.FOLDER}/all_topologies.txt', onn_topo, fmt='%s')  
 

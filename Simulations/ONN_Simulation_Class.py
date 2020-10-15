@@ -239,6 +239,7 @@ class ONN_Simulation:
         legend_size = 15
         tick_size = 14
         contour_color = (0.36, 0.54, 0.66)
+        contour_linewidth = 3
         tick_fmt = '%.2f'
 
         # Plot Loss + Phase uncert accuracies
@@ -269,13 +270,14 @@ class ONN_Simulation:
         ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
         cbar = plt.colorbar()
-        cs = plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*np.max(self.accuracy_LPU)], colors=[contour_color])
+        cs = plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*np.max(self.accuracy_LPU)], colors=[contour_color], linewidths=contour_linewidth)
         proxy = [plt.Rectangle((0,0),1,1,fc = contour_color)]
-        plt.legend(proxy, [f'Above {self.zeta}\% Accuracy'])
+        plt.legend(proxy, [f'Above {int(self.zeta*100)}\% Accuracy'], prop={'size': legend_size})
         plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.title(f'FoM in Rad$\\cdot$dB', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()
@@ -290,13 +292,14 @@ class ONN_Simulation:
         ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
         cbar = plt.colorbar()
-        cs = plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*np.max(self.accuracy_PT)], colors=[contour_color])
+        cs = plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*np.max(self.accuracy_PT)], colors=[contour_color], linewidths=contour_linewidth)
         proxy = [plt.Rectangle((0,0),1,1,fc = contour_color)]
-        plt.legend(proxy, [f'Above {self.zeta}\% Accuracy'])
+        plt.legend(proxy, [f'Above {int(self.zeta*100)}\% Accuracy'], prop={'size': legend_size})
         plt.xlabel(r'$\sigma_\theta$ (Rad)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\phi}$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.title(f'FoM in Rad$^2$', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/PT_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()

@@ -12,7 +12,7 @@ import neuroptica as neu
 
 
 onn = ONN_Cls.ONN_Simulation()
-onn = onn.pickle_load(f'/home/simon/Documents/neuroptica/tests/Analysis/3l/N=16')
+onn = onn.pickle_load(f'Simulations/Analysis/3l/N=16')
 model = onn.model
 
 onn.range_dB = 10

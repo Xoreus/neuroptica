@@ -1,3 +1,8 @@
+''' This is code found online to create a digital NN to test whether a dataset is linearly separable or not
+
+Author: Online, edits by Simon Geoffroy-Gagnon
+Edit: 2020-05-06
+'''
 import math
 import numpy as np
 import create_datasets
