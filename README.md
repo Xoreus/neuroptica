@@ -26,6 +26,8 @@ For an overview of `neuroptica`, read the [documentation](https://neuroptica.rea
 
 - [Planar data classification using electro-optic activation functions](https://github.com/fancompute/neuroptica-notebooks/blob/master/neuroptica_demo.ipynb)
 
+Additionally, here are the main code files within the Simulations folder that one may want to go through when getting started:
+
 - [linsep_main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/linsep_main.py) gives a good overview of how to program using this new `Neuroptica` repository. This code creates an ONN, then finds a linearly separable multivariate Gaussian dataset before training the ONN on this dataset.
 
 - Finally, [main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/main.py) is where most of the work is done, and is the best file to learn how neuroptica works.
