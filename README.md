@@ -9,7 +9,7 @@ You can clone this modified Neuroptica repository:
 ```
 git clone https://gitlab.com/simongg/neuroptica.git
 ```
-
+ 
 and in your program or notebook, add
 
 ```python
@@ -26,14 +26,19 @@ For an overview of `neuroptica`, read the [documentation](https://neuroptica.rea
 
 - [Planar data classification using electro-optic activation functions](https://github.com/fancompute/neuroptica-notebooks/blob/master/neuroptica_demo.ipynb)
 
+Additionally, here are the main code files within the Simulations folder that one may want to go through when getting started:
+
+- [linsep_main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/linsep_main.py) gives a good overview of how to program using this new `Neuroptica` repository. This code creates an ONN, then finds a linearly separable multivariate Gaussian dataset before training the ONN on this dataset.
+
+- Finally, [main.py](https://gitlab.com/simongg/neuroptica/-/blob/master/Simulations/main.py) is where most of the work is done, and is the best file to learn how neuroptica works.
+
 This updated repository contains a few additions, namely an ONN simulation class which takes in all simulation data, saves the training data and best phases, and plots various simulations. See below what this ONN simulation class can output.
 - Some examples of what this Neuroptica package can do:
 ![Phi Theta error Simulation of a trained 96x96 Diamond Mesh](img/PT_ACC_C_Q_P_N=96-1.png   "Diamond mesh accuracy plot")
 ![Insertion Loss + Phase error Simulation of a trained 96x96 Reck Mesh](img/LPU_ACC_R_P_N=32-1.png    "Reck mesh accuracy plot")
 
-Finally, one can run tests/main.py to train and test a small ONN, just to get a feel for how the code works.
 
-Here is a list of the more useful code within the test folder:
+Here is a list of the more useful code within the Simulation folder:
 
 [ONN_Simulation_Class.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/ONN_Simulation_Class.py) -- contains the ONN simulation class, which holds various variables related to the training and simulating of a single ONN mesh.
 
@@ -41,7 +46,7 @@ Here is a list of the more useful code within the test folder:
 
 [test_trained_onns.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/test_trained_onns.py) -- after the training period is completed, this function is run to test the ONNs by calculating their accuracy while varying some imperfections.
 
-[calculate_accuracy.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/calculate_accuracy.py) -- code to calculate accuracy if an ONN while varying the insertion loss and/or the phase uncertainties phi and theta.
+[calculate_accuracy.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/calculate_accuracy.py) -- code to calculate accuracy of an ONN while varying the insertion loss and/or the phase uncertainties phi and theta.
 
 [ONN_Setups.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/ONN_Setups.py) -- function that creates different meshes based on simple string of letters: R_R_P is Reck - Reck - Photodetector, for example.
 
