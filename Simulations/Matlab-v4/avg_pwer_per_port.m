@@ -19,7 +19,7 @@ for N = Ns
     
     for ii = datasets
         if lossy == 1
-            F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy/N=%d_%d', N, ii);
+            F = sprintf('../Analysis/outPorts_mean_pow_Lossy/N=%d_%d', N, ii);
         elseif lossy == 0.5 && 1
             F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy_half_dB_loss/N=%d_%d', N, ii);
         else

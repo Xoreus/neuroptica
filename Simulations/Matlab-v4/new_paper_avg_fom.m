@@ -8,9 +8,10 @@ fontsz = 64;
 printme = true;
 
 FOLDER = '../Analysis/outPorts_mean_pow';
-Ns = [4, 8, 16, 32, 64];
+Ns = [4, 8, 16, 32, 64, 96];
 
 topo = {'R_P','E_P','R_I_P','B_C_Q_P',};% , 'R_D_I_P', 'R_D_P'};
+% topo = {'R_P','E_P','B_C_Q_P',};% , 'R_D_I_P', 'R_D_P'};
 topology = {'Reck','Clements','Diamond'};% ,'Reck + DMM + Inv. Reck','Reck + DMM'};
 errBar = '';
 
@@ -57,26 +58,20 @@ for jj = 1:length(Ns)
     end
 end
 
-% topo = [topo(1), topo(2), topo(4)];
+topo = [topo(1), topo(2), topo(4)];
 % topo = [ topo(4), topo(1)];
 % topology = topology([3,1]);
-topo = [ topo(4), topo(1)];
-topology = topology([3,1]);
+% topo = [ topo(4), topo(1)];
+% topology = topology([3,1]);
 
-% markers = {'-v','-s','-d' };
-markers = {'-d', '-v'};
+markers = {'-v','-s','-d' };
+% markers = {'-d', '-v'};
 linecolor = [[0,0.5,0], [0.5,0,0], [0,0,0.5], [0.5,0.5,0]];
 figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
 for tt = 1:length(topo)
     if isempty(errBar)
-        if tt == 1
-            
-            plot(Ns,FoM_LPU.(topo{tt}), markers{tt}, 'markersize', 20, 'MarkerFaceColor', 'k', ...
-                'displayName', topology{tt}, 'linewidth', 3)
-        else
             plot(Ns,FoM_LPU.(topo{tt}), markers{tt}, 'markersize', 20, 'MarkerFaceColor', '#c3c3c3', ...
                 'displayName', topology{tt}, 'linewidth', 3)
-        end
     else
         errorbar(Ns,FoM_LPU.(topo{tt}), FoM_LPU_var.(topo{tt}), 'displayName', topology{tt}, 'linewidth', 3)
     end
@@ -133,14 +128,9 @@ if 1
     figure('Renderer', 'painters', 'Position', [400 400 1800 1300])
     for tt = 1:length(topo)
         if isempty(errBar)
-            if tt == 1
-                plot(Ns,MSE.(topo{tt}), markers{tt}, 'markersize', 20, 'MarkerFaceColor', 'k', ...
-                    'displayName', topology{tt}, 'linewidth', 3)
-            else
                 
                 plot(Ns,MSE.(topo{tt}), markers{tt}, 'markersize', 20, 'MarkerFaceColor', '#c3c3c3', ...
                     'displayName', topology{tt}, 'linewidth', 3)
-            end
         else
             errorbar(Ns,MSE.(topo{tt}),MSE_var.(topo{tt}),...
                 'displayName', topology{tt}, 'linewidth', 3)

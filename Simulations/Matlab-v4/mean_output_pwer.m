@@ -9,7 +9,7 @@ printMe = true;
 linewid = 3;
 fontsz = 64;
 
-for lossy = 00
+for lossy = 0
     Ns = [4,8,16,32,64];
     datasets_used = zeros(length(Ns),1);
     Ns_D = [];
@@ -23,9 +23,9 @@ for lossy = 00
         in_pwer = zeros(1,Ns(jj));
         
         if lossy == 1
-            F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_0.5/N=%d_*', Ns(jj));
+            F = sprintf('../Analysis/outPorts_mean_pow_0.5/N=%d/N=%d_*', Ns(jj), Ns(jj));
         else
-            F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N=%d_*', Ns(jj));
+            F = sprintf('../Analysis/outPorts_mean_pow/N=%d/N=%d_*', Ns(jj),Ns(jj));
         end
         sims = dir(F);
         sim_folders = {sims.folder};
@@ -57,7 +57,7 @@ for lossy = 00
     lgd = {};
     
     for name = 1:length(dirNames)
-        F = '/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N=4_0';
+        F = '../Analysis/outPorts_mean_pow/N=4/N=4_0';
         dirFiles = dir([sims(1).folder, '/', simulation{1}, '/Topologies/']);
         
         dirNames = {dirFiles(3:end).name};
@@ -68,7 +68,7 @@ for lossy = 00
     lgd{3} = 'Reck/$\overline{\mathrm{Reck}}$';
     lgd(3) = []; % Delete lgd(3), reck + inv. reck, if not used
     
-    figure('Renderer', 'painters', 'Position', [400 400 1900 1400])
+    figure('Renderer', 'painters', 'Position', [200 200 800 700]*2)
     
     if lossy
         plot(Ns, 10*log10(perc_diff(:, 4)), 'linewidth', linewid, 'marker', 'V', 'markersize', 20, 'MarkerFaceColor', '#c3c3c3')
@@ -101,7 +101,7 @@ for lossy = 00
     a = get(gca,'YTickLabel');
     set(gca,'YTickLabel',a,'FontName','Times','fontsize',fontsz*0.7)
     xlabel('Structure Size ($N$)', 'fontsize', fontsz*0.8, 'interpreter','latex', 'color', 'k')
-    ylabel('Mean Output Power (dB)', 'fontsize', fontsz*0.8, 'interpreter','latex')
+    ylabel('Mean Output Power (a.u.)', 'fontsize', fontsz*0.8, 'interpreter','latex')
     
     h = gca;
     set(h, 'YTickLabelMode','auto')
