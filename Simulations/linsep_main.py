@@ -16,7 +16,7 @@ import create_datasets
 
 onn = ONN_Cls.ONN_Simulation()
 onn.BATCH_SIZE = 2**6
-onn.EPOCHS = 500
+onn.EPOCHS = 200
 onn.STEP_SIZE = 0.005
 onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
@@ -32,7 +32,7 @@ dataset = 'Gauss'
 # dataset = 'MNIST'
 
 np.random.seed(onn.rng)
-for onn.N in [16]:
+for onn.N in [4]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]
@@ -41,7 +41,7 @@ for onn.N in [16]:
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
             if dataset == 'Gauss':
-                onn, _ = train.get_dataset(onn, onn.rng, SAMPLES=40, EPOCHS=60)
+                onn, _ = train.get_dataset(onn, onn.rng, SAMPLES=400, EPOCHS=60)
             elif dataset == 'MNIST':
                 onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(N=onn.N, nsamples=1000)
                 

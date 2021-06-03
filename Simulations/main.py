@@ -8,7 +8,7 @@ Edit: 2020.09.04
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler as mms
 import ONN_Simulation_Class as ONN_Cls
-from plot_scatter_matrix import plot_scatter_matrix
+# from plot_scatter_matrix import plot_scatter_matrix
 import ONN_Setups
 import training_onn as train
 import test_trained_onns as test
@@ -265,7 +265,7 @@ def main():
 
                 onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
-                # Save best model
+                # # Save best model
                 if max(onn.val_accuracy) > max_acc:
                     best_model = model
                     onn.model = model
