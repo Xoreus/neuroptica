@@ -21,9 +21,9 @@ for N = Ns
         if lossy == 1
             F = sprintf('../Analysis/outPorts_mean_pow_Lossy/N=%d_%d', N, ii);
         elseif lossy == 0.5 && 1
-            F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy_half_dB_loss/N=%d_%d', N, ii);
+            F = sprintf('/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/outPorts_mean_pow_Lossy_half_dB_loss/N=%d_%d', N, ii);
         else
-            F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N=%d_%d', N, ii);
+            F = sprintf('/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/outPorts_mean_pow/N=%d_%d', N, ii);
         end
         
         dirFiles = dir([F '/Topologies/']);

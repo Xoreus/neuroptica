@@ -26,7 +26,7 @@ for lossy = [0]
         outPow_per_port_nl = zeros(4,Ns(jj));
         in_pwer = zeros(1,Ns(jj));
         
-        F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/%.2f_sigma%.2f_outPorts_mean_pow', lossy, sigma);
+        F = sprintf('/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/%.2f_sigma%.2f_outPorts_mean_pow', lossy, sigma);
         
         folders = dir([F sprintf('/N=%d_*', Ns(jj))]);
         foldNames = {folders.name};

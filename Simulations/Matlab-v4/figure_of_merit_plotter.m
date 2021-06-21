@@ -35,7 +35,7 @@ xlabel('Structure Size ($N$)', 'fontsize', fontsz, 'interpreter','latex')
 ylabel('FoM $(\mathrm{Rad} \cdot \mathrm{dB})$', 'fontsize', fontsz, 'interpreter','latex')
 % axis square
 grid('on')
-pMe_lineplot('/home/simon/Documents/neuroptica/tests/Crop_Me/FoM.pdf')
+pMe_lineplot('/home/edwar/Documents/Github_Projects/neuroptica/tests/Crop_Me/FoM.pdf')
 %%
 diamond_bp  = [0.1927, 0.2067, 0.2086, 0.1948, 0.1530, 0.1848];
 reck_bp     = [0.1935, 0.2276, 0.3572, 0.6381, 1.2113, 2.4012];
@@ -65,6 +65,6 @@ ylabel('Final $\mathcal{L}_{\mathrm{(MSE)}}$', 'fontsize', fontsz, 'interpreter'
 
 % axis square
 grid('on')
-pMe_lineplot('/home/simon/Documents/neuroptica/tests/Crop_Me/MSE-N.pdf')
+pMe_lineplot('/home/edwar/Documents/Github_Projects/neuroptica/tests/Crop_Me/MSE-N.pdf')
 
 %%

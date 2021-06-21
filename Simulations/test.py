@@ -4,6 +4,11 @@ Using Neuroptica and linearly separable datasets or MNIST
 
 Author: Simon Geoffroy-Gagnon
 Edit: 2020.09.04
+
+Additional Edits
+
+Author: Edward Leung
+Edit: 2021.05.15
 '''
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler as mms
@@ -15,6 +20,7 @@ import test_trained_onns as test
 import create_datasets
 from sklearn import preprocessing
 import sys
+import matplotlib.pyplot as plt
 sys.path.append('../')
 import neuroptica as neu
 
@@ -22,21 +28,21 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
-    onn.BATCH_SIZE = 2**4 # # of input samples per batch
-    onn.EPOCHS = 400 # Epochs for ONN training
-    onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 50 # # of samples per class
+    onn.BATCH_SIZE = 2**6 # # of input samples per batch
+    onn.EPOCHS = 200 # Epochs for ONN training
+    onn.STEP_SIZE= 0.005 # Learning Rate
+    onn.SAMPLES = 400 # # of samples per class
 
-    onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
-    onn.rng_og = 2 # starting RNG value
+    onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+    onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 98 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 8  # How many features? max for MNIST = 784 
-    onn.classes = 8 # How many classes? max for MNIST = 10
+    onn.features = 4  # How many features? max for MNIST = 784 
+    onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
-    onn.zeta = 0.1 # Min diff between max (correct) sample and second sample
+    onn.zeta = 0.001 # Min diff between max (correct) sample and second sample
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
     # it is important to note that the ONN takes in FIELD, not POWER #
@@ -170,17 +176,17 @@ def create_model(features, classes):
 
 
     # If you want multi-layer Diamond Topology
-    # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(nlaf),
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
+    model = neu.Sequential([
+        neu.AddMaskDiamond(features),
+        neu.DiamondLayer(features),
+        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        neu.Activation(nlaf),
+        neu.AddMaskDiamond(features),
+        neu.DiamondLayer(features),
+        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)),
+    ])
 
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
@@ -196,19 +202,19 @@ def create_model(features, classes):
     # ])
 
     # If you want regular Reck (single-layer) topology
-    model = neu.Sequential([
-        neu.ReckLayer(features),
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-    ])
+    # model = neu.Sequential([
+    #     neu.ReckLayer(features),
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    # ])
     return model
 
 def save_onn(onn, model, lossDiff=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0, 4, 6) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 2, 6) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 2, 6) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0, 2, 6) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 6) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 6) # set phi phase uncert range
 
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
@@ -221,7 +227,7 @@ def save_onn(onn, model, lossDiff=0):
     'upper left' 	2
     'lower left' 	3
     'lower right' 	4
-    'right'        	5
+    'right'         5
     'center left' 	6
     'center right' 	7
     'lower center' 	8
@@ -255,6 +261,7 @@ def main():
             max_acc = 0 # Reset maximum accuracy achieved
             onn.loss_diff = lossDiff
             onn.loss_dB = [trainLoss]
+            onn.get_topology_name()
             for test_number in range(onn.max_number_of_tests):
                 onn.phases = [] # Reset Saved Phases
                 
@@ -263,7 +270,7 @@ def main():
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases)
 
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
                 # # Save best model
                 if max(onn.val_accuracy) > max_acc:
@@ -288,8 +295,8 @@ def main():
                     best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)
 
                     # To plot scattermatrix of dataset
-                    # axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
-                    # plt.savefig(onn.FOLDER + '/scatterplot.pdf')
+                    axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
+                    plt.savefig(onn.FOLDER + '/scatterplot.pdf')
                     break
 
 if __name__ == '__main__':

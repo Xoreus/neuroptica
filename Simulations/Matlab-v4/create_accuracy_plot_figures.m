@@ -12,9 +12,9 @@ showContour = 0;
 printMe = 1;
 
 % has potential for acc vs IL
-F = '/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N=32_4';
-F = '/home/simon/Documents/neuroptica/tests/Analysis/N=32';
-F = '/home/simon/Documents/neuroptica/tests/Analysis/N=32_v2';
+F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/outPorts_mean_pow/N=32_4';
+F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/N=32';
+F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/N=32_v2';
 
 [sim, topo] = load_ONN_data(F);
 makeMatlabDirs(F)

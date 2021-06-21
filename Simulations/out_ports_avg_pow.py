@@ -40,7 +40,7 @@ for ii in range(20, 40):
     for onn.N in onn.Ns:
         onn.features = onn.N
         onn.classes = onn.N
-        onn.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N={onn.N}_{ii}'
+        onn.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/outPorts_mean_pow/N={onn.N}_{ii}'
         onn, onn.rng = train.get_dataset(onn, onn.rng, SAMPLES=onn.SAMPLES, EPOCHS=60, linear_sep_acc_limit=95)
 
         onn.createFOLDER()

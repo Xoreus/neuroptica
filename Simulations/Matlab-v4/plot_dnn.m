@@ -34,4 +34,4 @@ title(sprintf('Accuracy of %s', model), 'fontsize', fontsz, 'interpreter','latex
 drawnow;
 % savefig([sprintf('DNN_loss+acc-plot.fig')])
 % saveas(gcf, [sprintf('DNN_loss+acc-plot.png')])
-pMe(sprintf('/home/simon/Documents/Thesis/Figures/DNN_Iris_0h_maxAcc%d.pdf', max(valacc)))
+pMe(sprintf('/home/edwar/Documents/Github_Projects/Thesis/Figures/DNN_Iris_0h_maxAcc%d.pdf', max(valacc)))

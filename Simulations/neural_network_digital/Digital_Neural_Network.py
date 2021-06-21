@@ -17,7 +17,7 @@ import os
 import pickle
 import matplotlib.pyplot as plt
 import sys
-sys.path.append('/home/simon/Documents/neuroptica/tests/')
+sys.path.append('/home/edwar/Documents/Github_Projects/neuroptica/tests/')
 import create_datasets
 import neural_network as nn
 from sklearn.utils import shuffle

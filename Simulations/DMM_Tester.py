@@ -99,7 +99,7 @@ FoM = {}
 for ii in range(10):
     while True:
         random.seed(rng)
-        ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/DMM/{ii}'
+        ONN.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/DMM/{ii}'
         folder = f'../better-linsep-datasets/N={N}'
         rng = get_dataset(folder, N, rng)
         PT_FoM = {}

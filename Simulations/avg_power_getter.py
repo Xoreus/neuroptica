@@ -38,8 +38,8 @@ rng = 3
 ONN.Ns = [4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32] 
 for ii in [4]:
     for ONN.N in ONN.Ns:
-        folder = f'/home/simon/Documents/neuroptica/linsep-datasets/N={ONN.N}'
-        ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/pwer_out/N={ONN.N}_{ii}'
+        folder = f'/home/edwar/Documents/Github_Projects/neuroptica/linsep-datasets/N={ONN.N}'
+        ONN.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/pwer_out/N={ONN.N}_{ii}'
         rng = N_Finder.get_dataset(folder, ONN.N, rng, EPOCHS=50)
         for ONN.topo in onn_topo:
             ONN.get_topology_name()

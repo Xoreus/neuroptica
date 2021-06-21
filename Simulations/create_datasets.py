@@ -300,7 +300,7 @@ def plot_agmented_iris(nsamples=300):
 
 
     plt.suptitle('')
-    plt.savefig('/home/simon/Documents/neuroptica/tests/Crop_Me/Iris-Augmented.pdf')
+    plt.savefig('/home/edwar/Documents/Github_Projects/neuroptica/tests/Crop_Me/Iris-Augmented.pdf')
 
 def plot_OG_iris():
     iris = datasets.load_iris()
@@ -339,7 +339,7 @@ def plot_OG_iris():
 
 
     plt.suptitle('', fontname='Calibri', fontsize=34)
-    plt.savefig('/home/simon/Documents/neuroptica/tests/Crop_Me/Iris-OG.pdf')
+    plt.savefig('/home/edwar/Documents/Github_Projects/neuroptica/tests/Crop_Me/Iris-OG.pdf')
 
 def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=1):
     " GAUSSIAN BLOB MAKER "

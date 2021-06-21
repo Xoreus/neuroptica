@@ -1,7 +1,7 @@
 % Plot DNN loss/val acc/trn acc
 close all
 for hidden = 0:2
-    F = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/DNN/iris-%dh-og', hidden);
+    F = sprintf('/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/DNN/iris-%dh-og', hidden);
     l = load([F '/losses.txt']);
     trnacc = load([F '/trn_acc.txt']);
     valacc = load([F '/val_acc.txt']);

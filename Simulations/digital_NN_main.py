@@ -11,7 +11,7 @@ sys.path.append('neural_network_digital')
 from sklearn.utils import shuffle
 import numpy as np
 import pandas as pd
-import create_datasets as cd
+#import create_datasets as cd
 import os
 import Digital_Neural_Network as dnn
 import neural_network as nn

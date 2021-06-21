@@ -40,7 +40,7 @@ ONN.Ns = [4, 6, 8, 10]
 
 for ii in [3]:
     for ONN.N in ONN.Ns:
-        ONN.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N={ONN.N}_{ii}'
+        ONN.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/outPorts_mean_pow/N={ONN.N}_{ii}'
         for ONN.topo in onn_topo:
             ONN.get_topology_name()
             ONN.pickle_load()

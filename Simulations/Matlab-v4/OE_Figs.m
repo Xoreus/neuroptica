@@ -18,16 +18,16 @@ for jj = 1
 %     F = '/storage/Research/OE_2020/Figs+Datasets/N=16/N=16-Loss+PU';
         
     % 8x8 Sims
-%     F = '/home/simon/Documents/neuroptica/tests/Analysis/N=8/N=8_4';
-% F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=8/N=8_7';
+%     F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/N=8/N=8_4';
+% F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/OE/N=8/N=8_7';
     % 4x4 sims
-%      F = '/home/simon/Documents/neuroptica/tests/Analysis/N=4/N=4_22'; % OE Paper Lineplots
-%      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6';
-%      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6_new';
-%      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6_500';
-%      F = '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_6_highLoss';
-%      F= '/home/simon/Documents/neuroptica/tests/Analysis/OE/N=4/N=4_16_stdDev'
-     F='/home/simon/Documents/neuroptica/tests/Analysis/PRA/N=4';
+%      F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/N=4/N=4_22'; % OE Paper Lineplots
+%      F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/OE/N=4/N=4_6';
+%      F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/OE/N=4/N=4_6_new';
+%      F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/OE/N=4/N=4_6_500';
+%      F = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/OE/N=4/N=4_6_highLoss';
+%      F= '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/OE/N=4/N=4_16_stdDev'
+     F='/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/PRA/N=4';
     [sim, topo] = load_ONN_data(F);
     makeMatlabDirs(F)
     warning('off', 'MATLAB:table:ModifiedAndSavedVarnames')

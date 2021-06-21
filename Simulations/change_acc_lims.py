@@ -17,9 +17,9 @@ if __name__ == '__main__':
     onn_topo = ['B_C_Q_P', 'E_P', 'R_P']
     # onn_topo = ['C_Q_P', 'E_P', 'R_P']
     for onn.topo in onn_topo:
-        onn.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=8_lossy'
-        # onn.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/outPorts_mean_pow/N=32_4'
-        # onn.FOLDER = f'/home/simon/Documents/neuroptica/tests/Analysis/N=96_1'
+        onn.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/N=8_lossy'
+        # onn.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/outPorts_mean_pow/N=32_4'
+        # onn.FOLDER = f'/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/N=96_1'
         onn = onn.pickle_load()
         print(f'N={onn.N}, topo={onn.topo}')
         onn.range_dB = 5

@@ -6,7 +6,7 @@ close all; clc; clear;
 
 N = 4;
 fontsz = 64;
-FOLDER = sprintf('/home/simon/Documents/neuroptica/tests/Analysis/phaseConvergence_RDP/N=4', N);
+FOLDER = sprintf('/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/phaseConvergence_RDP/N=4', N);
 phases = {};
 
 comp_layer =  'DMM'; % 'Reck'; %

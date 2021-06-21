@@ -13,8 +13,8 @@ import neuroptica as neu
 
 onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 onn.topo = 'ONN'
-# onn.FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/iris_augment/4x3'
-onn.FOLDER = '/home/simon/Documents/neuroptica/tests/Analysis/iris_augment/4x3_test'
+# onn.FOLDER = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/iris_augment/4x3'
+onn.FOLDER = '/home/edwar/Documents/Github_Projects/neuroptica/tests/Analysis/iris_augment/4x3_test'
 onn = onn.pickle_load()
 model = onn.model
 model.set_all_phases_uncerts_losses(Phases=onn.phases)
