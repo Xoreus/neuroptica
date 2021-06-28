@@ -38,8 +38,8 @@ def init_onn_settings():
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 98 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 4  # How many features? max for MNIST = 784 
-    onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 10  # How many features? max for MNIST = 784 
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.001 # Min diff between max (correct) sample and second sample
@@ -176,30 +176,30 @@ def create_model(features, classes):
 
 
     # If you want multi-layer Diamond Topology
-    model = neu.Sequential([
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(nlaf),
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)),
-    ])
+    # model = neu.Sequential([
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #     neu.Activation(nlaf),
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)),
+    # ])
 
     # If you want regular Clements (multi-layer) topology
-    # model = neu.Sequential([
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes))
-    # ])
+    model = neu.Sequential([
+        neu.ClementsLayer(features),
+        neu.Activation(nlaf),
+        neu.ClementsLayer(features),
+        neu.Activation(nlaf),
+        neu.ClementsLayer(features),
+        neu.Activation(nlaf),
+        neu.ClementsLayer(features),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes))
+    ])
 
     # If you want regular Reck (single-layer) topology
     # model = neu.Sequential([
@@ -212,9 +212,9 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0, 2, 6) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 6) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 6) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0, 2, 20) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 20) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 20) # set phi phase uncert range
 
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
@@ -242,7 +242,8 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='Gauss')
+    onn = dataset(onn, dataset='MNIST')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None')
