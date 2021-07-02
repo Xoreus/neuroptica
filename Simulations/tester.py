@@ -31,15 +31,15 @@ def init_onn_settings():
     onn.BATCH_SIZE = 2**6 # # of input samples per batch
     onn.EPOCHS = 200 # Epochs for ONN training
     onn.STEP_SIZE= 0.005 # Learning Rate
-    onn.SAMPLES = 50 # # of samples per class
+    onn.SAMPLES = 400 # # of samples per class
 
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 98 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 4  # How many features? max for MNIST = 784 
-    onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 10  # How many features? max for MNIST = 784 
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.001 # Min diff between max (correct) sample and second sample
@@ -242,63 +242,64 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    onn = dataset(onn, dataset='Gauss')
-    # onn = dataset(onn, dataset='MNIST')
+    # onn = dataset(onn, dataset='Gauss')
+    onn = dataset(onn, dataset='MNIST')
+    #print(*onn.X, sep = ",")  #onn.y, onn.Xt, onn.yt)
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
-    onn = normalize_dataset(onn, normalization='None')
+    # onn = normalize_dataset(onn, normalization='None')
 
-    model = create_model(onn.features, onn.classes)
+    # model = create_model(onn.features, onn.classes)
 
-    loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [0] # loss used during training
+    # loss_diff = [0] # If loss_diff is used in insertion loss/MZI
+    # training_loss = [0] # loss used during training
 
-    for lossDiff in loss_diff:
-        for trainLoss in training_loss:
-            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_test' # Name the folder to be created
-            onn.createFOLDER() # Creates folder to save this ONN training and simulation info
-            onn.saveSimDataset() # save the simulation datasets
+    # for lossDiff in loss_diff:
+    #     for trainLoss in training_loss:
+    #         onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_test' # Name the folder to be created
+    #         onn.createFOLDER() # Creates folder to save this ONN training and simulation info
+    #         onn.saveSimDataset() # save the simulation datasets
 
-            max_acc = 0 # Reset maximum accuracy achieved
-            onn.loss_diff = lossDiff
-            onn.loss_dB = [trainLoss]
-            onn.get_topology_name()
-            for test_number in range(onn.max_number_of_tests):
-                onn.phases = [] # Reset Saved Phases
+    #         max_acc = 0 # Reset maximum accuracy achieved
+    #         onn.loss_diff = lossDiff
+    #         onn.loss_dB = [trainLoss]
+    #         onn.get_topology_name()
+    #         for test_number in range(onn.max_number_of_tests):
+    #             onn.phases = [] # Reset Saved Phases
                 
-                # Reset the phases to create new model
-                current_phases = model.get_all_phases()
-                current_phases = [[(None, None) for _ in layer] for layer in current_phases]
-                model.set_all_phases_uncerts_losses(current_phases)
+    #             # Reset the phases to create new model
+    #             current_phases = model.get_all_phases()
+    #             current_phases = [[(None, None) for _ in layer] for layer in current_phases]
+    #             model.set_all_phases_uncerts_losses(current_phases)
 
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+    #             onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
-                # # Save best model
-                if max(onn.val_accuracy) > max_acc:
-                    best_model = model
-                    onn.model = model
-                    best_onn = onn
-                    max_acc = max(onn.val_accuracy) 
-                    onn.plotBackprop(backprop_legend_location=0)
-                    onn.pickle_save() # save pickled version of the onn class
-                    current_phases = best_model.get_all_phases()
-                    best_model.set_all_phases_uncerts_losses(current_phases)
+    #             # # Save best model
+    #             if max(onn.val_accuracy) > max_acc:
+    #                 best_model = model
+    #                 onn.model = model
+    #                 best_onn = onn
+    #                 max_acc = max(onn.val_accuracy) 
+    #                 onn.plotBackprop(backprop_legend_location=0)
+    #                 onn.pickle_save() # save pickled version of the onn class
+    #                 current_phases = best_model.get_all_phases()
+    #                 best_model.set_all_phases_uncerts_losses(current_phases)
 
-                if (max(onn.val_accuracy) > onn.max_accuracy_req or
-                        test_number == onn.max_number_of_tests-1):
-                    print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
-                    save_onn(best_onn, best_model)
-                    best_onn.saveForwardPropagation(best_model)
-                    current_phases = best_model.get_all_phases()
-                    best_model.set_all_phases_uncerts_losses(current_phases)
-                    best_onn.save_correct_classified_samples(best_model)
-                    best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
-                    best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)
+    #             if (max(onn.val_accuracy) > onn.max_accuracy_req or
+    #                     test_number == onn.max_number_of_tests-1):
+    #                 print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
+    #                 save_onn(best_onn, best_model)
+    #                 best_onn.saveForwardPropagation(best_model)
+    #                 current_phases = best_model.get_all_phases()
+    #                 best_model.set_all_phases_uncerts_losses(current_phases)
+    #                 best_onn.save_correct_classified_samples(best_model)
+    #                 best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
+    #                 best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)
 
-                    # To plot scattermatrix of dataset
-                    axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
-                    plt.savefig(onn.FOLDER + '/scatterplot.pdf')
-                    break
+    #                 # To plot scattermatrix of dataset
+    #                 axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
+    #                 plt.savefig(onn.FOLDER + '/scatterplot.pdf')
+    #                 break
 
 if __name__ == '__main__':
      main()

@@ -65,18 +65,24 @@ def load_mnist_labels(filename):
 def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this is for unnormalized MNIST: [1,3,6,7]):
     " Download MNIST dataset "
     X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1)
+    #print(X_train[0])
     y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
+    #print(y_train[0])
     X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
+    #print(X_test[8])
     y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
+    #print(y_test[8])
 
     if classes != 4:
         digits = random.sample(range(10), classes)
 
     print(f"Classes: {digits}")
 
+    # Array of Trues that come about when y_train is a digit
     train_mask = np.isin(y_train, digits)
     test_mask = np.isin(y_test, digits)
 
+    # Removes values that are not apart of the digits that are being tested
     X_train_4_digits, y_train_4_digits = X_train[train_mask], y_train[train_mask]
 
     # Create dimensionality reducer (PCA with 4 dimensions) and fit it to dataset

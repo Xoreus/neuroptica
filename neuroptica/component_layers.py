@@ -321,7 +321,6 @@ class OpticalMesh:
                                                                        use_partial_vectors=use_partial_vectors)
 
         gradients = {}
-
         for layer, layer_fields, layer_fields_adj in zip(self.layers, forward_fields, reversed(adjoint_fields)):
 
             if isinstance(layer, PhaseShifterLayer):
