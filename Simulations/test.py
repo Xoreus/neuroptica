@@ -6,6 +6,7 @@ Author: Simon Geoffroy-Gagnon
 Edit: 2020.09.04
 
 Additional Edits
+- Add MZI Error into Learning Model
 
 Author: Edward Leung
 Edit: 2021.05.15
@@ -31,7 +32,7 @@ def init_onn_settings():
     onn.BATCH_SIZE = 2**6 # # of input samples per batch
     onn.EPOCHS = 200 # Epochs for ONN training
     onn.STEP_SIZE= 0.005 # Learning Rate
-    onn.SAMPLES = 50 # # of samples per class
+    onn.SAMPLES = 400 # # of samples per class
 
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
@@ -42,7 +43,7 @@ def init_onn_settings():
     onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
-    onn.zeta = 0.001 # Min diff between max (correct) sample and second sample
+    onn.zeta = 0.75 # Min diff between max (correct) sample and second sample
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
     # it is important to note that the ONN takes in FIELD, not POWER #
@@ -176,30 +177,30 @@ def create_model(features, classes):
 
 
     # If you want multi-layer Diamond Topology
-    # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(nlaf),
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
+    model = neu.Sequential([
+        neu.AddMaskDiamond(features),
+        neu.DiamondLayer(features),
+        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        neu.Activation(nlaf),
+        neu.AddMaskDiamond(features),
+        neu.DiamondLayer(features),
+        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)),
+    ])
 
     # If you want regular Clements (multi-layer) topology
-    model = neu.Sequential([
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes))
-    ])
+    # model = neu.Sequential([
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes))
+    # ])
 
     # If you want regular Reck (single-layer) topology
     # model = neu.Sequential([
@@ -209,17 +210,17 @@ def create_model(features, classes):
     # ])
     return model
 
-def save_onn(onn, model, lossDiff=0):
+def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0, 2, 20) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 20) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 20) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0., 1, 50) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 50) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 50) # set phi phase uncert range
 
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
     onn.saveAll(model) # Save best model information
-    onn.plotAll() # plot training and tests
+    onn.plotAll(trainingLoss=trainingLoss) # plot training and tests
     onn.plotBackprop(backprop_legend_location=0)
     ''' Backprop Legend Location Codes:
     'best' 	        0
@@ -251,10 +252,12 @@ def main():
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [0] # loss used during training
+    training_loss = [0.5] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
+            print("Loss Diff", lossDiff)
+            print("Training Loss", trainLoss)
             onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_test' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
@@ -269,9 +272,9 @@ def main():
                 # Reset the phases to create new model
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
-                model.set_all_phases_uncerts_losses(current_phases)
+                model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
 
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
                 # # Save best model
                 if max(onn.val_accuracy) > max_acc:
@@ -287,7 +290,7 @@ def main():
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         test_number == onn.max_number_of_tests-1):
                     print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
-                    save_onn(best_onn, best_model)
+                    save_onn(best_onn, best_model, 0, trainLoss)
                     best_onn.saveForwardPropagation(best_model)
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases)

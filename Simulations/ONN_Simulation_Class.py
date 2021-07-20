@@ -234,7 +234,7 @@ class ONN_Simulation:
         fig.tight_layout() 
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
         plt.clf()
-    def plotAll(self, cmap='magma'):
+    def plotAll(self, cmap='magma', trainingLoss=0.00):
         labels_size = 24
         legend_size = 15
         tick_size = 14
@@ -255,7 +255,7 @@ class ONN_Simulation:
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar = plt.colorbar()
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
-        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology} {trainingLoss}dB TrainingLoss', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_{self.topo}_N={self.N}.pdf')
         plt.clf()
@@ -277,7 +277,7 @@ class ONN_Simulation:
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.title(f'FoM in Rad$\\cdot$dB', fontsize=labels_size)
-        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology} {trainingLoss}db TrainingLoss', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()

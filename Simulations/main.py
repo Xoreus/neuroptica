@@ -32,8 +32,8 @@ def init_onn_settings():
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 8  # How many features? max for MNIST = 784 
-    onn.classes = 8 # How many classes? max for MNIST = 10
+    onn.features = 4  # How many features? max for MNIST = 784 
+    onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.1 # Min diff between max (correct) sample and second sample
@@ -255,6 +255,7 @@ def main():
             max_acc = 0 # Reset maximum accuracy achieved
             onn.loss_diff = lossDiff
             onn.loss_dB = [trainLoss]
+            onn.get_topology_name()
             for test_number in range(onn.max_number_of_tests):
                 onn.phases = [] # Reset Saved Phases
                 
