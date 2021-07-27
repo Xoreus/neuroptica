@@ -26,25 +26,29 @@ onn.range_dB = 10
 onn.range_linear = 20
 
 onn.ITERATIONS = 20 # number of times to retry same loss/PhaseUncert
-# onn_topo = ['B_C_Q_P', 'E_P', 'R_P']
-onn_topo = ['B_C_Q_P']
+onn_topo = ['B_C_Q_P', 'E_P', 'R_P']
+# onn_topo = ['B_C_Q_P']
 
-dataset = 'Gauss'
-# dataset = 'MNIST'
+#Addition
+onn.features = 10  # How many features? max for MNIST = 784 
+onn.classes = 10 # How many classes? max for MNIST = 10
+
+# dataset = 'Gauss'
+dataset = 'MNIST'
 
 np.random.seed(onn.rng)
-for onn.N in [4]:
+for onn.N in [10]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]
-    training_loss = [0]
+    training_loss = [2]
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
             if dataset == 'Gauss':
                 onn, _ = train.get_dataset(onn, onn.rng, SAMPLES=400, EPOCHS=60)
             elif dataset == 'MNIST':
-                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(N=onn.N, nsamples=1000)
+                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=onn.classes, features=onn.features, nsamples=400)
                 
 
             onn.FOLDER = f'Analysis/N={onn.N}'
@@ -74,9 +78,9 @@ for onn.N in [4]:
                     if (max(onn.val_accuracy) > onn.max_accuracy_req or
                             onn.rng == onn.max_number_of_tests-1):
                         onn.loss_diff = lossDiff # Set loss_diff
-                        onn.loss_dB = np.linspace(0, 2, 2) # set loss/MZI range
-                        onn.phase_uncert_theta = np.linspace(0., 1, 2) # set theta phase uncert range
-                        onn.phase_uncert_phi = np.linspace(0., 1, 2) # set phi phase uncert range
+                        onn.loss_dB = np.linspace(0, 1, 5) # set loss/MZI range
+                        onn.phase_uncert_theta = np.linspace(0., 1, 5) # set theta phase uncert range
+                        onn.phase_uncert_phi = np.linspace(0., 1, 5) # set phi phase uncert range
 
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(onn, model, onn.Xt, onn.yt)))
 
