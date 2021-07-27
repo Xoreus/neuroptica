@@ -150,7 +150,7 @@ class ONN_Simulation:
         corr = [diff_gt_zeta[idx]*correct_class[idx] for idx, _ in enumerate(correct_class)]
 
         ax = plot_confusion_matrix(pred, gt, list(range(self.classes)),
-                          normalize=False,
+                          normalize=True,
                           title=None,
                           cmap=plt.cm.Blues)
         bottom, top = ax.get_ylim()
