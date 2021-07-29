@@ -156,7 +156,6 @@ class InSituAdam(Optimizer):
         :param use_partial_vectors: if set to True, the MZI partial matrices will be stored as Nx2 vectors
         :return: losses, accuracy
         '''
-
         losses = []
         trn_accuracy = [0]
         val_accuracy = [0]
@@ -164,7 +163,6 @@ class InSituAdam(Optimizer):
         best_phases = self.model.get_all_phases()
         best_trf_matrix = self.model.get_transformation_matrix()
         n_features, n_samples = data.shape
-
         iterator = range(epochs)
         if show_progress: iterator = pbar(iterator)
 
@@ -172,12 +170,10 @@ class InSituAdam(Optimizer):
 
             total_epoch_loss = 0.0
             batch = 0
-
             for X, Y in self.make_batches(data, labels, batch_size):
 
                 batch += 1
                 self.t += 1
-                
                 # Propagate the data forward
                 Y_hat = self.model.forward_pass(X, cache_fields=cache_fields, use_partial_vectors=use_partial_vectors)
                 d_loss = self.loss.dL(Y_hat, Y)

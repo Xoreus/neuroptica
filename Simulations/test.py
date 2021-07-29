@@ -39,7 +39,7 @@ def init_onn_settings():
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 98 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 16  # How many features? max for MNIST = 784 
+    onn.features = 10  # How many features? max for MNIST = 784 
     onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
@@ -177,30 +177,30 @@ def create_model(features, classes):
 
 
     # If you want multi-layer Diamond Topology
-    model = neu.Sequential([
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(nlaf),
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)),
-    ])
+    # model = neu.Sequential([
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #     neu.Activation(nlaf),
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)),
+    # ])
 
     # If you want regular Clements (multi-layer) topology
-    # model = neu.Sequential([
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes))
-    # ])
+    model = neu.Sequential([
+        neu.ClementsLayer(features),
+        neu.Activation(nlaf),
+        neu.ClementsLayer(features),
+        neu.Activation(nlaf),
+        neu.ClementsLayer(features),
+        neu.Activation(nlaf),
+        neu.ClementsLayer(features),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes))
+    ])
 
     # If you want regular Reck (single-layer) topology
     # model = neu.Sequential([
@@ -253,7 +253,7 @@ def main():
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [0] # loss used during training
+    training_loss = [0.2] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
@@ -274,8 +274,7 @@ def main():
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
 
                 # # Save best model
                 if max(onn.val_accuracy) > max_acc:
@@ -286,7 +285,7 @@ def main():
                     onn.plotBackprop(backprop_legend_location=0)
                     onn.pickle_save() # save pickled version of the onn class
                     current_phases = best_model.get_all_phases()
-                    best_model.set_all_phases_uncerts_losses(current_phases)
+                    best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         test_number == onn.max_number_of_tests-1):
@@ -294,7 +293,7 @@ def main():
                     save_onn(best_onn, best_model, 0, trainLoss)
                     best_onn.saveForwardPropagation(best_model)
                     current_phases = best_model.get_all_phases()
-                    best_model.set_all_phases_uncerts_losses(current_phases)
+                    best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
                     best_onn.save_correct_classified_samples(best_model)
                     best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
                     best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)

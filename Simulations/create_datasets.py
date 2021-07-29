@@ -92,7 +92,6 @@ def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this
     # transform the training and testing datasets
     X = pca.transform(X_train_4_digits)
     y = pd.get_dummies(y_train_4_digits, len(digits)).values
-
     X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
 
     rand_ind = random.sample(list(range(len(X))), int(nsamples*classes))

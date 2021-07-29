@@ -80,7 +80,6 @@ def train_single_onn(onn, model, loss_function='cce'): # cce: categorical cross 
         optimizer = neu.InSituAdam(model, neu.MeanSquaredError, step_size=onn.STEP_SIZE)
     elif loss_function == 'cce':
         optimizer = neu.InSituAdam(model, neu.CategoricalCrossEntropy, step_size=onn.STEP_SIZE)
-
     onn.losses, onn.trn_accuracy, onn.val_accuracy, onn.phases, onn.best_trf_matrix = optimizer.fit(X.T, y.T, Xt.T, yt.T, epochs=onn.EPOCHS, batch_size=onn.BATCH_SIZE, show_progress=True)
     print(f'time spent for current training: {(time.time() - t)/60:.2f} minutes')
     return onn, model
