@@ -7,7 +7,7 @@ Edited: 2019-04-05
 Creates a confusion matrix from general data
 """
 from sklearn.metrics import confusion_matrix
-import numpy as np
+import numpy as np 
 import re
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -33,7 +33,8 @@ def plot_confusion_matrix(y_true, y_pred, classes,
     # Compute confusion matrix
     cm = confusion_matrix(y_true, y_pred)
     if normalize:
-        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+        with np.errstate(invalid='ignore'): #Avoid Error State
+            cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
 
     fig, ax = plt.subplots()

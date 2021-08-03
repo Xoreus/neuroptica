@@ -138,7 +138,6 @@ class ONN_Simulation:
     def save_correct_classified_samples(self, model, zeta=0):
         ''' Save only the correct validation samples for a dataset
         Uses the zeta parameter from Shokraneh et al's paper in 2019'''
-
         Y_hat = model.forward_pass(self.Xt.T)
         pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
         gt = np.array([np.argmax(tru) for tru in self.yt])
@@ -150,7 +149,7 @@ class ONN_Simulation:
         corr = [diff_gt_zeta[idx]*correct_class[idx] for idx, _ in enumerate(correct_class)]
 
         ax = plot_confusion_matrix(pred, gt, list(range(self.classes)),
-                          normalize=True,
+                          normalize=False,
                           title=None,
                           cmap=plt.cm.Blues)
         bottom, top = ax.get_ylim()

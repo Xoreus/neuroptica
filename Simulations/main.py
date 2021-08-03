@@ -266,6 +266,9 @@ def main():
 
                 onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
+                if test_number>0:
+                    print("\nPhase of current best model")
+                    print(best_model.get_all_phases())
                 # # Save best model
                 if max(onn.val_accuracy) > max_acc:
                     best_model = model
@@ -276,9 +279,13 @@ def main():
                     onn.pickle_save() # save pickled version of the onn class
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases)
+                    print("\nNew Best Model!")
+                    print(best_model.get_all_phases())
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         test_number == onn.max_number_of_tests-1):
+                    print("\nThis is the best model")
+                    print(best_model.get_all_phases())
                     print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model)
                     best_onn.saveForwardPropagation(best_model)

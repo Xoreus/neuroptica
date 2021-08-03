@@ -24,6 +24,7 @@ import sys
 import matplotlib.pyplot as plt
 sys.path.append('../')
 import neuroptica as neu
+from copy import deepcopy
 
 def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
@@ -32,15 +33,15 @@ def init_onn_settings():
     onn.BATCH_SIZE = 2**6 # # of input samples per batch
     onn.EPOCHS = 200 # Epochs for ONN training
     onn.STEP_SIZE= 0.005 # Learning Rate
-    onn.SAMPLES = 400 # # of samples per class
+    onn.SAMPLES = 50 # # of samples per class 400
 
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
     onn.max_accuracy_req = 98 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10  # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 4  # How many features? max for MNIST = 784 
+    onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.50 # Min diff between max (correct) sample and second sample
@@ -213,10 +214,11 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0., 1, 5) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 5) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 5) # set phi phase uncert range
-
+    onn.loss_dB = [0, 0.5, 1, 1.5] # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
+    print("\nUsing this for test_LPU")
+    print(model.get_all_phases())
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
     onn.saveAll(model) # Save best model information
@@ -243,8 +245,8 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    # onn = dataset(onn, dataset='Gauss')
-    onn = dataset(onn, dataset='MNIST')
+    onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='MNIST')
     # onn = dataset(onn, dataset='FFT_MNIST')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
@@ -253,7 +255,7 @@ def main():
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [0.2] # loss used during training
+    training_loss = [1] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
@@ -274,29 +276,58 @@ def main():
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
-
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
+                
+                print("\nPhase of the Model: ")
+                print(model.get_all_phases())
+                if test_number>0:
+                    print("\nPhase of current best model")
+                    print(best_model.get_all_phases())
                 # # Save best model
+                print("Checking for greater accuracy")
                 if max(onn.val_accuracy) > max_acc:
-                    best_model = model
-                    onn.model = model
-                    best_onn = onn
+                    print("New model is better")
+                    best_model = deepcopy(model)
+                    # best_onn.model = model
+                    best_onn = deepcopy(onn)
                     max_acc = max(onn.val_accuracy) 
                     onn.plotBackprop(backprop_legend_location=0)
                     onn.pickle_save() # save pickled version of the onn class
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
+                    print("\nNew Best Model!")
+                    print(best_model.get_all_phases())
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         test_number == onn.max_number_of_tests-1):
+                    print("\nThis is the best model")
+                    print(best_model.get_all_phases())
                     print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model, 0, trainLoss)
                     best_onn.saveForwardPropagation(best_model)
                     current_phases = best_model.get_all_phases()
-                    best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                    best_onn.save_correct_classified_samples(best_model)
-                    best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
-                    best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)
+
+                    # print("Setting loss_dB 0")
+                    # best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, 0, lossDiff)
+                    # best_onn.save_correct_classified_samples(best_model)
+                    # print("Setting loss_dB", trainLoss)
+                    # best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
+                    # best_onn.save_correct_classified_samples(best_model)
+                    # print("Setting loss_dB 5")
+                    # best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, 5, lossDiff)
+                    # best_onn.save_correct_classified_samples(best_model)
+                    # print("Setting Loss/MZI = ", trainLoss)
+                    # best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
+                    # best_onn.save_correct_classified_samples(best_model)
+                    # print("Setting Loss/MZI = 0")
+                    # best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, 0, lossDiff)
+                    # best_onn.save_correct_classified_samples(best_model)
+                    # print("Setting Loss/MZI = 1")
+                    # best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, 1, lossDiff)
+                    # best_onn.save_correct_classified_samples(best_model)
+                    
+                    # best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
+                    # best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)
 
                     # To plot scattermatrix of dataset
                     axes = plot_scatter_matrix(onn.X, onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)

@@ -59,7 +59,7 @@ class NetworkLayer:
                 phases_layer.append(phases[idx])
                 idx += 1
             phases_mzi_layer.append(phases_layer)
-
+        # print("Setting Loss:", loss_dB)
         # create every layer of MZIs with new loss/phase uncerts
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
@@ -558,6 +558,8 @@ class ClementsLayer(OpticalMeshNetworkLayer):
                 phases_layer.append(phases[idx])
                 idx += 1
             phases_mzi_layer.append(phases_layer)
+
+        # print("Setting ClementsLayer Loss:", loss_dB)
 
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]

@@ -101,6 +101,7 @@ class Sequential(BaseModel):
 
     def set_all_phases_uncerts_losses(self, Phases, phase_uncert_theta=0, phase_uncert_phi=0, loss_dB=0, loss_diff=0):
         phase_idx = 0
+        # print("Set all phase uncerts", loss_dB)
         for layer in self.layers:
             if hasattr(layer, 'mesh'):
                 layer.set_phases_uncert_loss(Phases[phase_idx], phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
