@@ -214,11 +214,11 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = [0, 0.5, 1, 1.5] # set loss/MZI range
+    onn.loss_dB = [0, 0.1, 0.2, 0.3, 0.4] # set loss/MZI range
     onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
-    print("\nUsing this for test_LPU")
-    print(model.get_all_phases())
+    # print("\nUsing this for test_LPU")
+    # print(model.get_all_phases())
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
     onn.saveAll(model) # Save best model information
@@ -255,7 +255,7 @@ def main():
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [1] # loss used during training
+    training_loss = [0.1] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
@@ -278,15 +278,15 @@ def main():
                 model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
                 onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
                 
-                print("\nPhase of the Model: ")
-                print(model.get_all_phases())
-                if test_number>0:
-                    print("\nPhase of current best model")
-                    print(best_model.get_all_phases())
-                # # Save best model
-                print("Checking for greater accuracy")
+                # print("\nPhase of the Model: ")
+                # print(model.get_all_phases())
+                # if test_number>0:
+                #     print("\nPhase of current best model")
+                #     print(best_model.get_all_phases())
+                # Save best model
+                # print("Checking for greater accuracy")
                 if max(onn.val_accuracy) > max_acc:
-                    print("New model is better")
+                    # print("New model is better")
                     best_model = deepcopy(model)
                     # best_onn.model = model
                     best_onn = deepcopy(onn)
@@ -295,13 +295,13 @@ def main():
                     onn.pickle_save() # save pickled version of the onn class
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                    print("\nNew Best Model!")
-                    print(best_model.get_all_phases())
+                    # print("\nNew Best Model!")
+                    # print(best_model.get_all_phases())
 
                 if (max(onn.val_accuracy) > onn.max_accuracy_req or
                         test_number == onn.max_number_of_tests-1):
-                    print("\nThis is the best model")
-                    print(best_model.get_all_phases())
+                    # print("\nThis is the best model")
+                    # print(best_model.get_all_phases())
                     print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                     save_onn(best_onn, best_model, 0, trainLoss)
                     best_onn.saveForwardPropagation(best_model)

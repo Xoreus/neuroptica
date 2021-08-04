@@ -171,7 +171,6 @@ class InSituAdam(Optimizer):
             total_epoch_loss = 0.0
             batch = 0
             for X, Y in self.make_batches(data, labels, batch_size):
-
                 batch += 1
                 self.t += 1
                 # Propagate the data forward

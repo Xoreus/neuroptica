@@ -55,6 +55,9 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
                     gt = np.array([np.argmax(tru) for tru in yt])
                     acc.append(np.sum((pred == gt))/yt.shape[0]*100)
+                # if (phase_uncert_theta==0 and phase_uncert_phi==0 and loss_dB==0.1):
+                #     print("MAX FOR ITERATION")
+                #     print(max(acc))
                 acc_phi.append(np.mean(acc))
             acc_theta.append(acc_phi)
             if show_progress: pbar.update(1)
