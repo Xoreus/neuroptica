@@ -44,7 +44,7 @@ def init_onn_settings():
     onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
-    onn.zeta = 0.50 # Min diff between max (correct) sample and second sample
+    onn.zeta = 0.70 # Min diff between max (correct) sample and second sample
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
     # it is important to note that the ONN takes in FIELD, not POWER #
@@ -176,7 +176,7 @@ def create_model(features, classes):
     
     nlaf = cReLU # Pick the Non Linear Activation Function
 
-    print("Clement Layer")
+    print("Clements Layer")
 
     # If you want multi-layer Diamond Topology
     # model = neu.Sequential([
@@ -215,9 +215,9 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = [0, 0.1, 0.2, 0.3, 0.4] # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0., 1, 51) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 51) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 51) # set phi phase uncert range
     # print("\nUsing this for test_LPU")
     # print(model.get_all_phases())
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
@@ -256,7 +256,7 @@ def main():
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [0] # loss used during training
+    training_loss = [0.3] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:

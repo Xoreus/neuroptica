@@ -243,7 +243,7 @@ def main():
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
     # onn = dataset(onn, dataset='Gauss')
-    onn = dataset(onn, dataset='FFT_MNIST')
+    onn = dataset(onn, dataset='MNIST')
     #print(*onn.X, sep = ",")  #onn.y, onn.Xt, onn.yt)
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
