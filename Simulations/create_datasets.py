@@ -305,7 +305,7 @@ def plot_agmented_iris(nsamples=300):
 
 
     plt.suptitle('')
-    plt.savefig('/home/edwar/Documents/Github_Projects/neuroptica/tests/Crop_Me/Iris-Augmented.pdf')
+    plt.savefig('/home/edwar/Documents/Github_Projects/neuroptica/Simulations/Analysis/Crop_Me/Iris-Augmented.pdf')
 
 def plot_OG_iris():
     iris = datasets.load_iris()

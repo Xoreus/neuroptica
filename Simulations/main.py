@@ -32,8 +32,8 @@ def init_onn_settings():
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 4  # How many features? max for MNIST = 784 
-    onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 8  # How many features? max for MNIST = 784 
+    onn.classes = 8 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.1 # Min diff between max (correct) sample and second sample
@@ -206,9 +206,9 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0, 4, 6) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 2, 6) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 2, 6) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0, 2, 38) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 11) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 11) # set phi phase uncert range
 
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
@@ -264,7 +264,7 @@ def main():
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases)
 
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
                 if test_number>0:
                     print("\nPhase of current best model")

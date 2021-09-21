@@ -38,10 +38,10 @@ def init_onn_settings():
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
-    onn.max_accuracy_req = 98 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10  # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 8  # How many features? max for MNIST = 784 
+    onn.classes = 8 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.70 # Min diff between max (correct) sample and second sample
@@ -176,7 +176,7 @@ def create_model(features, classes):
     
     nlaf = cReLU # Pick the Non Linear Activation Function
 
-    print("Clements Layer")
+    print("Reck Layer")
 
     # If you want multi-layer Diamond Topology
     # model = neu.Sequential([
@@ -192,32 +192,33 @@ def create_model(features, classes):
     # ])
 
     # If you want regular Clements (multi-layer) topology
-    model = neu.Sequential([
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes))
-    ])
+    # model = neu.Sequential([
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes))
+    # ])
 
     # If you want regular Reck (single-layer) topology
-    # model = neu.Sequential([
-    #     neu.ReckLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-    # ])
+    model = neu.Sequential([
+        neu.ReckLayer(features),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    ])
     return model
 
 def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0., 1, 51) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 51) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 51) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0., 2, 38) # set loss/MZI range
+    print(onn.loss_dB)
+    onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
     # print("\nUsing this for test_LPU")
     # print(model.get_all_phases())
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
@@ -246,8 +247,8 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    # onn = dataset(onn, dataset='Gauss')
-    onn = dataset(onn, dataset='MNIST')
+    onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='MNIST')
     # onn = dataset(onn, dataset='FFT_MNIST')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
@@ -256,7 +257,7 @@ def main():
     model = create_model(onn.features, onn.classes)
 
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
-    training_loss = [0.3] # loss used during training
+    training_loss = [0] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
@@ -277,7 +278,7 @@ def main():
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
                 
                 # print("\nPhase of the Model: ")
                 # print(model.get_all_phases())
@@ -289,7 +290,7 @@ def main():
                 if max(onn.val_accuracy) > max_acc:
                     # print("New model is better")
                     best_model = deepcopy(model)
-                    # best_onn.model = model
+                    #best_onn.model = model
                     best_onn = deepcopy(onn)
                     max_acc = max(onn.val_accuracy) 
                     onn.plotBackprop(backprop_legend_location=0)

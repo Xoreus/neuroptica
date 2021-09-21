@@ -65,6 +65,25 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     if show_progress: pbar.close()
     return np.squeeze(np.swapaxes(np.array(accuracy), 0, 2))
 
+def get_accuracy_SLPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
+    t = time.time()
+
+    if show_progress: pbar = tqdm(total=len(ONN.loss_dB))
+    accuracy = []
+    for loss_dB in ONN.loss_dB:
+        if show_progress: pbar.set_description(f'Loss/MZI (dB): {loss_dB:.2f}/{ONN.loss_dB[-1]:.2f}', refresh=True)
+        acc = []
+        for _ in range(ONN.ITERATIONS):
+            model.set_all_phases_uncerts_losses(ONN.phases, 0, 0, loss_dB, loss_diff)
+            Y_hat = model.forward_pass(Xt.T)
+            pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+            gt = np.array([np.argmax(tru) for tru in yt])
+            acc.append(np.sum((pred == gt))/yt.shape[0]*100)
+        if show_progress: pbar.update(1)
+        accuracy.append(np.mean(acc))
+    if show_progress: pbar.close()
+    return np.array(accuracy)
+    
 def get_accuracy(onn, model, Xt, yt, loss_diff, show_progress=True):
     if onn.same_phase_uncert:
        return get_accuracy_LPU(onn, model, Xt, yt, loss_diff=loss_diff, show_progress=show_progress)

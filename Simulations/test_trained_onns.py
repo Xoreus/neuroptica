@@ -37,6 +37,13 @@ def test_LPU(onn, X, y, model, show_progress=True):
     onn.LPU_FoM = np.sum((np.array(onn.accuracy_LPU) >  onn.zeta*np.max(onn.accuracy_LPU))*onn.LPU_Area)
     return onn, model
 
+def test_SLPU(onn, X, y, model, show_progress=True): #Only tests Loss/MZI at 0 dB Phase 
+    onn.same_phase_uncert = True
+    print('\nLoss + Phase Uncertainty')
+    onn.accuracy_LPU = calc_acc.get_accuracy_SLPU(onn, model, X, y, loss_diff=onn.loss_diff, show_progress=show_progress)
+    print("Accuracy: \n", onn.accuracy_LPU)
+    return onn, model
+
 def test_onn(onn, model, show_progress=True):
     onn, model = test_PT(onn, onn.Xt, onn.yt, model, show_progress=show_progress)
     onn, model = test_LPU(onn, onn.Xt, onn.yt, model, show_progress=show_progress)

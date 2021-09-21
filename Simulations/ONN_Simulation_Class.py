@@ -207,12 +207,12 @@ class ONN_Simulation:
         self.plotAll(cmap=cmap)
         self.saveSelf() # Only useful if wanting a .mat file
     def plotBackprop(self, backprop_legend_location=0):
+        plt.clf()
         labels_size = 20
         legend_size = 14
         tick_size = 12
-
         # Plot loss and accuracy values throughout training
-        fig, ax = plt.subplots()
+        fig, ax = plt.subplots(figsize=(11.69, 8.27), dpi=100)
         ax.tick_params(axis='both', which='major', labelsize=tick_size)
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
         color = 'tab:blue'
@@ -221,6 +221,8 @@ class ONN_Simulation:
         lns1 = ax.plot(self.losses, color='tab:blue', label='Losses')
         ax.tick_params(axis='y', labelcolor=color)
         ax2 = ax.twinx()  # instantiate a second axes that shares the same x-axis
+        ax2.tick_params(axis='both', which='major', labelsize=tick_size) #Fixes tick size issue
+        ax2.tick_params(axis='both', which='minor', labelsize=tick_size)
         color = 'tab:red'
         ax2.set_ylabel('Accuracy (\%)', color=color, fontsize=labels_size)  # we already handled the x-label with ax
         ax2.set_ylim([0, 100])
@@ -231,7 +233,7 @@ class ONN_Simulation:
         ax2.legend(lns, labs, loc=backprop_legend_location, fontsize=legend_size)
         ax2.tick_params(axis='y', labelcolor=color)
         fig.tight_layout() 
-        plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf')
+        plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf', bbox_inches="tight")
         plt.clf()
     def plotAll(self, cmap='magma', trainingLoss=0.00):
         labels_size = 24

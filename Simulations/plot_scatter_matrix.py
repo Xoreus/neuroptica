@@ -85,5 +85,5 @@ if __name__ == "__main__":
     SAMPLES = 300
     X, Y, Xt, Yt = blob_maker(nsamples=SAMPLES, features=2,  targets=2)
     axes = plot_scatter_matrix(X, Y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
-    plt.savefig(f'/home/simon/Documents/neuroptica/tests/Crop_Me/gauss_S={SAMPLES}.pdf')
+    plt.savefig(f'/home/edwar/Documents/Github_Projects/neuroptica/Simulations/Crop_Me/gauss_S={SAMPLES}.pdf')
 
