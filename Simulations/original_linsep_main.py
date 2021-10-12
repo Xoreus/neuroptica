@@ -32,7 +32,7 @@ dataset = 'Gauss'
 # dataset = 'MNIST'
 
 np.random.seed(onn.rng)
-for onn.N in [8]:
+for onn.N in [4]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]
@@ -43,7 +43,7 @@ for onn.N in [8]:
             if dataset == 'Gauss':
                 onn, _ = train.get_dataset(onn, onn.rng, SAMPLES=400, EPOCHS=60)
             elif dataset == 'MNIST':
-                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(classes=onn.classes, features=onn.features, nsamples=400)
+                onn.X, onn.y, onn.Xt, onn.yt = create_datasets.MNIST_dataset(N=onn.N, nsamples=1000)
                 
 
             onn.FOLDER = f'Analysis/N={onn.N}'
@@ -73,16 +73,15 @@ for onn.N in [8]:
                     if (max(onn.val_accuracy) > onn.max_accuracy_req or
                             onn.rng == onn.max_number_of_tests-1):
                         onn.loss_diff = lossDiff # Set loss_diff
-                        onn.loss_dB = np.linspace(0, 1, 38) # set loss/MZI range
-                        onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
-                        onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
-                        
+                        onn.loss_dB = np.linspace(0, 0.5, 2) # set loss/MZI range
+                        onn.phase_uncert_theta = np.linspace(0., 1, 41) # set theta phase uncert range
+                        onn.phase_uncert_phi = np.linspace(0., 1, 41) # set phi phase uncert range
+
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(onn, model, onn.Xt, onn.yt)))
-                    
+
                         test.test_PT(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
                         test.test_LPU(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
                         onn.saveAll(best_model) # Save best model information
                         onn.plotAll() # plot training and tests
                         onn.pickle_save() # save pickled version of the onn class
                         break
-
