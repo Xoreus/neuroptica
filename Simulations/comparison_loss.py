@@ -21,10 +21,10 @@ import neuroptica as neu
 
 onn = ONN_Cls.ONN_Simulation()
 
-onn.BATCH_SIZE = 400
-onn.EPOCHS = 200
+onn.BATCH_SIZE = 500
+onn.EPOCHS = 400
 onn.STEP_SIZE = 0.005
-onn.SAMPLES = 400
+onn.SAMPLES = 500
 
 onn.ITERATIONS = 400 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
@@ -40,8 +40,8 @@ onn.N = onn.features # number of ports in device
 onn.range_linear = 20
 onn.range_dB = 10
 
-# onn_topo = ['Diamond', 'Clements', 'Reck']
-onn_topo = ['B_C_Q_P', 'E_P', 'R_P'] #Diamond, Clements, Reck See ONN_Simulation_Class
+onn_topo = ['Diamond', 'Clements', 'Reck']
+#onn_topo = ['G_H_J_F_B_C_Q_P', 'T_F_E_P', 'S_F_R_P'] #Diamond, Clements, Reck See ONN_Simulation_Class
 #onn_topo = ['B_C_Q_P']
 
 def create_model(features, classes, topo):
@@ -60,10 +60,10 @@ def create_model(features, classes, topo):
     if topo == 'Diamond':
     # If you want multi-layer Diamond Topology
         model = neu.Sequential([
-            # neu.AddMaskDiamond(features),
-            # neu.DiamondLayer(features),
-            # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-            # neu.Activation(nlaf),
+            neu.AddMaskDiamond(features),
+            neu.DiamondLayer(features),
+            neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+            neu.Activation(nlaf),
             neu.AddMaskDiamond(features),
             neu.DiamondLayer(features),
             neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
@@ -73,8 +73,8 @@ def create_model(features, classes, topo):
     elif topo == 'Clements':
     # If you want regular Clements (multi-layer) topology
         model = neu.Sequential([
-            # neu.ClementsLayer(features),
-            # neu.Activation(nlaf),
+            neu.ClementsLayer(features),
+            neu.Activation(nlaf),
             neu.ClementsLayer(features),
             neu.Activation(neu.AbsSquared(features)), # photodetector measurement
             neu.DropMask(features, keep_ports=range(classes))
@@ -82,8 +82,8 @@ def create_model(features, classes, topo):
     elif topo == 'Reck':
     # If you want regular Reck (single-layer) topology
         model = neu.Sequential([
-            # neu.ReckLayer(features),
-            # neu.Activation(nlaf),
+            neu.ReckLayer(features),
+            neu.Activation(nlaf),
             neu.ReckLayer(features),
             neu.Activation(neu.AbsSquared(features)), # photodetector measurement
             neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
@@ -101,11 +101,11 @@ for onn.N in [10]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]
-    training_loss = [0]
+    training_loss = np.linspace(0, 1, 11)
 
 
-    for lossDiff in loss_diff:
-        for trainLoss in training_loss:
+    for onn.topo in onn_topo:
+        for lossDiff in loss_diff:
             if dataset == 'Gauss':
                 onn, _ = train.get_dataset(onn, onn.rng, SAMPLES=400, EPOCHS=60)
             elif dataset == 'MNIST':
@@ -115,8 +115,9 @@ for onn.N in [10]:
             onn.FOLDER = f'Analysis/N={onn.N}'
             onn.createFOLDER()
             onn.saveSimDataset()
+            temp_acc = []
+            for trainLoss in training_loss:
 
-            for onn.topo in onn_topo:
                 print(f"Training {onn.topo}")
                 print("Loss Diff", lossDiff)
                 print("Training Loss", trainLoss)
@@ -127,8 +128,8 @@ for onn.N in [10]:
                 for test_number in range(onn.max_number_of_tests):
                     onn.phases = []
 
-                    model = ONN_Setups.ONN_creation(onn)
-                    #model = create_model(onn.features, onn.classes, onn.topo)
+                    #model = ONN_Setups.ONN_creation(onn)
+                    model = create_model(onn.features, onn.classes, onn.topo)
                     #print("Starting Phases")
                     #print(current_phases)
                     current_phases = model.get_all_phases()
@@ -158,7 +159,9 @@ for onn.N in [10]:
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(best_onn, best_model, best_onn.Xt, best_onn.yt)))
 
                         test.test_SLPU(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True)
-                        accuracy_dict.append(best_onn.accuracy_LPU)
+                        temp = int(trainLoss/0.1)
+                        temp_acc.append(best_onn.accuracy_LPU[temp])
+                        print(temp_acc)
                         #onn.saveAll(best_model) # Save best model information
                         #onn.plotAll(trainingLoss=trainLoss) # plot training and tests
                         best_onn.plotBackprop(backprop_legend_location=0)
@@ -167,7 +170,10 @@ for onn.N in [10]:
                         axes = plot_scatter_matrix(best_onn.X, best_onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
                         plt.savefig(best_onn.FOLDER + '/scatterplot.pdf')
                         plt.clf()
+                        plt.close('all')
                         break
+        accuracy_dict.append(temp_acc)
+        print(accuracy_dict)
 
 labels_size = 20
 legend_size = 16
@@ -178,9 +184,9 @@ ax.tick_params(axis='both', which='major', labelsize=tick_size)
 ax.tick_params(axis='both', which='minor', labelsize=tick_size)
 ax.set_xlabel('Loss/MZI (dB)', fontsize=labels_size)
 ax.set_ylabel("Verification Accuracy (\%)", fontsize=labels_size)
-lns0 = ax.plot(best_onn.loss_dB, accuracy_dict[0], color='#edb120', label='Diamond')
-lns1 = ax.plot(best_onn.loss_dB, accuracy_dict[1], color='#d95319', label='Clements')
-lns2 = ax.plot(best_onn.loss_dB, accuracy_dict[2], color='#0072bd', label='Reck')
+lns0 = ax.plot(best_onn.loss_dB, accuracy_dict[0], color='#edb120', label=onn_topo[0])
+lns1 = ax.plot(best_onn.loss_dB, accuracy_dict[1], color='#d95319', label=onn_topo[1])
+lns2 = ax.plot(best_onn.loss_dB, accuracy_dict[2], color='#0072bd', label=onn_topo[2])
 ax.set_ylim([0, 100])
 lns = lns0+lns1+lns2
 labs = [l.get_label() for l in lns]
@@ -188,3 +194,4 @@ ax.legend(lns, labs, loc=0, fontsize=legend_size)
 fig.tight_layout() 
 plt.savefig(best_onn.FOLDER + '/comparison.pdf')
 plt.clf()
+plt.close('all')
