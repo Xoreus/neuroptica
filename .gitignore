@@ -138,9 +138,6 @@ dmypy.json
 # Matlab savefiles
 *~*
 
-# Simulation folders in neuroptica/test/
-/tests/**/*.txt
-
 # Also pickle files
 *.P
 *.pkl
