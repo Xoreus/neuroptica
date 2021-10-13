@@ -154,5 +154,3 @@ dmypy.json
 # Ignore .ps scripts
 *.ps
 
-# Ignore everything in tests/analysis
-# Simulations/Analysis/**
