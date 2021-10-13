@@ -123,11 +123,6 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Figures
-*.png
-*.pdf
-*.fig
-
 # MNIST Dataset
 *.gz
 
