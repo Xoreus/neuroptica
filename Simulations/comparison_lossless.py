@@ -28,7 +28,7 @@ onn.SAMPLES = 400
 
 onn.ITERATIONS = 400 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
@@ -43,53 +43,6 @@ onn.range_dB = 10
 # onn_topo = ['Diamond', 'Clements', 'Reck']
 onn_topo = ['B_C_Q_P', 'E_P', 'R_P'] #Diamond, Clements, Reck See ONN_Simulation_Class
 #onn_topo = ['B_C_Q_P']
-
-def create_model(features, classes, topo):
-    ''' create ONN model based on neuroptica layer '''
-    eo_settings = {'alpha': 0.1, 'g':0.5 * np.pi, 'phi_b': -1 * np.pi} # If Electro-Optic Nonlinear Activation is used
-
-    # Some nonlinearities, to be used withing neu.Activation()
-    eo_activation = neu.ElectroOpticActivation(features, **eo_settings)
-    cReLU = neu.cReLU(features)
-    zReLU = neu.zReLU(features)
-    bpReLU = neu.bpReLU(features, cutoff=1, alpha=0.1)
-    modReLU = neu.modReLU(features, cutoff=1)
-    sigmoid = neu.Sigmoid(features)
-    
-    nlaf = cReLU # Pick the Non Linear Activation Function
-    if topo == 'Diamond':
-    # If you want multi-layer Diamond Topology
-        model = neu.Sequential([
-            # neu.AddMaskDiamond(features),
-            # neu.DiamondLayer(features),
-            # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-            # neu.Activation(nlaf),
-            neu.AddMaskDiamond(features),
-            neu.DiamondLayer(features),
-            neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-            neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-            neu.DropMask(features, keep_ports=range(classes)),
-        ])
-    elif topo == 'Clements':
-    # If you want regular Clements (multi-layer) topology
-        model = neu.Sequential([
-            # neu.ClementsLayer(features),
-            # neu.Activation(nlaf),
-            neu.ClementsLayer(features),
-            neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-            neu.DropMask(features, keep_ports=range(classes))
-        ])
-    elif topo == 'Reck':
-    # If you want regular Reck (single-layer) topology
-        model = neu.Sequential([
-            # neu.ReckLayer(features),
-            # neu.Activation(nlaf),
-            neu.ReckLayer(features),
-            neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-            neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-        ])
-    #print(model)
-    return model
 
 accuracy_dict = []
 
@@ -128,11 +81,10 @@ for onn.N in [10]:
                     onn.phases = []
 
                     model = ONN_Setups.ONN_creation(onn)
-                    #model = create_model(onn.features, onn.classes, onn.topo)
                     #print("Starting Phases")
                     #print(current_phases)
-                    current_phases = model.get_all_phases()
-                    model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
+                    # current_phases = model.get_all_phases()
+                    # model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
                     #print("Setting Phases")
                     #print(model.get_all_phases())
                     onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
@@ -150,7 +102,7 @@ for onn.N in [10]:
                             test_number == onn.max_number_of_tests-1):
                         print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                         best_onn.loss_diff = lossDiff # Set loss_diff
-                        best_onn.loss_dB = np.linspace(0, 1, 11) # set loss/MZI range
+                        best_onn.loss_dB = np.linspace(0, 2, 101) # set loss/MZI range
                         print(best_onn.loss_dB)
                         best_onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
                         best_onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
@@ -158,6 +110,8 @@ for onn.N in [10]:
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(best_onn, best_model, best_onn.Xt, best_onn.yt)))
 
                         test.test_SLPU(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True)
+                        # test.test_PT(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
+                        # test.test_LPU(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
                         accuracy_dict.append(best_onn.accuracy_LPU)
                         #onn.saveAll(best_model) # Save best model information
                         #onn.plotAll(trainingLoss=trainLoss) # plot training and tests
