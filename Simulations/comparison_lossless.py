@@ -21,14 +21,14 @@ import neuroptica as neu
 
 onn = ONN_Cls.ONN_Simulation()
 
-onn.BATCH_SIZE = 400
+onn.BATCH_SIZE = 50
 onn.EPOCHS = 200
 onn.STEP_SIZE = 0.005
 onn.SAMPLES = 400
 
-onn.ITERATIONS = 400 # number of times to retry same loss/PhaseUncert
+onn.ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
@@ -110,8 +110,6 @@ for onn.N in [10]:
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(best_onn, best_model, best_onn.Xt, best_onn.yt)))
 
                         test.test_SLPU(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True)
-                        # test.test_PT(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
-                        # test.test_LPU(onn, onn.Xt, onn.yt, best_model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
                         accuracy_dict.append(best_onn.accuracy_LPU)
                         #onn.saveAll(best_model) # Save best model information
                         #onn.plotAll(trainingLoss=trainLoss) # plot training and tests

@@ -35,9 +35,9 @@ def init_onn_settings():
     onn.STEP_SIZE= 0.005 # Learning Rate
     onn.SAMPLES = 400 # # of samples per class 400
 
-    onn.ITERATIONS = 400 # number of times to retry same loss/PhaseUncert
+    onn.ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
+    onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
     onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
     onn.features = 10  # How many features? max for MNIST = 784 
@@ -209,6 +209,10 @@ def create_model(features, classes):
     #     neu.ReckLayer(features),
     #     neu.Activation(nlaf),
     #     neu.ReckLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ReckLayer(features),
+    #     neu.Activation(nlaf),
+    #     neu.ReckLayer(features),
     #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
     # ])
@@ -281,7 +285,7 @@ def main():
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
                 
                 # print("\nPhase of the Model: ")
                 # print(model.get_all_phases())
