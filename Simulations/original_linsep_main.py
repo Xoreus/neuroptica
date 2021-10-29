@@ -32,7 +32,7 @@ dataset = 'Gauss'
 # dataset = 'MNIST'
 
 np.random.seed(onn.rng)
-for onn.N in [4]:
+for onn.N in [8]:
     onn.features = onn.N
     onn.classes = onn.N
     loss_diff = [0]
@@ -73,9 +73,9 @@ for onn.N in [4]:
                     if (max(onn.val_accuracy) > onn.max_accuracy_req or
                             onn.rng == onn.max_number_of_tests-1):
                         onn.loss_diff = lossDiff # Set loss_diff
-                        onn.loss_dB = np.linspace(0, 0.5, 2) # set loss/MZI range
-                        onn.phase_uncert_theta = np.linspace(0., 1, 41) # set theta phase uncert range
-                        onn.phase_uncert_phi = np.linspace(0., 1, 41) # set phi phase uncert range
+                        onn.loss_dB = np.linspace(0, 1.5, 76) # set loss/MZI range
+                        onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
+                        onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
 
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(onn, model, onn.Xt, onn.yt)))
 
@@ -85,3 +85,4 @@ for onn.N in [4]:
                         onn.plotAll() # plot training and tests
                         onn.pickle_save() # save pickled version of the onn class
                         break
+

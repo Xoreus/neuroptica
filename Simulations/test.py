@@ -35,13 +35,13 @@ def init_onn_settings():
     onn.STEP_SIZE= 0.005 # Learning Rate
     onn.SAMPLES = 400 # # of samples per class 400
 
-    onn.ITERATIONS = 100 # number of times to retry same loss/PhaseUncert
+    onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 3 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
-    onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
+    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
+    onn.max_accuracy_req = 99 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10  # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 4  # How many features? max for MNIST = 784 
+    onn.classes = 4 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.70 # Min diff between max (correct) sample and second sample
@@ -176,53 +176,61 @@ def create_model(features, classes):
     
     nlaf = cReLU # Pick the Non Linear Activation Function
 
-    print("Reck Layer")
+    print("Diamond Layer")
 
     # If you want multi-layer Diamond Topology
     # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(nlaf),
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
+    #         # neu.AddMaskDiamond(features),
+    #         # neu.DiamondLayer(features),
+    #         # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #         # neu.Activation(nlaf),
+    #         # neu.AddMaskDiamond(features),
+    #         # neu.DiamondLayer(features),
+    #         # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #         # neu.Activation(nlaf),
+    #         # neu.AddMaskDiamond(features),
+    #         # neu.DiamondLayer(features),
+    #         # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #         # neu.Activation(nlaf),
+    #         neu.AddMaskDiamond(features),
+    #         neu.DiamondLayer(features),
+    #         neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #         #neu.DropMask(features, keep_ports=range(classes)),
     # ])
 
     # If you want regular Clements (multi-layer) topology
-    model = neu.Sequential([
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(nlaf),
-        neu.ClementsLayer(features),
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes))
-    ])
+    # model = neu.Sequential([
+    #     # neu.ClementsLayer(features),
+    #     # neu.Activation(nlaf),
+    #     # neu.ClementsLayer(features),
+    #     # neu.Activation(nlaf),
+    #     # neu.ClementsLayer(features),
+    #     # neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes))
+    # ])
 
     # If you want regular Reck (single-layer) topology
-    # model = neu.Sequential([
-    #     neu.ReckLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ReckLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ReckLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ReckLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-    # ])
+    model = neu.Sequential([
+        # neu.ReckLayer(features),
+        # neu.Activation(nlaf),
+        # neu.ReckLayer(features),
+        # neu.Activation(nlaf),
+        # neu.ReckLayer(features),
+        # neu.Activation(nlaf),
+        neu.ReckLayer(features),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    ])
     print(model)
     return model
 
 def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0., 1.5, 76) # set loss/MZI range
+    onn.loss_dB = np.linspace(0., 1, 51) # set loss/MZI range
     print(onn.loss_dB)
     onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
@@ -254,8 +262,8 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    # onn = dataset(onn, dataset='Gauss')
-    onn = dataset(onn, dataset='MNIST')
+    onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='MNIST')
     # onn = dataset(onn, dataset='FFT_MNIST')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
@@ -283,7 +291,7 @@ def main():
                 
                 # Reset the phases to create new model
                 current_phases = model.get_all_phases()
-                current_phases = [[(None, None) for _ in layer] for layer in current_phases]
+                # current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
                 onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs, use CCE for classification
                 
