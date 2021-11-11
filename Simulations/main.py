@@ -22,18 +22,18 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
-    onn.BATCH_SIZE = 2**4 # # of input samples per batch
+    onn.BATCH_SIZE = 512 # # of input samples per batch
     onn.EPOCHS = 400 # Epochs for ONN training
     onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 50 # # of samples per class
+    onn.SAMPLES = 512 # # of samples per class
 
     onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 2 # starting RNG value
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 8  # How many features? max for MNIST = 784 
-    onn.classes = 8 # How many classes? max for MNIST = 10
+    onn.features = 16  # How many features? max for MNIST = 784 
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.1 # Min diff between max (correct) sample and second sample
@@ -170,17 +170,17 @@ def create_model(features, classes):
 
 
     # If you want multi-layer Diamond Topology
-    # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(nlaf),
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
+    #model = neu.Sequential([
+        # neu.AddMaskDiamond(features),
+        # neu.DiamondLayer(features),
+        # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        # neu.Activation(nlaf),
+        # neu.AddMaskDiamond(features),
+        # neu.DiamondLayer(features),
+        # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        # neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        # neu.DropMask(features, keep_ports=range(classes)),
+    #])
 
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
@@ -236,7 +236,8 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='Gauss')
+    onn = dataset(onn, dataset='FFT_MNIST')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None')
@@ -263,8 +264,7 @@ def main():
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases)
-
-                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
                 if test_number>0:
                     print("\nPhase of current best model")

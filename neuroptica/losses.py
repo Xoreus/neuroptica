@@ -30,7 +30,7 @@ class MeanSquaredError(Loss):
 
     @staticmethod
     def dL(X: np.ndarray, T: np.ndarray) -> np.ndarray:
-        # print(X.shape, T.shape)
+        #print(X.shape, T.shape)
         return np.conj(X - T)
 
 class CategoricalCrossEntropy(Loss):

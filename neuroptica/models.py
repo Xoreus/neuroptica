@@ -56,6 +56,7 @@ class Sequential(BaseModel):
         :return: output electric fields (to be fed into a loss function)
         '''
         X_out = X
+        #print(X_out.shape)
         for layer in self.layers:
             if isinstance(layer, OpticalMeshNetworkLayer):
                 X_out = layer.forward_pass(X_out)
@@ -64,6 +65,7 @@ class Sequential(BaseModel):
                 # print(X_out.T)
             else:
                 X_out = layer.forward_pass(X_out)
+        #print(X_out.shape)
         return X_out
 
     def backward_pass(self, d_loss: np.ndarray, cache_fields=False, use_partial_vectors=False) -> Dict[str, np.ndarray]:

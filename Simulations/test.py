@@ -30,18 +30,18 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
-    onn.BATCH_SIZE = 400 # # of input samples per batch
-    onn.EPOCHS = 200 # Epochs for ONN training
-    onn.STEP_SIZE= 0.005 # Learning Rate
-    onn.SAMPLES = 400 # # of samples per class 400
+    onn.BATCH_SIZE = 512 # # of input samples per batch
+    onn.EPOCHS = 400 # Epochs for ONN training
+    onn.STEP_SIZE= 0.06 # Learning Rate
+    onn.SAMPLES = 512 # # of samples per class 400
 
-    onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+    onn.ITERATIONS = 200 # number of times to retry same loss/PhaseUncert
     onn.rng_og = 1 # starting RNG value
-    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
-    onn.max_accuracy_req = 99 # Will stop retrying after accuracy above this is reached
+    onn.max_number_of_tests = 1 # Max number of retries for a single model's training (keeps maximum accuracy model) #5
+    onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 4  # How many features? max for MNIST = 784 
-    onn.classes = 4 # How many classes? max for MNIST = 10
+    onn.features = 16  # How many features? max for MNIST = 784 
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.70 # Min diff between max (correct) sample and second sample
@@ -176,7 +176,7 @@ def create_model(features, classes):
     
     nlaf = cReLU # Pick the Non Linear Activation Function
 
-    print("Diamond Layer")
+    print("Clement Layer")
 
     # If you want multi-layer Diamond Topology
     # model = neu.Sequential([
@@ -200,37 +200,37 @@ def create_model(features, classes):
     # ])
 
     # If you want regular Clements (multi-layer) topology
-    # model = neu.Sequential([
-    #     # neu.ClementsLayer(features),
-    #     # neu.Activation(nlaf),
-    #     # neu.ClementsLayer(features),
-    #     # neu.Activation(nlaf),
-    #     # neu.ClementsLayer(features),
-    #     # neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes))
-    # ])
-
-    # If you want regular Reck (single-layer) topology
     model = neu.Sequential([
-        # neu.ReckLayer(features),
+        # neu.ClementsLayer(features),
         # neu.Activation(nlaf),
-        # neu.ReckLayer(features),
+        # neu.ClementsLayer(features),
         # neu.Activation(nlaf),
-        # neu.ReckLayer(features),
+        # neu.ClementsLayer(features),
         # neu.Activation(nlaf),
-        neu.ReckLayer(features),
+        neu.ClementsLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+        neu.DropMask(features, keep_ports=range(classes))
     ])
+
+    # # If you want regular Reck (single-layer) topology
+    # model = neu.Sequential([
+    #     # neu.ReckLayer(features),
+    #     # neu.Activation(nlaf),
+    #     # neu.ReckLayer(features),
+    #     # neu.Activation(nlaf),
+    #     # neu.ReckLayer(features),
+    #     # neu.Activation(nlaf),
+    #     neu.ReckLayer(features),
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    # ])
     print(model)
     return model
 
 def save_onn(onn, model, lossDiff=0, trainingLoss=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0., 1, 51) # set loss/MZI range
+    onn.loss_dB = np.linspace(0., 1, 11) # set loss/MZI range
     print(onn.loss_dB)
     onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
@@ -262,9 +262,9 @@ def main():
 
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
-    onn = dataset(onn, dataset='Gauss')
+    # onn = dataset(onn, dataset='Gauss')
     # onn = dataset(onn, dataset='MNIST')
-    # onn = dataset(onn, dataset='FFT_MNIST')
+    onn = dataset(onn, dataset='FFT_MNIST')
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None')

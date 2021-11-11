@@ -26,9 +26,9 @@ onn.EPOCHS = 200
 onn.STEP_SIZE = 0.005
 onn.SAMPLES = 400
 
-onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+onn.ITERATIONS = 200 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 1 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 25 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
@@ -69,10 +69,10 @@ def create_model(features, classes, topo):
             # neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
             # neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
             # neu.Activation(nlaf),
-            neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
-            neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
-            neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
-            neu.Activation(nlaf),
+            # neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
+            # neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
+            # neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
+            # neu.Activation(nlaf),
             neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
             neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
             neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
@@ -86,8 +86,8 @@ def create_model(features, classes, topo):
             # neu.Activation(nlaf),
             # neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             # neu.Activation(nlaf),
-            neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
-            neu.Activation(nlaf),
+            # neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
+            # neu.Activation(nlaf),
             neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             neu.Activation(neu.AbsSquared(features)), # photodetector measurement
             #neu.DropMask(features, keep_ports=range(classes))
@@ -99,8 +99,8 @@ def create_model(features, classes, topo):
             # neu.Activation(nlaf),
             # neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             # neu.Activation(nlaf),
-            neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
-            neu.Activation(nlaf),
+            # neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
+            # neu.Activation(nlaf),
             neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             neu.Activation(neu.AbsSquared(features)), # photodetector measurement
             #neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
@@ -146,7 +146,7 @@ for onn.N in [10]:
 
                     # model = ONN_Setups.ONN_creation(onn)
                     model = create_model(onn.features, onn.classes, onn.topo)
-                    # current_phases = model.get_all_phases()
+                    current_phases = model.get_all_phases()
                     # if onn.topo == 'Diamond':
                     #     current_phases = [[(0.9957536152885338, 3.898775749713394), (1.4695933688580787, 0.8236238034356378), (0.015323493287291465, 5.048433495956256), (0.30202906876790203, 3.2107342747530354), (0.7380871550458405, 4.293174666079528), (2.6373958327166482, 4.692096920343434), (0.7845859106719074, 3.1045264522323968), (0.06736278338608598, 2.435561137767668), (2.029437185091462, 4.153057367670428), (2.546229979666238, 5.4072007167411575), (1.3058283822110792, 1.2404251728870852), (0.0658106916905543, 1.5053688723939733), (2.022193117691199, 5.171120253802082), (1.9163921362143737, 1.9646730284115144), (0.5450882160137414, 0.14414523962451847), (0.7945821548531647, 4.315684722769842), (2.3435024836912834, 0.6344817595185769), (1.8589532993873288, 0.38464088548727343), (1.6053761655854009, 5.163726173963973), (0.7651287047180673, 5.075389861761968), (2.271780248464872, 4.92391779143677), (1.150378608017238, 3.52290524388841), (2.1152095262929964, 4.135493391757848), (1.4886637621574421, 4.5942904400604725), (1.5503916616789544, 1.1899083488439666), (1.8202229491025563, 3.4301371270201293), (2.3226748283816447, 4.951781507385526), (2.193899455251833, 2.3349777521596358), (1.3174652990533335, 0.8899806219811985), (1.0920190353632493, 0.4434367023230703), (1.488220965237406, 2.743565374576324), (1.6217741307787559, 0.29095646593359537), (2.149001090283193, 4.741321121484844), (0.4690026961363456, 1.7969895706327523), (1.1865091111128865, 0.6337330790741152), (1.747069439716735, 4.725449510144097), (0.165705645503092, 6.0239442346370495), (2.1424778496333023, 6.176382958115432), (0.018338098674082422, 3.5293561205965394), (1.400131569162883, 2.616947781204543), (0.1731432501631664, 3.0606412591569185), (0.10929129313233996, 2.906925476472582), (1.341996972180872, 0.2335432206620295), (0.14434885931505306, 4.452561506637295), (0.5550406754944661, 1.6545512933281792), (2.1520065769995176, 0.6243685231368199), (0.9010935109242181, 0.9005750053370272), (3.010992285138248, 2.4924272285292832), (0.4115868629926506, 1.5014129621347694), (0.2735000012190956, 0.5973074585720316), (2.943406409403485, 0.9783047359986121), (1.143252149863193, 4.965232667619389), (0.9344871868975759, 1.4070103936321998), (1.0877827149469366, 1.4772073276879119), (2.764856373064271, 6.1247081717989476), (1.4641641186179764, 3.3201780804719685), (1.8645714876311932, 1.423541414243275), (0.4510107541862305, 0.7656647977871042), (0.8431394852833279, 4.78410720278273), (1.992804098012697, 3.2514667497881935), (0.9373806190218031, 0.4904673181841005), (2.4324759645249814, 2.1898444821241854), (0.5842028944869398, 2.2520385308878352), (0.21857268686891201, 4.179260822307894), (2.301088251667885, 0.19481250488956503), (3.00383676090613, 1.862056772813499), (1.9067894001282677, 1.7631779983564728), (1.6550607084585438, 4.795914681540585), (1.3259307617178098, 3.1360683538565235), (0.03063633642956202, 3.9564829034580087), (0.3223008580012284, 4.329409974008857), (2.7944875810195944, 0.3671803184284466), (0.011981176449307015, 2.5180321097973133), (2.9255626444769365, 4.382466411135497), (3.0549751250699235, 0.8049242650192298), (1.1199006719416733, 4.195539549691825), (1.836135056133511, 3.302683579211228), (0.24738957786241217, 0.32440504714235385), (2.738906541455178, 3.4674188845872425), (1.0543468342044948, 0.39419267912244793), (0.41928457024014415, 4.712834391667629)], [(2.078225857487261, 5.327348666575508), (1.846311252318179, 0.14189471245581295), (2.226944959975923, 6.261647815158006), (2.2094878067530983, 3.138320863596988), (2.4165089412038565, 5.121829560347599), (0.22354158607992416, 1.6353202146551133), (1.724893153415155, 2.093450817949015), (0.44878828555725475, 1.8165560402030507), (3.0352420411481806, 0.17250966187323416), (2.2632610702365517, 5.681121021323064), (1.581434000701945, 4.117895229529219), (1.379069577241659, 2.0673934824688036), (0.4671362680849726, 1.7880882862260992), (1.6640736387315047, 1.3461224417448896), (2.6375802052180775, 5.3498697381574285), (1.5846749670351519, 5.604852156712854), (0.5310018966448566, 4.718400577266702), (2.5417226323518656, 0.35330988535539243), (2.1046072326729686, 6.067435350953189), (2.145609119338278, 5.341377408341795), (0.650759510296305, 1.19265341912275), (0.544721820052883, 4.283170691192003), (1.5348502093785616, 1.8199762998780482), (1.8145302038115658, 3.1776452242066426), (1.9907538721263727, 5.593980309271664), (1.5389624170547636, 1.8216814409254365), (2.0855280150031037, 0.44674103631134965), (2.6660365612889576, 0.10249928514657698), (0.0990964068805422, 0.9591957378313645), (2.552354958682308, 4.6811705613930705), (0.947356991505269, 2.7240225248660987), (0.8844664235284455, 1.3038844969349492), (0.8163306714941219, 3.0284192139907757), (0.5070357378835102, 5.412913939935769), (1.6059028324499072, 6.223775746715983), (1.8844649334819639, 5.251947255244975), (1.052702422918964, 3.6539968602565036), (3.0804089757793864, 3.1290793997418396), (1.8131155585346534, 4.855549645511122), (2.311215964199722, 2.427972415680304), (0.6846578721351442, 2.873658995559373), (0.10787045149104514, 5.657858056240117), (1.1929306908570751, 1.119122071606293), (1.5326967981474064, 2.415362811831494), (2.043216535097438, 5.666000324440554), (1.7512779618324172, 5.275613284617846), (2.14659450257461, 1.4621433602870115), (2.5398565870679466, 1.509358706887342), (0.529595368138562, 3.040374347971971), (0.7185148722680722, 0.517533836662591), (0.13414939960664515, 4.161968233091349), (1.3528711323844664, 0.33386400202790223), (2.7446812511211727, 4.37990295732115), (3.009328711261977, 3.2551421605579964), (1.9923500940445316, 0.6043965019181924), (1.566417313450922, 6.004691953031884), (0.6914378387645965, 4.182887531402606), (3.0792330645633177, 3.8188052827667542), (0.33047695022306217, 2.6594989873788824), (2.1852924147526402, 0.782148778562763), (3.04489967375157, 3.4310552898041706), (1.3853466033765462, 2.3868183667518594), (2.6517295371386207, 1.32204394489745), (2.511791943036099, 2.251493784213156), (1.80545627406488, 1.521265503576512), (1.981811236596088, 5.747018324415599), (1.6671378245281536, 1.6510524516412566), (2.568427564646591, 2.1828710568801224), (1.105961929507848, 4.844315414211817), (1.9456890916008758, 4.0524136975703655), (1.0200450254881663, 0.972468151646521), (0.4354916406209288, 5.164767137703222), (0.9031207232049699, 5.512890254568337), (2.9828912924890703, 4.734862648854464), (0.2949779029419753, 2.1874004238287377), (0.16148110497766024, 0.1431809836091597), (1.6429189529880726, 4.623590453964215), (0.736449960534714, 1.8417174779153316), (2.3442854273480345, 3.191771057049726), (1.283463039358832, 2.5833842531636897), (1.0610778565277128, 3.0382276184635137)]]
                     # elif onn.topo == 'Clements':
@@ -157,11 +157,11 @@ for onn.N in [10]:
                     #print("Starting Phases")
                     #print(current_phases)
                     model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                    print("Setting Phases")
-                    print(model.get_all_phases())
+                    #print("Setting Phases")
+                    #print(model.get_all_phases())
                     onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
-                    print("Ending Phases")
-                    print(model.get_all_phases())
+                    #print("Ending Phases")
+                    #print(model.get_all_phases())
                     # Save best model
                     if max(onn.val_accuracy) > max_acc:
                         best_model = deepcopy(model)
