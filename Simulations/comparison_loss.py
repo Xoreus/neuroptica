@@ -206,7 +206,7 @@ fig, ax = plt.subplots(figsize=(8.27, 8.27), dpi=100) #11.69, 8.27
 ax.tick_params(axis='both', which='major', labelsize=tick_size)
 ax.tick_params(axis='both', which='minor', labelsize=tick_size)
 ax.set_xlabel('Loss/MZI (dB)', fontsize=labels_size)
-ax.set_ylabel("Verification Accuracy (\%)", fontsize=labels_size)
+ax.set_ylabel("Validation Accuracy (\%)", fontsize=labels_size)
 lns0 = ax.plot(best_onn.loss_dB, accuracy_dict[0], color='#edb120', label=onn_topo[0])
 lns1 = ax.plot(best_onn.loss_dB, accuracy_dict[1], color='#d95319', label=onn_topo[1])
 lns2 = ax.plot(best_onn.loss_dB, accuracy_dict[2], color='#0072bd', label=onn_topo[2])

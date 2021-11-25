@@ -26,9 +26,9 @@ onn.EPOCHS = 200
 onn.STEP_SIZE = 0.005
 onn.SAMPLES = 400
 
-onn.ITERATIONS = 200 # number of times to retry same loss/PhaseUncert
+onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 25 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 50 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
@@ -69,10 +69,10 @@ def create_model(features, classes, topo):
             # neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
             # neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
             # neu.Activation(nlaf),
-            # neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
-            # neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
-            # neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
-            # neu.Activation(nlaf),
+            neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
+            neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
+            neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
+            neu.Activation(nlaf),
             neu.AddMaskDiamond(onn.N), # Adds 0s to the top half of the Diamond input
             neu.DiamondLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]), # Diamond Mesh
             neu.DropMask(2*onn.N - 2, keep_ports=range(onn.N - 2, 2*onn.N - 2)), # Bottom Diamond Topology
@@ -86,8 +86,8 @@ def create_model(features, classes, topo):
             # neu.Activation(nlaf),
             # neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             # neu.Activation(nlaf),
-            # neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
-            # neu.Activation(nlaf),
+            neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
+            neu.Activation(nlaf),
             neu.ClementsLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             neu.Activation(neu.AbsSquared(features)), # photodetector measurement
             #neu.DropMask(features, keep_ports=range(classes))
@@ -99,8 +99,8 @@ def create_model(features, classes, topo):
             # neu.Activation(nlaf),
             # neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             # neu.Activation(nlaf),
-            # neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
-            # neu.Activation(nlaf),
+            neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
+            neu.Activation(nlaf),
             neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=[(None, None)]),
             neu.Activation(neu.AbsSquared(features)), # photodetector measurement
             #neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
@@ -174,7 +174,7 @@ for onn.N in [10]:
                             test_number == onn.max_number_of_tests-1):
                         print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                         best_onn.loss_diff = lossDiff # Set loss_diff
-                        best_onn.loss_dB = np.linspace(0, 1, 51) # set loss/MZI range
+                        best_onn.loss_dB = np.linspace(0, 1.6, 81) # set loss/MZI range
                         print(best_onn.loss_dB)
                         best_onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
                         best_onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
@@ -201,7 +201,7 @@ fig, ax = plt.subplots(figsize=(8.27, 8.27), dpi=100) #11.69, 8.27
 ax.tick_params(axis='both', which='major', labelsize=tick_size)
 ax.tick_params(axis='both', which='minor', labelsize=tick_size)
 ax.set_xlabel('Loss/MZI (dB)', fontsize=labels_size)
-ax.set_ylabel("Verification Accuracy (\%)", fontsize=labels_size)
+ax.set_ylabel("Validation Accuracy (\%)", fontsize=labels_size)
 lns0 = ax.plot(best_onn.loss_dB, accuracy_dict[0], color='#edb120', label=onn_topo[0])
 lns1 = ax.plot(best_onn.loss_dB, accuracy_dict[1], color='#d95319', label=onn_topo[1])
 lns2 = ax.plot(best_onn.loss_dB, accuracy_dict[2], color='#0072bd', label=onn_topo[2])
