@@ -28,7 +28,7 @@ onn.SAMPLES = 400
 
 onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 50 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
