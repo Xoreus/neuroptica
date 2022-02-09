@@ -28,7 +28,7 @@ onn.SAMPLES = 400
 
 onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 10 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
@@ -174,7 +174,7 @@ for onn.N in [10]:
                             test_number == onn.max_number_of_tests-1):
                         print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                         best_onn.loss_diff = lossDiff # Set loss_diff
-                        best_onn.loss_dB = np.linspace(0, 1.6, 81) # set loss/MZI range
+                        best_onn.loss_dB = np.linspace(0, 1, 51) # set loss/MZI range
                         print(best_onn.loss_dB)
                         best_onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
                         best_onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
