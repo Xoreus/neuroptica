@@ -29,7 +29,7 @@ onn.SAMPLES = 400
 
 onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
 onn.rng = 1 # starting RNG value
-onn.max_number_of_tests = 100 # Max number of retries for a single model's training (keeps maximum accuracy model)
+onn.max_number_of_tests = 25 # Max number of retries for a single model's training (keeps maximum accuracy model)
 onn.max_accuracy_req = 99.9 # (%) Will stop retrying after accuracy above this is reached
 
 onn.features = 10 # How many features? max for MNIST = 784 
@@ -97,15 +97,15 @@ accuracy_dict = []
 
 dataset = 'MNIST'
 
-loss_dB_Values = np.linspace(0, 5, 51)
+loss_dB_Values = np.linspace(1, 2, 11)
 print(loss_dB_Values)
 
 np.random.seed(onn.rng)
 for onn.N in [10]:
     onn.features = onn.N
     onn.classes = onn.N
-    loss_diff = [0]
-    training_loss = np.linspace(0, 5, 51)
+    loss_diff = [0.5]
+    training_loss = np.linspace(1, 2, 11)
     df = pd.DataFrame(columns=["Mesh", "Test Number"])
     temp_df = pd.DataFrame(columns=["Mesh", "Test Number"])
     temp = 2
@@ -140,7 +140,8 @@ for onn.N in [10]:
 
                     model = create_model(onn.features, onn.classes, onn.topo)
                     current_phases = model.get_all_phases()
-                    model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
+                    print("Setting Loss Diff = 0")
+                    model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, 0)
                     onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
                     onn.loss_diff = lossDiff # Set loss_diff
                     onn.loss_dB = loss_dB_Values # set loss/MZI range
@@ -148,9 +149,10 @@ for onn.N in [10]:
                     onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
 
                     print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(onn, model, onn.Xt, onn.yt)))
-
+                    print("Setting Loss Diff = ", lossDiff)
+                    model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
                     test.test_SLPU(onn, onn.Xt, onn.yt, model, show_progress=True)
-                    temp = int(trainLoss/0.1)
+                    temp = int((trainLoss-1)/0.1) #Getting Index Values
                     accuracy = onn.accuracy_LPU[temp]
                     accuracy_dict.append(onn.accuracy_LPU[temp])
                     #onn.plotBackprop(backprop_legend_location=0)

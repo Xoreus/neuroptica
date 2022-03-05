@@ -301,7 +301,7 @@ def _get_mzi_partial_transfer_matrices(theta, phi, backward=False, cumulative=Tr
 def apply_loss(mzi, loss):
     return np.array([[loss, 1],[1, loss]]) * mzi
 
-def get_loss(loss_dB, loss_diff=0, rv='gamma'):
+def get_loss(loss_dB, loss_diff=0, rv='gauss'):
     if rv == 'exp':
         loss_dB_cur = loss_dB + np.random.exponential(loss_diff)
         return loss_dB_cur

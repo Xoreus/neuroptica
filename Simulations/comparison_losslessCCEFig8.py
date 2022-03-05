@@ -161,17 +161,15 @@ for onn.N in [10]:
                             test_number == onn.max_number_of_tests-1):
                         print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                         best_onn.loss_diff = lossDiff # Set loss_diff
-                        best_onn.loss_dB = np.linspace(0, 1, 51) # set loss/MZI range
+                        best_onn.loss_dB = np.linspace(0, 0.5, 2) # set loss/MZI range
                         print(best_onn.loss_dB)
-                        best_onn.phase_uncert_theta = np.linspace(0., 1, 3) # set theta phase uncert range
-                        best_onn.phase_uncert_phi = np.linspace(0., 1, 3) # set phi phase uncert range
+                        best_onn.phase_uncert_theta = np.linspace(0., 1, 41) # set theta phase uncert range
+                        best_onn.phase_uncert_phi = np.linspace(0., 1, 41) # set phi phase uncert range
 
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(best_onn, best_model, best_onn.Xt, best_onn.yt)))
 
                         test.test_SLPU(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True)
                         accuracy_dict.append(best_onn.accuracy_LPU)
-                        #onn.saveAll(best_model) # Save best model information
-                        #onn.plotAll(trainingLoss=trainLoss) # plot training and tests
                         best_onn.plotBackprop(backprop_legend_location=0)
                         best_onn.saveForwardPropagation(best_model)
                         current_phases = best_model.get_all_phases()
