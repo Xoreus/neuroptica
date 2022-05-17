@@ -18,6 +18,8 @@ import scipy.io
 import pickle
 import matplotlib as mpl
 from matplotlib.ticker import FormatStrFormatter
+import xlsxwriter
+import io
 np.seterr(divide = 'ignore') 
 
 class ONN_Simulation:
@@ -256,7 +258,7 @@ class ONN_Simulation:
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar = plt.colorbar()
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
-        plt.title(f'{self.N}$\\times${self.N} {self.topology} {trainingLoss}dB TrainingLoss', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_{self.topo}_N={self.N}.pdf')
         plt.clf()
@@ -278,7 +280,7 @@ class ONN_Simulation:
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=legend_size)
         plt.title(f'FoM in Rad$\\cdot$dB', fontsize=labels_size)
-        plt.title(f'{self.N}$\\times${self.N} {self.topology} {trainingLoss}db TrainingLoss', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()
@@ -322,6 +324,19 @@ class ONN_Simulation:
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/PT_ACC_{self.topo}_N={self.N}.pdf')
         plt.clf()
+        df = pd.DataFrame(columns=["Theta", "Phi", "Accuracy"])
+        temp_x = 0
+        temp_y = 0
+        temp = 0
+        for x in self.phase_uncert_theta:
+            for y in self.phase_uncert_phi:
+                df.loc[temp] = [x, y, self.accuracy_PT[temp_x][temp_y]]
+                temp_y = temp_y + 1
+                temp = temp + 1
+            temp_x = temp_x + 1
+            temp_y = 0
+        # print(df.to_string())
+        df.to_csv(f'{self.FOLDER}/{self.topo}_results.csv')
     def createFOLDER(self):
         if not os.path.isdir(self.FOLDER):
             os.makedirs(self.FOLDER)

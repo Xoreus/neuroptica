@@ -27,13 +27,14 @@ def test_PT(onn, X, y, model, show_progress=True):
     print('\nPhi + Theta')
     onn.accuracy_PT = calc_acc.get_accuracy(onn, model, X, y, loss_diff=onn.loss_diff, show_progress=show_progress)
     onn.PT_FoM = np.sum((np.array(onn.accuracy_PT) > onn.zeta*np.max(onn.accuracy_PT))*onn.PT_Area)
+    print("Accuracy: \n", onn.accuracy_PT)
     return onn, model
 
 def test_LPU(onn, X, y, model, show_progress=True):
     onn.same_phase_uncert = True
     print('\nLoss + Phase Uncertainty')
     onn.accuracy_LPU = calc_acc.get_accuracy(onn, model, X, y, loss_diff=onn.loss_diff, show_progress=show_progress)
-    print("Accuracy: \n", onn.accuracy_LPU)
+    # print("Accuracy: \n", onn.accuracy_LPU)
     onn.LPU_FoM = np.sum((np.array(onn.accuracy_LPU) >  onn.zeta*np.max(onn.accuracy_LPU))*onn.LPU_Area)
     return onn, model
 
@@ -41,7 +42,7 @@ def test_SLPU(onn, X, y, model, show_progress=True): #Only tests Loss/MZI at 0 d
     onn.same_phase_uncert = True
     print('\nLoss + Phase Uncertainty')
     onn.accuracy_LPU = calc_acc.get_accuracy_SLPU(onn, model, X, y, loss_diff=onn.loss_diff, show_progress=show_progress)
-    print("Accuracy: \n", onn.accuracy_LPU)
+    # print("Accuracy: \n", onn.accuracy_LPU)
     return onn, model
 
 def test_onn(onn, model, show_progress=True):

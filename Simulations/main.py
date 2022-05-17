@@ -22,17 +22,17 @@ def init_onn_settings():
     ''' Initialize onn settings for training, testing and simulation '''
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
-    onn.BATCH_SIZE = 512 # # of input samples per batch
-    onn.EPOCHS = 400 # Epochs for ONN training
-    onn.STEP_SIZE= 0.0005 # Learning Rate
-    onn.SAMPLES = 512 # # of samples per class
+    onn.BATCH_SIZE = 400 # # of input samples per batch
+    onn.EPOCHS = 200 # Epochs for ONN training
+    onn.STEP_SIZE= 0.005 # Learning Rate
+    onn.SAMPLES = 400 # # of samples per class
 
-    onn.ITERATIONS = 1 # number of times to retry same loss/PhaseUncert
-    onn.rng_og = 2 # starting RNG value
+    onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
+    onn.rng_og = 1 # starting RNG value
     onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
-    onn.max_accuracy_req = 97 # Will stop retrying after accuracy above this is reached
+    onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 16  # How many features? max for MNIST = 784 
+    onn.features = 10  # How many features? max for MNIST = 784 
     onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
@@ -206,9 +206,9 @@ def create_model(features, classes):
 def save_onn(onn, model, lossDiff=0):
     onn.loss_diff = lossDiff # Set loss_diff
     # For simulation purposes, defines range of loss and phase uncert
-    onn.loss_dB = np.linspace(0, 2, 38) # set loss/MZI range
-    onn.phase_uncert_theta = np.linspace(0., 1, 11) # set theta phase uncert range
-    onn.phase_uncert_phi = np.linspace(0., 1, 11) # set phi phase uncert range
+    onn.loss_dB = np.linspace(0, 0.5, 2) # set loss/MZI range
+    onn.phase_uncert_theta = np.linspace(0., 1, 41) # set theta phase uncert range
+    onn.phase_uncert_phi = np.linspace(0., 1, 41) # set phi phase uncert range
 
     onn, model = test.test_PT(onn, onn.Xt, onn.yt, model, show_progress=True) # test Phi Theta phase uncertainty accurracy
     onn, model = test.test_LPU(onn, onn.Xt, onn.yt, model, show_progress=True) # test Loss/MZI + Phase uncert accuracy
@@ -237,7 +237,8 @@ def main():
     # onn = dataset(onn, dataset='Iris_augment')
     # onn = dataset(onn, dataset='Iris')
     # onn = dataset(onn, dataset='Gauss')
-    onn = dataset(onn, dataset='FFT_MNIST')
+    # onn = dataset(onn, dataset='FFT_MNIST')
+    onn = dataset(onn, dataset="MNIST")
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None')

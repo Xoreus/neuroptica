@@ -40,7 +40,8 @@ onn.N = onn.features # number of ports in device
 onn.range_linear = 20
 onn.range_dB = 10
 
-onn_topo = ['Diamond', 'Clements', 'Reck']
+# onn_topo = ['Diamond', 'Clements', 'Reck']
+onn_topo = ['Reck']
 # onn_topo = ['B_C_Q_P', 'E_P', 'R_P'] #Diamond, Clements, Reck See ONN_Simulation_Class
 #onn_topo = ['B_C_Q_P']
 
@@ -110,8 +111,8 @@ def create_model(features, classes, topo):
 
 accuracy_dict = []
 
-# dataset = 'Gauss'
-dataset = 'MNIST'
+dataset = 'Gauss'
+# dataset = 'MNIST'
 
 np.random.seed(onn.rng)
 for onn.N in [10]:
@@ -148,7 +149,7 @@ for onn.N in [10]:
                     model = create_model(onn.features, onn.classes, onn.topo)
                     current_phases = model.get_all_phases()
                     model.set_all_phases_uncerts_losses(current_phases, 0, 0, trainLoss, lossDiff)
-                    onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                    onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
                     # Save best model
                     if max(onn.val_accuracy) > max_acc:
                         best_model = deepcopy(model)
@@ -161,21 +162,29 @@ for onn.N in [10]:
                             test_number == onn.max_number_of_tests-1):
                         print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
                         best_onn.loss_diff = lossDiff # Set loss_diff
-                        best_onn.loss_dB = np.linspace(0, 0.5, 2) # set loss/MZI range
+                        best_onn.loss_dB = np.linspace(0.5, 1, 2) # set loss/MZI range
                         print(best_onn.loss_dB)
                         best_onn.phase_uncert_theta = np.linspace(0., 1, 41) # set theta phase uncert range
                         best_onn.phase_uncert_phi = np.linspace(0., 1, 41) # set phi phase uncert range
 
                         print('Test Accuracy of validation dataset = {:.2f}%'.format(calc_acc.accuracy(best_onn, best_model, best_onn.Xt, best_onn.yt)))
 
-                        test.test_SLPU(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True)
-                        accuracy_dict.append(best_onn.accuracy_LPU)
-                        best_onn.plotBackprop(backprop_legend_location=0)
+                        test.test_PT(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True) # test Phi Theta phase uncertainty accurracy
+                        test.test_LPU(best_onn, best_onn.Xt, best_onn.yt, best_model, show_progress=True)
+                        # accuracy_dict.append(best_onn.accuracy_LPU)
+                        # best_onn.plotBackprop(backprop_legend_location=0)
+                        
+                        best_onn.saveAll(best_model)
+                        # best_onn.plotAll()
+                        onn.plotBackprop(backprop_legend_location=0)
+                        # onn.pickle_save()
                         best_onn.saveForwardPropagation(best_model)
                         current_phases = best_model.get_all_phases()
-                        axes = plot_scatter_matrix(best_onn.X, best_onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
-                        plt.savefig(best_onn.FOLDER + '/scatterplot.pdf')
-                        plt.clf()
+                        # axes = plot_scatter_matrix(best_onn.X, best_onn.y,  figsize=(15, 15), label='X', start_at=0, fontsz=54)
+                        # plt.savefig(best_onn.FOLDER + '/scatterplot.pdf')
+                        # plt.clf()
+
+
                         break
 
 # labels_size = 20
