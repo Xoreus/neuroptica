@@ -98,8 +98,8 @@ class MZI(OpticalComponent):
         self.loss_diff = loss_diff # Stochastic std dev
         self.loss = 10**(-self.loss_dB/10) # Linear Loss
 
-        if theta is None: theta = pi * np.random.rand()
-        if phi is None: phi = 2 * pi * np.random.rand()
+        if theta is None: theta = pi # * np.random.rand()
+        if phi is None: phi = pi #np.random.rand()
 
         self.theta = theta
         self.phi = phi

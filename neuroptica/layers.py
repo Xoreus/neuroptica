@@ -61,10 +61,12 @@ class NetworkLayer:
             phases_mzi_layer.append(phases_layer)
         # print("Setting Loss:", loss_dB)
         # create every layer of MZIs with new loss/phase uncerts
+        layerCount = 0 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(layerCount, self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
         self.mesh = OpticalMesh(self.N, layers)
 
 class AddMask(NetworkLayer):
@@ -316,10 +318,12 @@ class DiamondLayer(OpticalMeshNetworkLayer):
             phases_mzi_layer.append(phases_layer)
 
         # create every layer of MZIs within the Reck Mesh
+        layerCount = 0 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert, phase_uncert_phi=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(layerCount, self.S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert, phase_uncert_phi=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
 
         self.mesh = OpticalMesh(S, layers)
 
@@ -343,10 +347,12 @@ class DiamondLayer(OpticalMeshNetworkLayer):
                 idx += 1
             phases_mzi_layer.append(phases_layer)
         # create every layer of MZIs within the Reck Mesh
+        layerCount = 0 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(self.S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(layerCount, self.S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
         self.mesh = OpticalMesh(self.S, layers)
 
 class DMM_layer(OpticalMeshNetworkLayer):
@@ -493,11 +499,12 @@ class ReckLayer(OpticalMeshNetworkLayer):
             phases_mzi_layer.append(phases_layer)
 
         # create every layer of MZIs within the Reck Mesh
+        layerCount = 0 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_phi=self.phase_uncert, phase_uncert_theta=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
-
+            layers.append(MZILayer.from_waveguide_indices(layerCount, N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_phi=self.phase_uncert, phase_uncert_theta=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
         self.mesh = OpticalMesh(N, layers)
 
     def forward_pass(self, X: np.ndarray) -> np.ndarray:
@@ -560,12 +567,13 @@ class ClementsLayer(OpticalMeshNetworkLayer):
             phases_mzi_layer.append(phases_layer)
 
         # print("Setting ClementsLayer Loss:", loss_dB)
-
+        layerCount = 0
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
             # layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
-            layers.append(MZILayer.from_waveguide_indices(self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert, phase_uncert_phi=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(layerCount, self.N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert, phase_uncert_phi=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
 
         self.mesh = OpticalMesh(N, layers)
 

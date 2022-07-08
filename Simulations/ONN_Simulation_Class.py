@@ -237,7 +237,7 @@ class ONN_Simulation:
         fig.tight_layout() 
         plt.savefig(f'{self.FOLDER}/backprop_{self.topo}.pdf', bbox_inches="tight")
         plt.clf()
-    def plotAll(self, cmap='magma', trainingLoss=0.00):
+    def plotAll(self, cmap='gist_heat', trainingLoss=0.00):
         labels_size = 24
         legend_size = 15
         tick_size = 14

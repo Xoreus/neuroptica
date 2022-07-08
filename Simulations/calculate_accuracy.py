@@ -15,8 +15,8 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
 
     if show_progress: pbar = tqdm(total=len(ONN.phase_uncert_phi)*len(ONN.phase_uncert_theta))
     accuracy = []
-    for loss_dB in ONN.loss_dB[:1]:
-        print(loss_dB)
+    for loss_dB in [0.25]:# ONN.loss_dB[:1]:
+        # print(loss_dB)
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
             if show_progress: pbar.set_description(f'Theta phase uncert = {phase_uncert_theta:.2f}/{ONN.phase_uncert_theta[-1]:.2f}', refresh=True)
