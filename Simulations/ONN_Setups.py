@@ -20,7 +20,7 @@ def ONN_creation(onn, Nonlinearity=neu.nonlinearities.Sigmoid(4), phases=[(None,
     layers = ''.join(char if char != 'D' else 'AMD' for char in layers) # D really means AddMask, DMM, DropMask
     layer_dict = {
             'R':neu.ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),
-            'I':neu.flipped_ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),# Flipped Reck layer with N*(N-1)/2 MZIs in an upside down triangle
+            # 'I':neu.flipped_ReckLayer(onn.N, include_phase_shifter_layer=False, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),# Flipped Reck layer with N*(N-1)/2 MZIs in an upside down triangle
 
             'A':neu.AddMask(2*onn.N),# Add 0s between every channel to account for empty tapered input waveguides the DMM sections
             'M':neu.DMM_layer(2*onn.N, loss_dB=onn.loss_dB[0], loss_diff=onn.loss_diff, phase_uncert=onn.phase_uncert_theta[0], phases=phases),

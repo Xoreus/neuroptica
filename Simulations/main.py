@@ -4,7 +4,10 @@ Using Neuroptica and linearly separable datasets or MNIST
 
 Author: Simon Geoffroy-Gagnon
 Edit: 2020.09.04
+
+Edit: 2022.10.13 by Bokun Zhao (bokun.zhao@mail.mcgill.ca)
 '''
+from math import floor
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler as mms
 import ONN_Simulation_Class as ONN_Cls
@@ -19,6 +22,12 @@ sys.path.append('../')
 import neuroptica as neu
 
 def see_each_mzi(p_model, p_onn):
+    '''
+    Helper Function to visualize each MZI's (sigma_theta, sigma_phi, loss)
+
+    sigma is the standard deviation of the normal distribution from which the phase error is drawn
+    see the method "get_transfer_matrix()" in components.py
+    '''
     print("\n------------------------------------------------------------------------------------------------")
     MZImesh = [layer for layer in p_model.layers if isinstance(layer, neu.OpticalMeshNetworkLayer)]
     print(f"There are {len(MZImesh)} MZImesh(es) in the model.")
@@ -27,10 +36,25 @@ def see_each_mzi(p_model, p_onn):
         print(f"There are {len(mzi_layers)} MZILayers in this {p_onn.N}x{p_onn.N} '{p_onn.topo}' topology, onn layer: {i}")
         for eachMZILayer in mzi_layers:
             for eachMZI in eachMZILayer.mzis:
-                # can also print other information related to each MZI, such as the theta/phi phases...
+                # you can also print other information related to each MZI here, such as the theta/phi phases...
                 print(f"({eachMZI.phase_uncert_theta:.3f}, {eachMZI.phase_uncert_phi:.3f}, {eachMZI.loss_dB:.2f})", end="")
             print("\n")
     print("------------------------------------------------------------------------------------------------")
+
+def sigma_adjust(p_model):
+    '''
+    if you want to individually tune certain MZIs' sigma values,
+    you can use this method.
+    '''
+    for layer in p_model.layers:
+        if isinstance(layer, neu.OpticalMeshNetworkLayer):
+            # adjust sigma for individual mzis in a mesh
+            # e.g. set the sigma_theta of the MZI at column 0, row 1 to be 0.5 rad
+            layer.mesh.layers[3].mzis[1].phase_uncert_theta = 0.5
+            # e.g. halve the sigma_theta of the MZI at column 3, row 0
+            layer.mesh.layers[3].mzis[0].phase_uncert_theta /= 2
+            # e.g. set the sigma_phi of the MZI at column 8, row 2 to be 2/3 of the old value
+            layer.mesh.layers[8].mzis[2].phase_uncert_phi *= (2/3)
 
 
 def init_onn_settings():
@@ -44,7 +68,7 @@ def init_onn_settings():
 
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng = 1 # starting RNG value
-    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_number_of_tests = 4 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
     onn.features = 10  # How many features? max for MNIST = 784 
@@ -60,7 +84,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
     onn.range_linear = 1
 
-    onn.topo = 'Diamond,INIT=pi,twoway_calibrate,LOSS_MZI=0.25dB' # Name of the model
+    onn.topo = '10x10_MNIST_2xDiamond_0.00dB_Loss' # Name of the model
 
     return onn
 
@@ -184,39 +208,62 @@ def create_model(features, classes):
     nlaf = cReLU # Pick the Non Linear Activation Function
 
 
-    # If you want multi-layer Diamond Topology
-    model = neu.Sequential([
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(nlaf),
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)),
-    ])
+    # If you want multi-layer BOTTOM Diamond Topology
+    # model = neu.Sequential([
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #     neu.Activation(nlaf), # first layer ends here
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)), # needs a drop mask at the output
+    # ])
+
+    # If you want multi-layer TOP Diamond Topology
+    # model = neu.Sequential([
+    #     # neu.AddMaskDiamond(features),
+    #     # neu.DiamondLayer(features),
+    #     # neu.DropMask(2*features - 2, keep_ports=range(0, features)), # Top Diamond Topology
+    #     # neu.Activation(nlaf), # first layer ends here
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(0, features)), # Top Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)),
+    # ])
+
+    # If you want multi-layer MIDDLE Diamond Topology
+    # model = neu.Sequential([
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
+    #     neu.Activation(nlaf), # first layer ends here
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)),
+    # ])
 
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
-        # neu.ClementsLayer(features),
-        # neu.Activation(nlaf),
-        # neu.ClementsLayer(features),
-        # neu.Activation(nlaf),
-        # neu.ClementsLayer(features),
-        # neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
     #     neu.ClementsLayer(features),
     #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     #     neu.DropMask(features, keep_ports=range(classes))
     # ])
 
     # If you want regular Reck (single-layer) topology
-    # model = neu.Sequential([
-    #     neu.ReckLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     # neu.Activation(sigmoid), # don't use signoid, low validation accuracy
-    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-    # ])
+    model = neu.Sequential([
+        # neu.ReckLayer(features),
+        # neu.Activation(nlaf), # photodetector measurement
+        neu.ReckLayer(features),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    ])
     return model
 
 def save_onn(onn, model, lossDiff=0):
@@ -250,11 +297,8 @@ def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
 
-    # onn = dataset(onn, dataset='Iris_augment')
-    # onn = dataset(onn, dataset='Iris')
-    # onn = dataset(onn, dataset='Gauss')
-    # onn = dataset(onn, dataset='FFT_MNIST')
-    onn = dataset(onn, dataset="MNIST")
+    data = 'MNIST' # Choose one: Gauss, MNIST, FFT_MNIST, Iris_augment, Iris
+    onn = dataset(onn, dataset=data)
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None')
@@ -266,13 +310,12 @@ def main():
     print(f"phases({np.shape(model.get_transformation_matrix())}):{model.get_transformation_matrix()}")
     # exit(0)
 
-
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
     training_loss = [0] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
-            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_test' # Name the folder to be created
+            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_{data}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 
@@ -287,16 +330,8 @@ def main():
                 current_phases = model.get_all_phases()
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0.0)
-                # see_each_mzi(model, onn)
-                # exit(0)
                 
                 onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
-
-                ############################### To see each MZI in the topology ###############################
-                see_each_mzi(model, onn)
-                exit(0)
-                ###############################################################################################
-
 
                 if test_number>0:
                     print("\nPhase of current best model")
@@ -322,7 +357,7 @@ def main():
                     save_onn(best_onn, best_model)
                     best_onn.saveForwardPropagation(best_model)
                     current_phases = best_model.get_all_phases()
-                    best_model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.5, phase_uncert_phi=0.5, loss_dB=0.25, loss_diff=0.0)
+                    best_model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0.00, loss_diff=0.0)
                     best_onn.save_correct_classified_samples(best_model)
                     best_onn.save_correct_classified_samples(best_model, zeta=onn.zeta)
                     best_onn.save_correct_classified_samples(best_model, zeta=2*onn.zeta)

@@ -3,8 +3,11 @@ network. The API for this module is based loosely on Keras.
 
 Last Author: Simon Geoffroy-Gagnon
 Edit: 2020.06.26
+
+Edit: 2022.10.13 by Bokun Zhao (bokun.zhao@mail.mcgill.ca)
 '''
 
+from math import floor
 import numpy as np
 
 from neuroptica.component_layers import MZILayer, OpticalMesh, PhaseShifterLayer
@@ -59,7 +62,7 @@ class NetworkLayer:
                 phases_layer.append(phases[idx])
                 idx += 1
             phases_mzi_layer.append(phases_layer)
-        # print("Setting Loss:", loss_dB)
+
         # create every layer of MZIs with new loss/phase uncerts
         layerCount = 0 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
@@ -100,15 +103,27 @@ class AddMaskDiamond(NetworkLayer):
         B = np.zeros_like(X, dtype=NP_COMPLEX)
         B = B[:-2, :]
         C = np.empty((X.shape[0]+B.shape[0], X.shape[1]), dtype=NP_COMPLEX)
-        C[:X.shape[0]-2,:] = B
-        C[X.shape[0]-2:,:] = X
+
+        C[:X.shape[0]-2,:] = B # if using bottom ports (clear top ports)
+        C[X.shape[0]-2:,:] = X # if using bottom ports
+        
+        # C[X.shape[0]:2*X.shape[0]-2,:] = B # if using top ports (clear bottom ports)
+        # C[:X.shape[0],:] = X # if using top ports
+
+        # C[:X.shape[0]//2-1,:] = B[:B.shape[0]//2,:] # if using middle ports (clear remaining top ports)
+        # C[floor(X.shape[0]*1.5)-1:2*X.shape[0]-2,:] = B[B.shape[0]//2:,:] # if using middle ports (clear remaining bottom ports)
+        # C[X.shape[0]//2-1:floor(X.shape[0]*1.5)-1,:] = X # if using middle ports
+
         return C
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
         n_features, n_samples = delta.shape
         delta_back = np.zeros((int(self.input_size), n_samples), dtype=NP_COMPLEX)
-        delta_back = delta[self.input_size-2:2*self.input_size-2]
-        # delta_back = delta[:self.input_size]
+        
+        delta_back = delta[self.input_size-2:2*self.input_size-2] # if using bottom ports
+        # delta_back = delta[:self.input_size] # if using top ports
+        # delta_back = delta[self.input_size//2-1:floor(self.input_size*1.5)-1] # if using middle ports
+        
         return delta_back
 
 class DropMask(NetworkLayer):
@@ -264,7 +279,7 @@ class ReckLayer_H(OpticalMeshNetworkLayer): # Hermitian Transpose of a Reck Laye
         for start, end, phases in zip(mzi_limits_lower, mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer_H.from_waveguide_indices(N, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis))
+            layers.append(MZILayer_H.from_waveguide_indices(None, N, list(range(start, end + 1)), loss_dB=loss_dB, thetas=thetas, phis=phis))
 
         self.mesh = OpticalMesh(N, layers)
 
@@ -304,6 +319,11 @@ class DiamondLayer(OpticalMeshNetworkLayer):
         self.S = S
         self.mzi_limits_lower = list(range(self.S - self.N, -1, -1)) + list(range(1, self.N - 1))
         self.mzi_limits_upper = list(range(self.N - 1, self.S)) + list(range(self.S - 2, self.N - 2, -1))
+
+        # self.mzi_limits_lower = self.mzi_limits_lower[4:14] # for truncated diamond
+        # self.mzi_limits_upper = self.mzi_limits_upper[4:14] # for truncated diamond
+        print(f"mzi_limits_lower: {self.mzi_limits_lower}")
+        print(f"mzi_limits_upper: {self.mzi_limits_upper}")
 
         mzi_nums = [int(len(range(start, end+1))/2) for start, end in zip(self.mzi_limits_lower, self.mzi_limits_upper)] # get the number of MZIs in this component layer
         if (None, None) in phases:
@@ -391,7 +411,7 @@ class DMM_layer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_phi=self.phase_uncert, phase_uncert_theta=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(None, N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_phi=self.phase_uncert, phase_uncert_theta=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
 
         self.mesh = OpticalMesh(self.N, layers)
 
@@ -447,7 +467,7 @@ class flipped_ReckLayer(OpticalMeshNetworkLayer):
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
-            layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_phi=self.phase_uncert, phase_uncert_theta=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(None, N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_phi=self.phase_uncert, phase_uncert_theta=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
 
         self.mesh = OpticalMesh(N, layers)
 

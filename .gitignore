@@ -146,3 +146,8 @@ dmypy.json
 # Ignore .ps scripts
 *.ps
 
+#macOS file system meta information
+*.DS_Store
+
+#simulation output
+Simulations/Analysis/iris_augment/*/

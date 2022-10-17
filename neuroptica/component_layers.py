@@ -120,14 +120,17 @@ def mzi_uncertainties_reck_twoway_calibrate(p_layerCount, p_N, p_waveguide_indic
 
 def mzi_uncertainties_clement_twoway_calibrate(p_layerCount, p_N, p_ref_value_theta, p_ref_value_phi, p_i):
     '''
-    WARNING: not tested with onn sizes other than 8x8
-    when onn size isn't 8x8, print out mzi uncertainties to see if they are scaled correctly
+    WARNING: not tested with onn sizes other than 8x8 and 10x10
+    when onn size isn't 8x8 or 10x10, print out mzi uncertainties to see if they are scaled correctly
     '''
     wide_layer_mzi_count = p_N // 2 # = 4 for N = 8 
     narrow_layer_mzi_count = p_N // 2 - 1 # = 3 for N = 8
     wide_layer = False
+    odd_no_of_layer_pairs = True
     if p_layerCount % 2 == 0:
         wide_layer = True
+    if(p_N // 2) % 2 == 0:
+        odd_no_of_layer_pairs = False
 
     if p_layerCount < 2: # first two MZILayer
         scale = ((p_layerCount+1) // 2 / 10 + 0.1) * 2
@@ -141,12 +144,25 @@ def mzi_uncertainties_clement_twoway_calibrate(p_layerCount, p_N, p_ref_value_th
             # scale = maxScale in this layer - (p_i - wide_layer_mzi_count/4) * 0.1
             scale = ((p_layerCount) / 10) * 2 + (wide_layer_mzi_count/2 - 1) * 0.2 - (p_i - wide_layer_mzi_count) * 0.1
             if not wide_layer: scale -= 0.2
+            if odd_no_of_layer_pairs and p_layerCount == 2 and p_i == 4: scale *= 0.75 # temp. solution for 10x10...
     else: # second half of the network
-        if p_layerCount == p_N - 1: # the last MZILayer
+        if odd_no_of_layer_pairs and p_layerCount == p_N // 2: # first layer in second half is narrow layer, e.g. 6x6, 10x10
+            p_layerCount -= 2 # it has the same uncert. value assignment as two layers before
+            if p_i <= wide_layer_mzi_count/2: # top half of MZIs, increasing scaling
+                scale = ((p_layerCount) / 10) * 2 + p_i * 0.1
+            else: # bottom half of MZIs, decreasing scaling
+                # scale = maxScale in this layer - (p_i - wide_layer_mzi_count/4) * 0.1
+                scale = ((p_layerCount) / 10) * 2 + (wide_layer_mzi_count/2 - 1) * 0.2 - (p_i - wide_layer_mzi_count) * 0.1
+                scale -= 0.2
+        elif p_layerCount == p_N - 1: # the last MZILayer
             scale = 0.2
         else:
             # decrement first row scaling every two layer deeper, starting from the center layer
-            first_row_scale = p_N / 10 / 4 * 2 - (p_layerCount - p_N/2)//2 * 0.2
+            if odd_no_of_layer_pairs:
+                first_row_scale = p_N / 10 / 4 * 2 - (p_layerCount - p_N/2)//2 * 0.2
+            else:
+                first_row_scale = p_N / 10 / 4 * 2 - (p_layerCount - p_N/2)//2 * 0.2
+            first_row_scale = (1 + p_N - p_layerCount) // 2 * 0.2
             if p_i <= wide_layer_mzi_count/2: # top half of MZIs, increasing scaling
                 scale = first_row_scale + p_i * 0.1
             else: # bottome half of MZIs, decreasing scaling
@@ -154,6 +170,7 @@ def mzi_uncertainties_clement_twoway_calibrate(p_layerCount, p_N, p_ref_value_th
                 #       = [first_row_scale + (no. of increments in top half) * 0.2] - (p_i - wide_layer_mzi_count) * 0.1
                 scale = first_row_scale + (p_N/4 - 1) * 0.2 - (p_i - wide_layer_mzi_count) * 0.1
                 if not wide_layer: scale -= 0.2
+                if odd_no_of_layer_pairs and p_layerCount == 8 and p_i == 4: scale *= 2/3 # temp. solution for 10x10...
     theta_uncert = p_ref_value_theta * scale
     phi_uncert = p_ref_value_phi * scale
     return (theta_uncert, phi_uncert) # unit: rad
@@ -181,6 +198,60 @@ def mzi_uncertainties_diamond_twoway_calibrate(p_layerCount, p_N, p_waveguide_in
             scale = maxScale - 0.2*(p_i//2 - MZIcount//2)
     theta_uncert = p_ref_value_theta * scale # MZIs at lower indices have high uncertainty
     phi_uncert = p_ref_value_phi * scale
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_reck(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    ===uncertainty assignment based on direct accessiblity===
+    ===2022.09.13===
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    :param p_layerCount: layer index, indicating which MZIlayer is being created
+    :param p_N: ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    Author: Bokun Zhao
+    '''
+    scaling = 1.1
+    # if creating the last MZI in this MZILayer, reduce the uncertainty:
+    if p_waveguide_indices[p_i] == p_waveguide_indices[-2]:
+        scaling = 1.0
+    theta_uncert = p_ref_value_theta * scaling
+    phi_uncert = p_ref_value_phi * scaling
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_clement(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    ===uncertainty assignment based on direct accessiblity===
+    ===2022.09.13===
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    :param p_layerCount: layer index, indicating which MZIlayer is being created
+    :param p_N: ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    Author: Bokun Zhao
+    '''
+    scaling = 1.1
+    
+    """
+    TODO: for the first half of the network (including the center MZIlayer)
+          first 2 MZILayers has first and last MZI as accessible MZIs
+          second 2 MZILayers has second and second to last MZI as accessible MZIs
+          ...
+          can keep track of the index of the most center MZI, and reverse the process for the second half of the network
+    """
+    if p_layerCount != p_N - 1: # while not final MZILayer
+        virtual_center_index = (p_N - 1)/2 # = 4.5 when network size is 10
+        n = p_layerCount//2 # nth MZI is the one of the MZI in this MZIlayer that is directly accessible, n=0 for first two MZILayer, then n=1...
+        dist = abs(p_waveguide_indices[p_i]+0.5 - virtual_center_index)
+        if (p_i//2 == n) or (abs(p_waveguide_indices[n*2]+0.5 - virtual_center_index) == dist): # if is nth MZI or the nth to last MZI 
+            scaling = 1.0
+
+    theta_uncert = p_ref_value_theta * scaling
+    phi_uncert = p_ref_value_phi * scaling
     return (theta_uncert, phi_uncert) # unit: rad
 
 class ComponentLayer:
@@ -562,19 +633,23 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
-            '''
-            choose the from below options for assignment pahse uncertainties to MZIs
-            1. All MZIs have the same uncertainties
-            2. Certain MZIs' phases are more accurately calibrated due to being more accessible. (reck, clement & diamond)
-            '''
-            # mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+            
+            '''choose from below the options for assigning phase uncertainties to MZIs'''
+            
+            '''1. All MZIs have the same uncertainties'''
+            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+
+            '''2. Certain MZIs' phases are more accurately calibrated due to being more accessible. (reck, clement & diamond)'''
+            '''uncomment one of the (uncert= ...) and then uncommment (mzis.append()) '''
             # uncert = mzi_uncertainties_revised_reck(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
             # uncert = mzi_uncertainties_revised_clement(p_layerCount=p_layerCount, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi)
             # uncert = mzi_uncertainties_revised_diamond(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
             # uncert = mzi_uncertainties_reck_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
             # uncert = mzi_uncertainties_clement_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
-            uncert = mzi_uncertainties_diamond_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
-            mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert_theta=uncert[0], phase_uncert_phi=uncert[1], loss_dB=loss_dB, loss_diff=loss_diff))
+            # uncert = mzi_uncertainties_diamond_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_reck(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_clement(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert_theta=uncert[0], phase_uncert_phi=uncert[1], loss_dB=loss_dB, loss_diff=loss_diff))
         return cls(N, mzis)
 
     @staticmethod

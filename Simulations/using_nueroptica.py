@@ -91,8 +91,6 @@ def mzi_uncertainties(p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p
     # return (sigma_theta, sigma_phi) # unit: rad
     return (theta_uncert/max_scale, phi_uncert/max_scale) # unit: rad
 
-
-###########
 def mzi_uncertainties_revised_reck(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
     '''
     ===revised so that the uncertainties are now based on how direct we can access a MZI's input===
@@ -229,10 +227,18 @@ def see_component_layer():
         # layers.append(MZILayer.from_waveguide_indices(S, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
 
 if __name__ == '__main__':
-    # see_component_layer()
-    # for L in range(8):
-    #     print((L+1)//2/10 + 0.1)
-    # for apple in [0.25]:
-    #     print(apple)
-    scale = 8 / 10 / 4 * 2
-    print(scale)
+    # B = np.zeros_like(X, dtype=NP_COMPLEX)
+    zeros_numpy = np.zeros((5, 5))
+    one_numpy = np.ones((5, 5))
+    empty_numpy = np.empty((5, 5))
+    sequence_numpy = np.arange(0, 5, 0.5, dtype=int)
+    random_numpy = np.random.randint(0, 10, (5, 5))
+
+    print(f"zeros_numpy: {zeros_numpy}")
+    print(f"one_numpy: {one_numpy}")
+    print(f"empty_numpy: {empty_numpy}")
+    print(f"sequence_numpy: {sequence_numpy}")
+    print(f"random_numpy: {random_numpy}")
+
+    dot_product = np.dot(sequence_numpy, random_numpy)
+    

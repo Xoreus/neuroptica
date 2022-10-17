@@ -8,6 +8,7 @@ Edit: 2020.03.04
 import numpy as np
 from tqdm import tqdm
 import time
+# from main import truncate_diamond_sigma_adjust
 
 def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
     ONN.PT_Area = (ONN.phase_uncert_phi[1] - ONN.phase_uncert_phi[0])**2
@@ -15,7 +16,7 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
 
     if show_progress: pbar = tqdm(total=len(ONN.phase_uncert_phi)*len(ONN.phase_uncert_theta))
     accuracy = []
-    for loss_dB in [0.25]:# ONN.loss_dB[:1]:
+    for loss_dB in ONN.loss_dB[:1]:
         # print(loss_dB)
         acc_theta = []
         for phase_uncert_theta in ONN.phase_uncert_theta:
@@ -25,6 +26,7 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
                 acc = []
                 for _ in range(ONN.ITERATIONS):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
+                    # sigma_adjust(model) # should adjustments needed
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
                     gt = np.array([np.argmax(tru) for tru in yt])
@@ -52,6 +54,7 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
                 acc = []
                 for _ in range(ONN.ITERATIONS):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
+                    # sigma_adjust(model) # should adjustments needed
                     Y_hat = model.forward_pass(Xt.T)
                     pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
                     gt = np.array([np.argmax(tru) for tru in yt])
