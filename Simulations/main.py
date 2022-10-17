@@ -68,11 +68,11 @@ def init_onn_settings():
 
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng = 1 # starting RNG value
-    onn.max_number_of_tests = 4 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_number_of_tests = 1 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 10  # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.features = 8  # How many features? max for MNIST = 784 
+    onn.classes = 8 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.75 # Min diff between max (correct) sample and second sample
@@ -84,7 +84,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
     onn.range_linear = 1
 
-    onn.topo = '10x10_MNIST_2xDiamond_0.00dB_Loss' # Name of the model
+    onn.topo = '8x8_Gauss_Reck_0.00dB_Loss' # Name of the model
 
     return onn
 
@@ -297,7 +297,7 @@ def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
 
-    data = 'MNIST' # Choose one: Gauss, MNIST, FFT_MNIST, Iris_augment, Iris
+    data = 'Gauss' # Choose one: Gauss, MNIST, FFT_MNIST, Iris_augment, Iris
     onn = dataset(onn, dataset=data)
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
@@ -331,7 +331,7 @@ def main():
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0.0)
                 
-                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
 
                 if test_number>0:
                     print("\nPhase of current best model")
