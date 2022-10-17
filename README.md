@@ -54,6 +54,21 @@ Here is a list of the more useful code within the Simulation folder:
 
 [change_acc_lims.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/change_acc_lims.py) -- changes the colormap limits and recreates them, which is useful when trying out new mesh sizes.
 
+## Support for Calibration-Dependent Phase Error and Truncated Diamond
+Implemented by Bokun Zhao (bokun.zhao@mail.mcgill.ca), Summer 2022 SURE.
+### Calibration-Dependent Phase Error
+For Reck, Clement, Diamond, assigning different phase uncertainties for each MZI is now supported, this is to simulate varying calibration accuracy for each MZI due to their different degrees of accessiblity.
+
+(TODO: detail Instruction on usage)
+### Truncated Diamond
+To <span style="color:#1ff839">use middle ports</span> instead of bottom ports (Diamond):
+1. [Main.py](https://github.com/Xoreus/neuroptica/blob/main/Simulations/main.py): In method `create_model()`, Change model construction.
+2. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): class "`AddMaskDiamond`, select appropriate lines to use inside methods `forward_pass()` and `backward_pass()`
+
+To go from Diamond to Bokun:
+1. <span style="color:#1ff839">Use middle ports</span> of the Diamond.
+2. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): Uncomment the two lines that contains `[4:14]`
+3. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): Change the two  `layerCount = 0` lines to `layerCount = 4` in class `DiamondLayer`
 ## Authors
 `Neuroptica: Towards a Practical Implementation of Photonic Neural Networks` was written by [Simon Geoffroy-Gagnon](https://s-g-gagnon.research.mcgill.ca/), with help from Farhad Shorkaneh.
 

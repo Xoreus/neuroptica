@@ -64,9 +64,9 @@ def load_mnist_labels(filename):
 
 def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this is for unnormalized MNIST: [1,3,6,7]):
     " Download MNIST dataset "
-    X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1)
+    X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1) # shape: (60000 rows, 784 column), i.e. 60000 28*28 pictures of chars
     #print(X_train[0])
-    y_train = load_mnist_labels('train-labels-idx1-ubyte.gz')
+    y_train = load_mnist_labels('train-labels-idx1-ubyte.gz') # y_train's shape: (60000,)
     #print(y_train[0])
     X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
     #print(X_test[8])
@@ -76,23 +76,25 @@ def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this
     if classes != 4:
         digits = random.sample(range(10), classes)
 
-    print(f"Classes: {digits}")
+    print(f"Classes: {digits}") # [9, 4, 5, 6, 7, 8, 0, 1, 3, 2]
 
     # Array of Trues that come about when y_train is a digit
-    train_mask = np.isin(y_train, digits)
+    train_mask = np.isin(y_train, digits) # (60000,) of 1s or 0s
     test_mask = np.isin(y_test, digits)
 
     # Removes values that are not apart of the digits that are being tested
     X_train_4_digits, y_train_4_digits = X_train[train_mask], y_train[train_mask]
+    # X_train_4_digits's shape:(60000, 784), all 60000 samples are digits
+    # y_train_4_digits's shape (60000,)
 
     # Create dimensionality reducer (PCA with 4 dimensions) and fit it to dataset
-    pca = PCA(n_components=features)
+    pca = PCA(n_components=features) # a number was represented by 784 values originally, now only {features} values
     pca.fit(X_train_4_digits)
 
     # transform the training and testing datasets
-    X = pca.transform(X_train_4_digits)
-    y = pd.get_dummies(y_train_4_digits, len(digits)).values
-    X, Xt, y, yt = train_test_split(X, y, test_size=0.2)
+    X = pca.transform(X_train_4_digits) # shape of X: (60000, {features})
+    y = pd.get_dummies(y_train_4_digits, len(digits)).values # dimension of y is: (60000, 10), these are 60000 labels
+    X, Xt, y, yt = train_test_split(X, y, test_size=0.2) # each label one hot encoded vector of length 10, indicating the correct digit this is.
 
     rand_ind = random.sample(list(range(len(X))), int(nsamples*classes))
     X = X[rand_ind]

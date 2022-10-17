@@ -60,6 +60,10 @@ def get_dataset(onn, rng, linear_sep_acc_limit=97, SAMPLES=80, EPOCHS=30, extra_
             onn.Xt = Xt
             onn.yt = yt
             print('This dataset is linearly separable!\n')
+            print(f"X: {np.shape(X)}")
+            print(f"Y: {np.shape(y)}")
+            print(f"Xt: {np.shape(Xt)}")
+            print(f"Yt: {np.shape(yt)}")
             return onn, rng
 
 def create_model(onn):

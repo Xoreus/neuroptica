@@ -5,12 +5,254 @@ acts on an input in parallel. ComponentLayers can be assembled into an OpticalMe
 from functools import reduce
 from typing import Callable, Dict, Iterable, List, Type
 import random
+from xmlrpc.client import boolean
 import numpy as np
 from numba import jit, prange
 
 from neuroptica.components import MZI, OpticalComponent, PhaseShifter, _get_mzi_partial_transfer_matrices
 from neuroptica.settings import NP_COMPLEX
 
+def mzi_uncertainties(p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    Method to apply different uncertainties based on how isolated a MZI is, for diamond/reck mesh.
+    e.g. for diamond mesh, the assumption is made such that MZIs at top or bottom can be well calibrated, thus having low phase uncertainties,
+    uncertainties increases as we go towards the middle.
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    '''
+    network_dim = p_waveguide_indices[int(len(p_waveguide_indices)/2)] + 1 # ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8.
+    mid = network_dim - 1.5 # "theoretical" average of wavegude_indices array
+    # e.g. for  [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], mid = 6.5
+
+    assert mid == 6.5, f"mid is {mid}, expected 6.5" # debug purpose, when running 8x8 diamond
+    assert network_dim == 8, f"network_dim is {network_dim}, expected 8" # debug purpose
+
+    # a metric to indicate how much this mzi is away from center row
+    # e.g. for 8x8 diamond, center row is 6.5, which has highest uncertainty
+    # e.g. for 8x8 diamond, top row is 12.5, which has lowest uncertainty
+    # e.g. for 8x8 diamond, bottom row is 0.5, which has lowest uncertainty
+    dist_to_center = abs(p_waveguide_indices[p_i] + 0.5 - mid) # range 0 - 6 for 8x8 diamond
+    theta_uncert = mid - dist_to_center #takes values of (0.5, 1.5, 2.5, ..., 6.5) for 8x8 diamond, the larger the dist, the smaller the uncert
+
+    theta_uncert  = (theta_uncert - 0.5) / 2 + 0.5 # takes scaling values of (0.5, 1, 1.5, 2, 2.5, 3, 3.5) for 8x8 diamond
+    phi_uncert  = theta_uncert + 0.00 # takes scaling values of (0.5 + 0.00, 1 + 0.00,..., 3.5 + 0.00) for 8x8 diamond
+    # based on heuristic, the phi shifter is believed to have more error than the theta shifter within a MZI
+    # so a positive offset can be added to the scaling for phi_uncert if wished to do so, but for 2D PT_Plot, this is unnecessary.
+
+    # apply the above scaling to p_ref_value
+    max_scale = (mid - 0.5) / 2 + 0.5 + 0.25 # = 3.75 for 8x8 diamond
+    assert max_scale == 3.75, f"max_scale is {max_scale}, expected 3.75" # debug purpose
+    sigma_theta = theta_uncert/max_scale * p_ref_value_theta
+    sigma_phi = phi_uncert/max_scale * p_ref_value_phi
+
+    return (sigma_theta, sigma_phi) # unit: rad
+
+def mzi_uncertainties_revised_reck(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    ===revised so that the uncertainties are now based on how direct we can access a MZI's input===
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    :param p_layerCount: layer index, indicating which MZIlayer is being created
+    :param p_N: ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    '''
+    MZIcount = len(p_waveguide_indices)//2 # no. of MZIs in this MZILayer
+    scale = 0.2 # ref_value x scale = actual uncertainty in radian
+    maxScale = (0.1 + 0.1*(p_layerCount//2)) * 2 # maximum scaling in this layer
+    theta_uncert = p_ref_value_theta * (maxScale - (p_i//2) * scale) # MZIs at lower indices have high uncertainty
+    phi_uncert = p_ref_value_phi * (maxScale - (p_i//2) * scale)
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_revised_clement(p_layerCount, p_ref_value_theta, p_ref_value_phi):
+    scale = ((p_layerCount+1) // 2 / 10 + 0.1) * 2
+    theta_uncert = p_ref_value_theta * scale
+    phi_uncert = p_ref_value_phi * scale
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_revised_diamond(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    MZIcount = len(p_waveguide_indices)//2 # no. of MZIs in this MZILayer
+    centerLayer = (p_N + 2)/2 - 2 # = 6
+    steps = (MZIcount - 1) // 2 # no. of increments/decrement of uncertainty scale
+    maxScale = (0.1 + 0.1*(p_layerCount//2)) * 2 # maximum scaling in this layer
+    scale = float()
+    if p_layerCount <= 6: # first half + middle MZILayers, starts at 0.1 rad uncertainties (top MZI within each MZILayer)
+        scale = 0.2
+    else:
+        scale = 0.2 + 0.2 * (p_layerCount - centerLayer) # second half of the MZILayers
+    
+    if p_i//2 < MZIcount/2.0: # top half of MZIs (+ the middle one), increasing with p_i
+        scale += p_i / 10.0
+    else: # bottom half, decreasing from maxScale, with p_i
+        if MZIcount % 2 == 0: # even layers
+            scale = maxScale - 0.2*(p_i//2 - MZIcount//2)
+        else: # odd layers
+            scale = maxScale - 0.2*(p_i//2 - MZIcount//2)
+    theta_uncert = p_ref_value_theta * scale # MZIs at lower indices have high uncertainty
+    theta_uncert = p_ref_value_theta * scale
+    phi_uncert = p_ref_value_phi * scale
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_reck_twoway_calibrate(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    ===assuming the onn can be calibrate from output ports as well===
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    :param p_layerCount: layer index, indicating which MZIlayer is being created
+    :param p_N: ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    '''
+    if p_layerCount > p_N - 2: # second half of the network
+        p_layerCount = 2 * (p_N - 2) - p_layerCount # reduce assigned uncertainties (can calibrate from output ports)
+    # print(f"twoway_reck, p_layerCount: {p_layerCount}")
+    MZIcount = len(p_waveguide_indices)//2 # no. of MZIs in this MZILayer
+    scale = 0.2 # ref_value x scale = actual uncertainty in radian
+    maxScale = (0.1 + 0.1*(p_layerCount//2)) * 2 # maximum scaling in this layer
+    theta_uncert = p_ref_value_theta * (maxScale - (p_i//2) * scale) # MZIs at lower indices have high uncertainty
+    phi_uncert = p_ref_value_phi * (maxScale - (p_i//2) * scale)
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_clement_twoway_calibrate(p_layerCount, p_N, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    WARNING: not tested with onn sizes other than 8x8 and 10x10
+    when onn size isn't 8x8 or 10x10, print out mzi uncertainties to see if they are scaled correctly
+    '''
+    wide_layer_mzi_count = p_N // 2 # = 4 for N = 8 
+    narrow_layer_mzi_count = p_N // 2 - 1 # = 3 for N = 8
+    wide_layer = False
+    odd_no_of_layer_pairs = True
+    if p_layerCount % 2 == 0:
+        wide_layer = True
+    if(p_N // 2) % 2 == 0:
+        odd_no_of_layer_pairs = False
+
+    if p_layerCount < 2: # first two MZILayer
+        scale = ((p_layerCount+1) // 2 / 10 + 0.1) * 2
+    elif p_layerCount < p_N // 2: # first half of the network (but not first two MZILayers)
+        if p_layerCount > 2 and wide_layer:
+            # beyond second MZILayer, increase top row MZI scaling every two MZILayers, until center layer.
+            p_layerCount -= 1
+        if p_i <= wide_layer_mzi_count/2: # top half of MZIs, increasing scaling
+            scale = ((p_layerCount) / 10) * 2 + p_i * 0.1
+        else: # bottom half of MZIs, decreasing scaling
+            # scale = maxScale in this layer - (p_i - wide_layer_mzi_count/4) * 0.1
+            scale = ((p_layerCount) / 10) * 2 + (wide_layer_mzi_count/2 - 1) * 0.2 - (p_i - wide_layer_mzi_count) * 0.1
+            if not wide_layer: scale -= 0.2
+            if odd_no_of_layer_pairs and p_layerCount == 2 and p_i == 4: scale *= 0.75 # temp. solution for 10x10...
+    else: # second half of the network
+        if odd_no_of_layer_pairs and p_layerCount == p_N // 2: # first layer in second half is narrow layer, e.g. 6x6, 10x10
+            p_layerCount -= 2 # it has the same uncert. value assignment as two layers before
+            if p_i <= wide_layer_mzi_count/2: # top half of MZIs, increasing scaling
+                scale = ((p_layerCount) / 10) * 2 + p_i * 0.1
+            else: # bottom half of MZIs, decreasing scaling
+                # scale = maxScale in this layer - (p_i - wide_layer_mzi_count/4) * 0.1
+                scale = ((p_layerCount) / 10) * 2 + (wide_layer_mzi_count/2 - 1) * 0.2 - (p_i - wide_layer_mzi_count) * 0.1
+                scale -= 0.2
+        elif p_layerCount == p_N - 1: # the last MZILayer
+            scale = 0.2
+        else:
+            # decrement first row scaling every two layer deeper, starting from the center layer
+            if odd_no_of_layer_pairs:
+                first_row_scale = p_N / 10 / 4 * 2 - (p_layerCount - p_N/2)//2 * 0.2
+            else:
+                first_row_scale = p_N / 10 / 4 * 2 - (p_layerCount - p_N/2)//2 * 0.2
+            first_row_scale = (1 + p_N - p_layerCount) // 2 * 0.2
+            if p_i <= wide_layer_mzi_count/2: # top half of MZIs, increasing scaling
+                scale = first_row_scale + p_i * 0.1
+            else: # bottome half of MZIs, decreasing scaling
+                # scale = [maxScale in this layer] - (p_i - wide_layer_mzi_count) * 0.1
+                #       = [first_row_scale + (no. of increments in top half) * 0.2] - (p_i - wide_layer_mzi_count) * 0.1
+                scale = first_row_scale + (p_N/4 - 1) * 0.2 - (p_i - wide_layer_mzi_count) * 0.1
+                if not wide_layer: scale -= 0.2
+                if odd_no_of_layer_pairs and p_layerCount == 8 and p_i == 4: scale *= 2/3 # temp. solution for 10x10...
+    theta_uncert = p_ref_value_theta * scale
+    phi_uncert = p_ref_value_phi * scale
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_diamond_twoway_calibrate(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    centerLayer = (p_N + 2)/2 - 2 # = 6
+    if p_layerCount > centerLayer: # second half of the network
+        p_layerCount = 2 * (centerLayer) - p_layerCount # reduce assigned uncertainties (can calibrate from output ports)
+    # print(f"twoway_diamond, p_layerCount: {p_layerCount}")
+    MZIcount = len(p_waveguide_indices)//2 # no. of MZIs in this MZILayer
+    steps = (MZIcount - 1) // 2 # no. of increments/decrement of uncertainty scale
+    maxScale = (0.1 + 0.1*(p_layerCount//2)) * 2 # maximum scaling in this layer
+    scale = float()
+    if p_layerCount <= 6: # first half + middle MZILayers, starts at 0.1 rad uncertainties (top MZI within each MZILayer)
+        scale = 0.2
+    else:
+        scale = 0.2 # second half of the MZILayers
+    
+    if p_i//2 < MZIcount/2.0: # top half of MZIs (+ the middle one), increasing with p_i
+        scale += p_i / 10.0
+    else: # bottom half, decreasing from maxScale, with p_i
+        if MZIcount % 2 == 0: # even layers
+            scale = maxScale - 0.2*(p_i//2 - MZIcount//2)
+        else: # odd layers
+            scale = maxScale - 0.2*(p_i//2 - MZIcount//2)
+    theta_uncert = p_ref_value_theta * scale # MZIs at lower indices have high uncertainty
+    phi_uncert = p_ref_value_phi * scale
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_reck(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    ===uncertainty assignment based on direct accessiblity===
+    ===2022.09.13===
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    :param p_layerCount: layer index, indicating which MZIlayer is being created
+    :param p_N: ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    Author: Bokun Zhao
+    '''
+    scaling = 1.1
+    # if creating the last MZI in this MZILayer, reduce the uncertainty:
+    if p_waveguide_indices[p_i] == p_waveguide_indices[-2]:
+        scaling = 1.0
+    theta_uncert = p_ref_value_theta * scaling
+    phi_uncert = p_ref_value_phi * scaling
+    return (theta_uncert, phi_uncert) # unit: rad
+
+def mzi_uncertainties_clement(p_layerCount, p_N, p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
+    '''
+    ===uncertainty assignment based on direct accessiblity===
+    ===2022.09.13===
+    Called in component_layers.py, MZILayer() class, in method from_waveguide_indices()
+    :param p_layerCount: layer index, indicating which MZIlayer is being created
+    :param p_N: ONN size / no. of input ports in use / transformation matrix dimesion, e.g. 8
+    :param p_waveguide_indices: list of port indices in this layer, len(waveguide_indices)/2 gives no. of MZIs in this layer.
+    :param p_ref_value_theta/phi (unit: rad): reference sigma value, uncertainties can be scaled using this value as a basis, e.g. 0.5*ref_value
+    :param p_i: = 0, 2, 4, ..., caller function's for loop index, indicate which MZI within a MZILayer we're creating.
+    :return: tuple (sigma_theta, sigma_phi) representing the phase uncertainties (unit: rad) for a single MZI
+    Author: Bokun Zhao
+    '''
+    scaling = 1.1
+    
+    """
+    TODO: for the first half of the network (including the center MZIlayer)
+          first 2 MZILayers has first and last MZI as accessible MZIs
+          second 2 MZILayers has second and second to last MZI as accessible MZIs
+          ...
+          can keep track of the index of the most center MZI, and reverse the process for the second half of the network
+    """
+    if p_layerCount != p_N - 1: # while not final MZILayer
+        virtual_center_index = (p_N - 1)/2 # = 4.5 when network size is 10
+        n = p_layerCount//2 # nth MZI is the one of the MZI in this MZIlayer that is directly accessible, n=0 for first two MZILayer, then n=1...
+        dist = abs(p_waveguide_indices[p_i]+0.5 - virtual_center_index)
+        if (p_i//2 == n) or (abs(p_waveguide_indices[n*2]+0.5 - virtual_center_index) == dist): # if is nth MZI or the nth to last MZI 
+            scaling = 1.0
+
+    theta_uncert = p_ref_value_theta * scaling
+    phi_uncert = p_ref_value_phi * scaling
+    return (theta_uncert, phi_uncert) # unit: rad
 
 class ComponentLayer:
     '''Base class for a single physical column of optical components which acts on inputs in parallel.'''
@@ -373,7 +615,7 @@ class MZILayer(ComponentLayer):
             yield np.log10(mzi.loss)*10
 
     @classmethod
-    def from_waveguide_indices(cls, N: int, waveguide_indices: List[int], thetas=None, phis=None, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0):
+    def from_waveguide_indices(cls, p_layerCount: int, N: int, waveguide_indices: List[int], thetas=None, phis=None, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0):
         '''
         Create an MZI layer from a list of an even number of input/output indices. Each pair of waveguides in the
         iteration order will be assigned to an MZI
@@ -391,8 +633,23 @@ class MZILayer(ComponentLayer):
             "Waveguide must have an even number <= N of indices which are all unique"
         mzis = []
         for i in range(0, len(waveguide_indices), 2):
+            
+            '''choose from below the options for assigning phase uncertainties to MZIs'''
+            
+            '''1. All MZIs have the same uncertainties'''
             mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
 
+            '''2. Certain MZIs' phases are more accurately calibrated due to being more accessible. (reck, clement & diamond)'''
+            '''uncomment one of the (uncert= ...) and then uncommment (mzis.append()) '''
+            # uncert = mzi_uncertainties_revised_reck(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_revised_clement(p_layerCount=p_layerCount, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi)
+            # uncert = mzi_uncertainties_revised_diamond(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_reck_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_clement_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_diamond_twoway_calibrate(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_reck(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # uncert = mzi_uncertainties_clement(p_layerCount=p_layerCount, p_N=N, p_waveguide_indices=waveguide_indices, p_ref_value_theta=phase_uncert_theta, p_ref_value_phi=phase_uncert_phi, p_i=i)
+            # mzis.append(MZI(waveguide_indices[i], waveguide_indices[i + 1], theta=thetas[len(mzis)], phi=phis[len(mzis)], phase_uncert_theta=uncert[0], phase_uncert_phi=uncert[1], loss_dB=loss_dB, loss_diff=loss_diff))
         return cls(N, mzis)
 
     @staticmethod
