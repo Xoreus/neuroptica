@@ -104,15 +104,15 @@ class AddMaskDiamond(NetworkLayer):
         B = B[:-2, :]
         C = np.empty((X.shape[0]+B.shape[0], X.shape[1]), dtype=NP_COMPLEX)
 
-        C[:X.shape[0]-2,:] = B # if using bottom ports (clear top ports)
-        C[X.shape[0]-2:,:] = X # if using bottom ports
+        # C[:X.shape[0]-2,:] = B # if using bottom ports (clear top ports)
+        # C[X.shape[0]-2:,:] = X # if using bottom ports
         
         # C[X.shape[0]:2*X.shape[0]-2,:] = B # if using top ports (clear bottom ports)
         # C[:X.shape[0],:] = X # if using top ports
 
-        # C[:X.shape[0]//2-1,:] = B[:B.shape[0]//2,:] # if using middle ports (clear remaining top ports)
-        # C[floor(X.shape[0]*1.5)-1:2*X.shape[0]-2,:] = B[B.shape[0]//2:,:] # if using middle ports (clear remaining bottom ports)
-        # C[X.shape[0]//2-1:floor(X.shape[0]*1.5)-1,:] = X # if using middle ports
+        C[:X.shape[0]//2-1,:] = B[:B.shape[0]//2,:] # if using middle ports (clear remaining top ports)
+        C[floor(X.shape[0]*1.5)-1:2*X.shape[0]-2,:] = B[B.shape[0]//2:,:] # if using middle ports (clear remaining bottom ports)
+        C[X.shape[0]//2-1:floor(X.shape[0]*1.5)-1,:] = X # if using middle ports
 
         return C
 
@@ -120,9 +120,9 @@ class AddMaskDiamond(NetworkLayer):
         n_features, n_samples = delta.shape
         delta_back = np.zeros((int(self.input_size), n_samples), dtype=NP_COMPLEX)
         
-        delta_back = delta[self.input_size-2:2*self.input_size-2] # if using bottom ports
+        # delta_back = delta[self.input_size-2:2*self.input_size-2] # if using bottom ports
         # delta_back = delta[:self.input_size] # if using top ports
-        # delta_back = delta[self.input_size//2-1:floor(self.input_size*1.5)-1] # if using middle ports
+        delta_back = delta[self.input_size//2-1:floor(self.input_size*1.5)-1] # if using middle ports
         
         return delta_back
 
@@ -320,8 +320,8 @@ class DiamondLayer(OpticalMeshNetworkLayer):
         self.mzi_limits_lower = list(range(self.S - self.N, -1, -1)) + list(range(1, self.N - 1))
         self.mzi_limits_upper = list(range(self.N - 1, self.S)) + list(range(self.S - 2, self.N - 2, -1))
 
-        # self.mzi_limits_lower = self.mzi_limits_lower[4:14] # for truncated diamond
-        # self.mzi_limits_upper = self.mzi_limits_upper[4:14] # for truncated diamond
+        self.mzi_limits_lower = self.mzi_limits_lower[4:14] # for truncated diamond
+        self.mzi_limits_upper = self.mzi_limits_upper[4:14] # for truncated diamond
         print(f"mzi_limits_lower: {self.mzi_limits_lower}")
         print(f"mzi_limits_upper: {self.mzi_limits_upper}")
 
@@ -338,7 +338,7 @@ class DiamondLayer(OpticalMeshNetworkLayer):
             phases_mzi_layer.append(phases_layer)
 
         # create every layer of MZIs within the Reck Mesh
-        layerCount = 0 # keep track of which layer we are creating
+        layerCount = 4 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
@@ -367,7 +367,7 @@ class DiamondLayer(OpticalMeshNetworkLayer):
                 idx += 1
             phases_mzi_layer.append(phases_layer)
         # create every layer of MZIs within the Reck Mesh
-        layerCount = 0 # keep track of which layer we are creating
+        layerCount = 4 # keep track of which layer we are creating
         for start, end, phases in zip(self.mzi_limits_lower, self.mzi_limits_upper, phases_mzi_layer):
             thetas = [phase[0] for phase in phases]
             phis = [phase[1] for phase in phases]
