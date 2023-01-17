@@ -15,7 +15,8 @@ Author: Bokun Zhao
 Edit: 2022.10.13 by Bokun Zhao (bokun.zhao@mail.mcgill.ca)
 '''
 
-no_accuracy = 1600
+no_accuracy = 800 # no. of datapoints on x axis
+no_accuracy_2 = 400 # no. of datapoints on y axis
 
 def count_squares(p_filepath: str, p_fom_percentage: float):
     '''
@@ -38,7 +39,7 @@ def count_squares(p_filepath: str, p_fom_percentage: float):
     if is_LPU:
         return f"max accuracy: {max_accuracy}%, LPU field of merit: {fom_count}/{no_accuracy} ({(fom_count/no_accuracy * 100):.2f}%)"
     else:
-        return f"max accuracy: {max_accuracy}%, PT field of merit: {fom_count}/{no_accuracy} ({(fom_count/no_accuracy * 100):.2f}%)"
+        return f"max accuracy: {max_accuracy}%, PT field of merit: {fom_count}/{no_accuracy_2} ({(fom_count/no_accuracy_2 * 100):.2f}%)"
     
 
 if __name__ == '__main__':

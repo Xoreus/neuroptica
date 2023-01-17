@@ -71,8 +71,8 @@ def init_onn_settings():
     onn.max_number_of_tests = 1 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
-    onn.features = 8  # How many features? max for MNIST = 784 
-    onn.classes = 8 # How many classes? max for MNIST = 10
+    onn.features = 10  # How many features? max for MNIST = 784 
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.75 # Min diff between max (correct) sample and second sample
@@ -84,7 +84,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
     onn.range_linear = 1
 
-    onn.topo = '8x8_Gauss_Reck_0.00dB_Loss' # Name of the model
+    onn.topo = 'Gaussian_Diamond' # Name of the model
 
     return onn
 
@@ -209,17 +209,17 @@ def create_model(features, classes):
 
 
     # If you want multi-layer BOTTOM Diamond Topology
-    # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(nlaf), # first layer ends here
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)), # needs a drop mask at the output
-    # ])
+    model = neu.Sequential([
+        # neu.AddMaskDiamond(features),
+        # neu.DiamondLayer(features),
+        # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        # neu.Activation(nlaf), # first layer ends here
+        neu.AddMaskDiamond(features),
+        neu.DiamondLayer(features),
+        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)), # needs a drop mask at the output
+    ])
 
     # If you want multi-layer TOP Diamond Topology
     # model = neu.Sequential([
@@ -249,21 +249,21 @@ def create_model(features, classes):
 
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
+        # neu.ClementsLayer(features),
+        # neu.Activation(nlaf),
     #     neu.ClementsLayer(features),
     #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     #     neu.DropMask(features, keep_ports=range(classes))
     # ])
 
     # If you want regular Reck (single-layer) topology
-    model = neu.Sequential([
-        # neu.ReckLayer(features),
-        # neu.Activation(nlaf), # photodetector measurement
-        neu.ReckLayer(features),
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-    ])
+    # model = neu.Sequential([
+    #     neu.ReckLayer(features),
+    #     neu.Activation(nlaf), # photodetector measurement
+    #     neu.ReckLayer(features),
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    # ])
     return model
 
 def save_onn(onn, model, lossDiff=0):
