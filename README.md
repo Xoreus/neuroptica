@@ -19,6 +19,20 @@ sys.path.append('path/to/neuroptica')
 
 `neuroptica` requires Python >=3.6.
 
+## Quick Start
+1. Locate [Main.py](https://github.com/Xoreus/neuroptica/blob/main/Simulations/main.py), in the main() method:
+
+    1.1 Configure simulation settings in [init_onn_setting()](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L60).
+    
+    1.2 Choose from the available dataset. (Gaussian, Mnist, Iris...etc.)
+    
+    1.3 Choose normalization method.
+    
+    1.4 Contruct model in [create_model()](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L196), if swithing between Diamond and Bokun mesh, see Truncated Diamond section below.
+    
+    1.5 [Choose](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L334) the loss function based on dataset and task.
+    
+    1.6 Run ```python main.py``` in console.
 
 ## Getting started
 
