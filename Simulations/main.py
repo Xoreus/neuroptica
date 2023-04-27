@@ -84,7 +84,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
     onn.range_linear = 1
 
-    onn.topo = 'Gaussian_Diamond' # Name of the model
+    onn.topo = 'Gaussian_Bokun' # Name of the model, "{Dataset}_{Topology}"
 
     return onn
 
@@ -209,17 +209,17 @@ def create_model(features, classes):
 
 
     # If you want multi-layer BOTTOM Diamond Topology
-    model = neu.Sequential([
+    # model = neu.Sequential([
         # neu.AddMaskDiamond(features),
         # neu.DiamondLayer(features),
         # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
         # neu.Activation(nlaf), # first layer ends here
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)), # needs a drop mask at the output
-    ])
+        # neu.AddMaskDiamond(features),
+        # neu.DiamondLayer(features),
+        # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
+        # neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        # neu.DropMask(features, keep_ports=range(classes)), # needs a drop mask at the output
+    # ])
 
     # If you want multi-layer TOP Diamond Topology
     # model = neu.Sequential([
@@ -234,18 +234,18 @@ def create_model(features, classes):
     #     neu.DropMask(features, keep_ports=range(classes)),
     # ])
 
-    # If you want multi-layer MIDDLE Diamond Topology
-    # model = neu.Sequential([
+    # If you want multi-layer Bokun Topology
+    model = neu.Sequential([
     #     neu.AddMaskDiamond(features),
     #     neu.DiamondLayer(features),
     #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
     #     neu.Activation(nlaf), # first layer ends here
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
+        neu.AddMaskDiamond(features),
+        neu.DiamondLayer(features),
+        neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)),
+    ])
 
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
