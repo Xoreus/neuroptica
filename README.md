@@ -28,7 +28,7 @@ sys.path.append('path/to/neuroptica')
     
     1.3 Choose normalization method.
     
-    1.4 Contruct model in [create_model()](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L196), if swithing between Diamond and Bokun mesh, see Truncated Diamond section below.
+    1.4 Contruct model in [create_model()](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L196), if swithing between Diamond and Bokun mesh, see Bokun mesh section below.
     
     1.5 [Choose](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L334) the loss function based on dataset and task.
     
@@ -68,18 +68,18 @@ Here is a list of the more useful code within the Simulation folder:
 
 [change_acc_lims.py](https://gitlab.com/simongg/neuroptica/-/blob/master/tests/change_acc_lims.py) -- changes the colormap limits and recreates them, which is useful when trying out new mesh sizes.
 
-## Support for Calibration-Dependent Phase Error and Truncated Diamond
-Implemented by Bokun Zhao (bokun.zhao@mail.mcgill.ca), Summer 2022 SURE.
+## Support for Calibration-Dependent Phase Error and Bokun Mesh
+Implemented by Bokun Zhao (bokun.zhao@mail.mcgill.ca), during Summer 2022 SURE.
 ### Calibration-Dependent Phase Error
 For Reck, Clement, Diamond, assigning different phase uncertainties for each MZI is now supported, this is to simulate varying calibration accuracy for each MZI due to their different degrees of accessiblity.
 
 (TODO: detail Instruction on usage)
-### Truncated Diamond
+### Bokun Mesh (https://arxiv.org/abs/2211.09626v1)
 To <span style="color:#1ff839">use middle ports</span> instead of bottom ports (Diamond):
 1. [Main.py](https://github.com/Xoreus/neuroptica/blob/main/Simulations/main.py): In method `create_model()`, Change model construction.
 2. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): class "`AddMaskDiamond`, select appropriate lines to use inside methods `forward_pass()` and `backward_pass()`
 
-To go from Diamond to Bokun:
+To go from Diamond mesh to Bokun mesh:
 1. <span style="color:#1ff839">Use middle ports</span> of the Diamond.
 2. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): Uncomment the two lines that contains `[4:14]`
 3. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): Change the two  `layerCount = 0` lines to `layerCount = 4` in class `DiamondLayer`
