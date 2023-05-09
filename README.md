@@ -74,7 +74,7 @@ Implemented by Bokun Zhao (bokun.zhao@mail.mcgill.ca), during Summer 2022 SURE.
 For Reck, Clement, Diamond, assigning different phase uncertainties for each MZI is now supported, this is to simulate varying calibration accuracy for each MZI due to their different degrees of accessiblity.
 
 (TODO: detail Instruction on usage)
-### Bokun Mesh (https://arxiv.org/abs/2211.09626v1)
+### Bokun Mesh (https://arxiv.org/abs/2303.04151)
 To <span style="color:#1ff839">use middle ports</span> instead of bottom ports (Diamond):
 1. [Main.py](https://github.com/Xoreus/neuroptica/blob/main/Simulations/main.py): In method `create_model()`, Change model construction.
 2. [Layers.py](https://github.com/Xoreus/neuroptica/blob/main/neuroptica/layers.py): class "`AddMaskDiamond`, select appropriate lines to use inside methods `forward_pass()` and `backward_pass()`
