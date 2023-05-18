@@ -4,6 +4,20 @@
 
 `Neuroptica: Towards a Practical Implementation of Photonic Neural Networks` was used to create and study Optical Neural Networks for [The diamond mesh, a phase-error- and loss-tolerant field-programmable MZI-based optical processor for optical neural networks](https://www.osapublishing.org/oe/abstract.cfm?uri=oe-28-16-23495) and many conference papers. The code itself was cloned from the original `Neuroptica` repository and subsequently modified in order to create the different meshes and figures seen in the papers. 
 
+## Example Netowork meshes:
+
+Reck:
+
+![8x8 Reck Mesh](img/Reck.png   "Reck Topology")
+
+Clements:
+
+![8x8 Clements Mesh](img/Clements.png   "Clements Topology")
+
+Diamonds:
+
+![8x8 Diamond Mesh](img/Diamond.png   "Diamond Topology")
+
 
 You can clone this modified Neuroptica repository:
 ```
@@ -28,7 +42,7 @@ sys.path.append('path/to/neuroptica')
     
     1.3 Choose normalization method.
     
-    1.4 Contruct model in [create_model()](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L196), if swithing between Diamond and Bokun mesh, see Bokun mesh section below.
+    1.4 Contruct model in [create_model()](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L196), if switching between Diamond and Bokun mesh, see Bokun mesh section below.
     
     1.5 [Choose](https://github.com/Xoreus/neuroptica/blob/f54c9b04ffd7911b489d2778e1443e56685636dd/Simulations/main.py#L334) the loss function based on dataset and task.
     
