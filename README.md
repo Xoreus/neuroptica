@@ -6,17 +6,17 @@
 
 ## Example Netowork meshes:
 
-Reck:
+10x10 Reck:
 
-![8x8 Reck Mesh](img/Reck.png   "Reck Topology")
+![10x10 Reck Mesh](img/Reck.png   "Reck Topology")
 
-Clements:
+10x10 Clements:
 
-![8x8 Clements Mesh](img/Clements.png   "Clements Topology")
+![10x10 Clements Mesh](img/Clements.png   "Clements Topology")
 
-Diamonds:
+10x10 Diamond:
 
-![8x8 Diamond Mesh](img/Diamond.png   "Diamond Topology")
+![10x10 Diamond Mesh](img/Diamond.png   "Diamond Topology")
 
 
 You can clone this modified Neuroptica repository:
