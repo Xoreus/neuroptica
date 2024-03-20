@@ -148,6 +148,7 @@ dmypy.json
 
 #macOS file system meta information
 *.DS_Store
+.DS_Store
 
 #simulation output
 Simulations/Analysis/iris_augment/*/
