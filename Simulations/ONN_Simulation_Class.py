@@ -212,6 +212,7 @@ class ONN_Simulation:
         self.plotAll(cmap=cmap)
         self.saveSelf() # Only useful if wanting a .mat file
     def plotBackprop(self, backprop_legend_location=0):
+        mpl.rcParams.update(mpl.rcParamsDefault)
         plt.clf()
         labels_size = 20
         legend_size = 14
@@ -252,12 +253,13 @@ class ONN_Simulation:
         # rc('font', weight='bold',**{'family':'serif','serif':['Times New Roman']})
         # rc('text', usetex=True)
         # the above settings has no effect... has to use preamble to change fonts
-        rc('text.latex', preamble=r'\usepackage{mathptmx}')
+        # rc('text.latex', preamble=r'\usepackage{mathptmx}')
 
         # Plot Loss + Phase uncert accuracies
         # plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
-        plt.figure(figsize=(6.95, 5.03)) # compress the graph (around) quarter in size, by cutting top half and compress horizontally
-        plt.pcolor(self.loss_dB, self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_LPU[:self.accuracy_LPU.shape[0]//2,:], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        plt.figure(figsize=(14, 10)) # compress the graph (around) quarter in size, by cutting top half and compress horizontally
+        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        # plt.pcolor(self.loss_dB, self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_LPU[:self.accuracy_LPU.shape[0]//2,:], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
 
         ax = plt.gca()
         ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
@@ -270,14 +272,14 @@ class ONN_Simulation:
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=tick_size)
         cbar.set_label('Accuracy (\%)', fontsize=labels_size)
-        # plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_{self.topo}_N={self.N}.pdf')
         plt.clf()
 
         # Plot Loss + Phase uncert accuracies along with contour of high accuracy region
-        # plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
-        plt.pcolor(self.loss_dB, self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_LPU[:self.accuracy_LPU.shape[0]//2,:], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        plt.pcolor(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        # plt.pcolor(self.loss_dB, self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_LPU[:self.accuracy_LPU.shape[0]//2,:], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
 
         ax = plt.gca()
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
@@ -287,18 +289,18 @@ class ONN_Simulation:
 
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=tick_size)
-        # cs = plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
-        cs = plt.contour(self.loss_dB, self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_LPU[:self.accuracy_LPU.shape[0]//2,:], [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
+        cs = plt.contour(self.loss_dB, self.phase_uncert_theta, self.accuracy_LPU, [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
+        # cs = plt.contour(self.loss_dB, self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_LPU[:self.accuracy_LPU.shape[0]//2,:], [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
         proxy = [plt.Rectangle((0,0),1,1,fc = contour_color2)]
-        # plt.legend(proxy, [f'Above {int(self.zeta*100)}\% Accuracy'], prop={'size': legend_size})
-        plt.annotate(f'FoM = 0.XXX dB·rad', xy=(0.099, 0.453), size=legend_size, bbox=dict(boxstyle='square,pad=0.1', alpha=0.75, facecolor='w'))
+        plt.legend(proxy, [f'Above {int(self.zeta*100)}\% Accuracy'], prop={'size': legend_size})
+        # plt.annotate(f'FoM = 0.XXX dB·rad', xy=(0.099, 0.453), size=legend_size, bbox=dict(boxstyle='square,pad=0.1', alpha=0.75, facecolor='w'))
                     #  (get FoM with script)    0.288 0.420 for fontsize of 50
         plt.text(-0.28, -0.12, f'h)', size=legend_size) # change numbering of plot
         plt.xlabel('Loss/MZI (dB)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\theta}, \sigma_\phi$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=labels_size)
-        plt.title(f'Bokun', fontsize=labels_size) # change title of plot (topology name)
-        # plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
+        # plt.title(f'Bokun', fontsize=labels_size) # change title of plot (topology name)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/LPU_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()
@@ -316,10 +318,10 @@ class ONN_Simulation:
         # print(df.to_string())
         df.to_csv(f'{self.FOLDER}/{self.topo}_LPU_results.csv')
 
-        plt.figure(figsize=(6.69, 4.90)) # cut the graph (around) quarter in size
+        plt.figure(figsize=(14, 10)) # cut the graph (around) quarter in size
         # Plot Phase uncert accuracies along with contour of high accuracy region
-        # plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
-        plt.pcolor(self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.phase_uncert_phi[:len(self.phase_uncert_phi)//2], self.accuracy_PT[:self.accuracy_PT.shape[0]//2,:self.accuracy_PT.shape[1]//2], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        # plt.pcolor(self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.phase_uncert_phi[:len(self.phase_uncert_phi)//2], self.accuracy_PT[:self.accuracy_PT.shape[0]//2,:self.accuracy_PT.shape[1]//2], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
 
         ax = plt.gca()
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
@@ -329,25 +331,25 @@ class ONN_Simulation:
 
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=tick_size)
-        # cs = plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
-        cs = plt.contour(self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_PT[:self.accuracy_PT.shape[0]//2,:self.accuracy_PT.shape[1]//2], [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
+        cs = plt.contour(self.phase_uncert_theta, self.phase_uncert_theta, self.accuracy_PT, [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
+        # cs = plt.contour(self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.accuracy_PT[:self.accuracy_PT.shape[0]//2,:self.accuracy_PT.shape[1]//2], [self.zeta*100], colors=[contour_color2], linewidths=contour_linewidth)
         proxy = [plt.Rectangle((0,0),1,1,fc = contour_color2)]
         # plt.legend(proxy, [f'Above {int(self.zeta*100)}\% Accuracy'], prop={'size': legend_size})
-        plt.annotate(f'FoM = 0.XXX rad\u00b2', xy=(0.087, 0.451), size=legend_size, bbox=dict(boxstyle='square,pad=0.1', alpha=0.75, facecolor='w'))
+        # plt.annotate(f'FoM = 0.XXX rad\u00b2', xy=(0.087, 0.451), size=legend_size, bbox=dict(boxstyle='square,pad=0.1', alpha=0.75, facecolor='w'))
                     #  (get FoM with script)
         plt.text(-0.14, -0.13, f'd)', size=legend_size) # change numbering
         plt.xlabel(r'$\sigma_\theta$ (Rad)', fontsize=labels_size)
         plt.ylabel(r'$\sigma_{\phi}$ (Rad)', fontsize=labels_size)
         cbar.set_label('Accuracy (\%)', fontsize=labels_size)
-        plt.title(f'Bokun', fontsize=labels_size) # change title of plot (topology name)
-        # plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
+        # plt.title(f'Bokun', fontsize=labels_size) # change title of plot (topology name)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/PT_ACC_Contour_{self.topo}_N={self.N}.pdf')
         plt.clf()
 
         # Colormap of Phi + Theta phase uncertainty
-        plt.pcolor(self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.phase_uncert_phi[:len(self.phase_uncert_phi)//2], self.accuracy_PT[:self.accuracy_PT.shape[0]//2,:self.accuracy_PT.shape[1]//2], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
-        # plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        # plt.pcolor(self.phase_uncert_theta[:len(self.phase_uncert_theta)//2], self.phase_uncert_phi[:len(self.phase_uncert_phi)//2], self.accuracy_PT[:self.accuracy_PT.shape[0]//2,:self.accuracy_PT.shape[1]//2], vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
+        plt.pcolor(self.phase_uncert_theta, self.phase_uncert_phi, self.accuracy_PT, vmin=100/(self.N+1)*0, vmax=100, cmap=cmap, rasterized=True)
 
         ax = plt.gca()
         ax.tick_params(axis='both', which='minor', labelsize=tick_size)
@@ -360,7 +362,7 @@ class ONN_Simulation:
         cbar = plt.colorbar()
         cbar.ax.tick_params(labelsize=tick_size)
         cbar.set_label('Accuracy (\%)', fontsize=labels_size)
-        # plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
+        plt.title(f'{self.N}$\\times${self.N} {self.topology}', fontsize=labels_size)
         plt.tight_layout()
         plt.savefig(f'{self.FOLDER}/Plots/PT_ACC_{self.topo}_N={self.N}.pdf')
         plt.clf()

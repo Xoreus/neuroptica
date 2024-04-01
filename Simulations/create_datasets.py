@@ -33,6 +33,7 @@ from pandas.plotting import scatter_matrix
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.datasets import make_blobs
+import pickle
 import plot_scatter_matrix 
 
 def download(filename, source='http://yann.lecun.com/exdb/mnist/'):
@@ -77,7 +78,6 @@ def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this
         digits = random.sample(range(10), classes)
 
     print(f"Classes: {digits}") # [9, 4, 5, 6, 7, 8, 0, 1, 3, 2]
-
     # Array of Trues that come about when y_train is a digit
     train_mask = np.isin(y_train, digits) # (60000,) of 1s or 0s
     test_mask = np.isin(y_test, digits)
@@ -355,6 +355,145 @@ def gaussian_dataset(targets=4, features=4, nsamples=10000, cluster_std=.1, rng=
     ohe_labels = pd.get_dummies(y).values
     X, Xt, y, yt = train_test_split(X, ohe_labels, test_size=0.2)
     return np.array(X), np.array(y), np.array(Xt), np.array(yt)
+
+def load_dataset_pickle(filepath, img_number = 1000):
+    data, labels = [], []
+    img_shape = (100, 100, 3)
+
+
+    with open(filepath[0], 'rb') as f:
+        for i in range(img_number):
+            a = np.array(pickle.load(f))
+
+            if a.shape != img_shape:
+                print(a.shape)
+
+            data.append(a)
+
+
+    with open(filepath[1], 'rb') as f:
+
+        for i in range(img_number):
+            b = np.expand_dims(pickle.load(f), 0)
+
+            labels.append(b)
+
+    return np.stack(data), np.stack(labels)
+
+def WIDER_FACE(classes=2, features=8, nsamples=100):
+    filepaths = ["../../validation.pkl", "../../validation_labels.pkl"]
+    validation_data, validation_labels = load_dataset_pickle(filepath = filepaths, img_number = 5000)
+    from copy import deepcopy
+
+    test_label = deepcopy(validation_labels)
+
+    removed_index = []
+
+    for i in range(len(test_label) - 4):
+
+        # sliding window of size 5
+        curr_range = test_label[i:i+4]
+
+        # continue if there is 1 valid image
+        if np.count_nonzero(curr_range == 1) > 1:
+            continue
+        elif np.count_nonzero(curr_range == 1) == 1 and curr_range[-1] == 1:
+            removed_index.append(i)
+            removed_index.append(i + 1)
+            continue
+        elif np.count_nonzero(curr_range == 1) == 1:
+            continue
+
+        # remove the first two of them
+        if i not in removed_index:
+            removed_index.append(i)
+            removed_index.append(i + 1)
+            removed_index.append(i + 2)
+    
+    validation_labels = np.delete(validation_labels, removed_index)
+    validation_data = np.delete(validation_data, removed_index, axis = 0)
+    filepaths = ["../../train.pkl", "../../train_labels.pkl"]
+    train_data, train_labels = load_dataset_pickle(filepath = filepaths, img_number = 10000)
+    filepaths = ["../../train_p2.pkl", "../../train_labels_p2.pkl"]
+    train_data2, train_labels2 = load_dataset_pickle(filepath = filepaths, img_number = 8000)
+    train_data = np.concatenate((train_data, train_data2), axis = 0)
+    train_labels = np.concatenate((train_labels, train_labels2), axis = 0)
+    filepaths = ["../../train_p3.pkl", "../../train_labels_p3.pkl"]
+    train_data2, train_labels2 = load_dataset_pickle(filepath = filepaths, img_number = 2000)
+    train_data = np.concatenate((train_data, train_data2), axis = 0)
+    train_labels = np.concatenate((train_labels, train_labels2), axis = 0)
+    
+    test_label = deepcopy(train_labels)
+    removed_index = []
+    for i in range(len(test_label) - 4):
+
+        # sliding window of size 5
+        curr_range = test_label[i:i+4]
+
+        # continue if there is 1 valid image
+        if np.count_nonzero(curr_range == 1) > 1:
+            continue
+        elif np.count_nonzero(curr_range == 1) == 1 and curr_range[-1] == 1:
+            removed_index.append(i)
+            removed_index.append(i + 1)
+            continue
+        elif np.count_nonzero(curr_range == 1) == 1:
+            continue
+
+        # remove the first two of them
+        if i not in removed_index:
+            removed_index.append(i)
+            removed_index.append(i + 1)
+            removed_index.append(i + 2)
+    train_labels = np.delete(train_labels, removed_index)[:10000]
+    train_data = np.delete(train_data, removed_index, axis = 0)[:10000]
+    filepaths = ["../../test.pkl", "../../test_labels.pkl"]
+    test_data, test_labels = load_dataset_pickle(filepath = filepaths, img_number = 10000)
+    
+    test_label = deepcopy(test_labels)
+    removed_index = []
+    for i in range(len(test_label) - 4):
+
+        # sliding window of size 5
+        curr_range = test_label[i:i+4]
+
+        # continue if there is 1 valid image
+        if np.count_nonzero(curr_range == 1) > 1:
+            continue
+        elif np.count_nonzero(curr_range == 1) == 1 and curr_range[-1] == 1:
+            removed_index.append(i)
+            removed_index.append(i + 1)
+            continue
+        elif np.count_nonzero(curr_range == 1) == 1:
+            continue
+
+        # remove the first two of them
+        if i not in removed_index:
+            removed_index.append(i)
+            removed_index.append(i + 1)
+            removed_index.append(i + 2)
+    test_labels = np.delete(test_labels, removed_index)
+    test_data = np.delete(test_data, removed_index, axis = 0)
+    
+    # PCA
+    train_data_flatten = train_data.reshape((train_data.shape[0], 100*100*3))
+    validation_data_flatten = validation_data.reshape((validation_data.shape[0], 100*100*3))
+    test_data_flatten = test_data.reshape((test_data.shape[0], 100*100*3))
+    pca_func = PCA(n_components = 8)
+    pca_func.fit(train_data_flatten)
+    new_train_data, new_validation_data, new_test_data = pca_func.transform(train_data_flatten), pca_func.transform(validation_data_flatten), pca_func.transform(test_data_flatten)
+
+    
+    # normalization (all use training max/min?)
+    x_train = (new_train_data - np.min(new_train_data))/(np.max(new_train_data) - np.min(new_train_data)) - 0.5
+    x_validation = (new_validation_data - np.min(new_validation_data))/(np.max(new_validation_data) - np.min(new_validation_data)) - 0.5
+    x_test = (new_test_data - np.min(new_test_data))/(np.max(new_test_data) - np.min(new_test_data)) - 0.5
+    y_train = np.eye(2)[train_labels.squeeze()]
+    y_val = np.eye(2)[validation_labels.squeeze()]
+    
+
+    return x_train, y_train, x_validation, y_val
+
 
 if __name__ == '__main__':
     FFT_MNIST()

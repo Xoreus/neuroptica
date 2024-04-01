@@ -7,6 +7,7 @@ Edit: 2020.09.04
 
 Edit: 2022.10.13 by Bokun Zhao (bokun.zhao@mail.mcgill.ca)
 '''
+#%%
 from math import floor
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler as mms
@@ -21,7 +22,7 @@ import sys
 sys.path.append('../')
 import neuroptica as neu
 
-def see_each_mzi(p_model, p_onn):
+def see_each_mzi(p_model):
     '''
     Helper Function to visualize each MZI's (sigma_theta, sigma_phi, loss)
 
@@ -33,11 +34,18 @@ def see_each_mzi(p_model, p_onn):
     print(f"There are {len(MZImesh)} MZImesh(es) in the model.")
     for i in range(len(MZImesh)):
         mzi_layers = MZImesh[i].mesh.layers # list of objects <MZILayer>
-        print(f"There are {len(mzi_layers)} MZILayers in this {p_onn.N}x{p_onn.N} '{p_onn.topo}' topology, onn layer: {i}")
-        for eachMZILayer in mzi_layers:
-            for eachMZI in eachMZILayer.mzis:
+        print(f"\t In MZImesh {i}, there are {len(mzi_layers)} MZILayers (columns)")
+        for col_idx, eachMZILayer in enumerate(mzi_layers):
+            for row_idx, eachMZI in enumerate(eachMZILayer.mzis):
                 # you can also print other information related to each MZI here, such as the theta/phi phases...
-                print(f"({eachMZI.phase_uncert_theta:.3f}, {eachMZI.phase_uncert_phi:.3f}, {eachMZI.loss_dB:.2f})", end="")
+                mzi_info = f" [{eachMZI.m}____{eachMZI.n}] "
+                stagger = " "*(len(mzi_info)//2) # to better visualize the zig-zag alignment between each MZI column
+                if row_idx==0: # at the start of each MZI column
+                    print(stagger*eachMZI.m,end="") # amount of visual offset to print
+                else:
+                    print(stagger*(eachMZI.m-previousMZI_n-1),end="")
+                print(mzi_info, end="")
+                previousMZI_n = eachMZI.n
             print("\n")
     print("------------------------------------------------------------------------------------------------")
 
@@ -50,7 +58,7 @@ def sigma_adjust(p_model):
         if isinstance(layer, neu.OpticalMeshNetworkLayer):
             # adjust sigma for individual mzis in a mesh
             # e.g. set the sigma_theta of the MZI at column 0, row 1 to be 0.5 rad
-            layer.mesh.layers[3].mzis[1].phase_uncert_theta = 0.5
+            layer.mesh.layers[0].mzis[1].phase_uncert_theta = 0.5
             # e.g. halve the sigma_theta of the MZI at column 3, row 0
             layer.mesh.layers[3].mzis[0].phase_uncert_theta /= 2
             # e.g. set the sigma_phi of the MZI at column 8, row 2 to be 2/3 of the old value
@@ -62,17 +70,17 @@ def init_onn_settings():
     onn = ONN_Cls.ONN_Simulation() # Required for containing training/simulation information
 
     onn.BATCH_SIZE = 4 # # of input samples per batch
-    onn.EPOCHS = 200 # Epochs for ONN training
+    onn.EPOCHS = 50 # Epochs for ONN training
     onn.STEP_SIZE= 0.005 # Learning Rate
     onn.SAMPLES = 400 # # of samples per class
 
     onn.ITERATIONS = 50 # number of times to retry same loss/PhaseUncert
     onn.rng = 1 # starting RNG value
-    onn.max_number_of_tests = 1 # Max number of retries for a single model's training (keeps maximum accuracy model)
+    onn.max_number_of_tests = 5 # Max number of retries for a single model's training (keeps maximum accuracy model)
     onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
     onn.features = 10  # How many features? max for MNIST = 784 
-    onn.classes = 10 # How many classes? max for MNIST = 10
+    onn.classes = 2 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
     onn.zeta = 0.75 # Min diff between max (correct) sample and second sample
@@ -84,7 +92,7 @@ def init_onn_settings():
     onn.MinMaxScaling = (np.sqrt(0.1), np.sqrt(10)) # For power = [-10 dB, +10 dB]
     onn.range_linear = 1
 
-    onn.topo = 'Gaussian_Bokun' # Name of the model, "{Dataset}_{Topology}"
+    onn.topo = 'MNIST_bokun_bokunPrune_2_mesh' # Name of the model, "{Dataset}_{Topology}"
 
     return onn
 
@@ -114,6 +122,8 @@ def dataset(onn, dataset='MNIST', half_square_length=2):
         onn.classes = 4
         onn.features = 4
         onn.N = 4
+    elif dataset == 'WIDER':
+        onn.X, onn.y, onn.Xt, onn.yt = create_datasets.WIDER_FACE(classes=onn.classes, features=onn.features, nsamples=onn.SAMPLES) # this gives real valued vectors as input samples 
     else: 
         print("\nDataset not understood. Use 'Gauss', 'MNIST', 'FFT_MNIST', 'FFT_PCA', 'Iris', or 'Iris_augment'.\n")
     return onn
@@ -235,22 +245,22 @@ def create_model(features, classes):
     # ])
 
     # If you want multi-layer Bokun Topology
-    model = neu.Sequential([
+    # model = neu.Sequential([
     #     neu.AddMaskDiamond(features),
     #     neu.DiamondLayer(features),
     #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
     #     neu.Activation(nlaf), # first layer ends here
-        neu.AddMaskDiamond(features),
-        neu.DiamondLayer(features),
-        neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
-        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        neu.DropMask(features, keep_ports=range(classes)),
-    ])
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)),
+    # ])
 
     # If you want regular Clements (multi-layer) topology
     # model = neu.Sequential([
-        # neu.ClementsLayer(features),
-        # neu.Activation(nlaf),
+    #     neu.ClementsLayer(features),
+    #     neu.Activation(nlaf),
     #     neu.ClementsLayer(features),
     #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
     #     neu.DropMask(features, keep_ports=range(classes))
@@ -258,12 +268,133 @@ def create_model(features, classes):
 
     # If you want regular Reck (single-layer) topology
     # model = neu.Sequential([
+    #     # neu.ReckLayer(features),
+    #     # neu.Activation(nlaf), # photodetector measurement
     #     neu.ReckLayer(features),
-    #     neu.Activation(nlaf), # photodetector measurement
-    #     neu.ReckLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    #     # neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     # neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
     # ])
+
+    # if using custom ONN layers, specify the mesh profile: a 2D matrix indicate MZI locations
+    # Representation of profile: 2D lists with waveguide indices as entries
+    # each pair of numbers in a row denote the MZI location
+    # This representation is the most convenient to parse by MZILayer.from_waveguide_indices() method
+    clement_4x4_profile = [[0, 1, 2, 3],
+                           [   1, 2,  ],
+                           [0, 1, 2, 3],
+                           [   1, 2,  ]]
+    reck_10x10_profile =    [[0,1                ],
+                             [  1,2              ],
+                             [0,1,2,3            ],
+                             [  1,2,3,4          ],
+                             [0,1,2,3,4,5        ],
+                             [  1,2,3,4,5,6      ],
+                             [0,1,2,3,4,5,6,7    ],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7    ],
+                             [  1,2,3,4,5,6      ],
+                             [0,1,2,3,4,5        ],
+                             [  1,2,3,4          ],
+                             [0,1,2,3            ],
+                             [  1,2              ],
+                             [0,1                ],]
+    
+    clement_10x10_profile = [[0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ]]
+    
+    clement_10x10_withHole = [[0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,    7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ]]
+    
+    custom_10x10_profile   = [[0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7,8,9],
+                             [  1,2,3,4,5,6,7,8  ],
+                             [0,1,2,3,4,5,6,7    ],
+                             [  1,2,3,4,5,6      ],
+                             [0,1,2,3,4,5        ],
+                             [  1,2,3,4          ],
+                             [0,1,2,3            ],
+                             [  1,2              ]]
+
+    diamond_10x10_profile  = [[                8,9                        ],
+                              [              7,8,9,10                     ],
+                              [            6,7,8,9,10,11                  ],
+                              [          5,6,7,8,9,10,11,12               ],
+                              [        4,5,6,7,8,9,10,11,12,13            ],
+                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
+                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
+                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
+                              [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
+                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
+                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
+                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
+                              [        4,5,6,7,8,9,10,11,12,13            ],
+                              [          5,6,7,8,9,10,11,12               ],
+                              [            6,7,8,9,10,11                  ],
+                              [              7,8,9,10                     ],
+                              [                8,9                        ]]
+
+    bokun_10x10_profile    = [[        4,5,6,7,8,9,10,11,12,13            ],
+                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
+                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
+                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
+                              [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
+                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
+                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
+                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
+                              [        4,5,6,7,8,9,10,11,12,13            ],
+                              [          5,6,7,8,9,10,11,12               ]]
+
+    bokun_pr_10x10_profile = [[        4,5,6,7,8,9,10,11,12,13            ],
+                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
+                              [    2,3,4,5,6,7,8,9,10,11,12,13            ],
+                              [  1,2,3,4,5,6,7,8,9,10,11,12               ],
+                              [0,1,2,3,4,5,6,7,8,9,10,11                  ],
+                              [  1,2,3,4,5,6,7,8,9,10                     ],
+                              [    2,3,4,5,6,7,8,9                        ],
+                              [      3,4,5,6,7,8                          ],
+                              [        4,5,6,7                            ],
+                              [          5,6                              ]]
+
+
+    model = neu.Sequential([
+        neu.CustomLayer(features, clement_10x10_profile),
+        neu.Activation(nlaf), # non-linear activation layer
+        neu.CustomLayer(features, custom_10x10_profile),
+        neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+    ])
+
+    # model = neu.Sequential([
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
+    #     neu.Activation(nlaf), # first layer ends here
+    #     neu.AddMaskDiamond(features),
+    #     neu.DiamondLayer(features),
+    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
+    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
+    #     neu.DropMask(features, keep_ports=range(classes)),
+    # ])
+
     return model
 
 def save_onn(onn, model, lossDiff=0):
@@ -293,29 +424,44 @@ def save_onn(onn, model, lossDiff=0):
     '''
     onn.pickle_save() # save pickled version of the onn class
 
+#%%
 def main():
     onn = init_onn_settings()
     np.random.seed(onn.rng)
 
-    data = 'Gauss' # Choose one: Gauss, MNIST, FFT_MNIST, Iris_augment, Iris
+    data = 'MNIST' # Choose one: Gauss, MNIST, FFT_MNIST, Iris_augment, Iris
     onn = dataset(onn, dataset=data)
 
     # onn = normalize_dataset(onn, normalization='MinMaxScaling') # dataset -> [Min, Max]
     onn = normalize_dataset(onn, normalization='None')
 
-    model = create_model(onn.features, onn.classes)
-    print("Phases when creating the model: D_mzi =")
-    print(f"phases({np.shape(model.get_all_phases())}):{model.get_all_phases()}")
-    print("\nTransformation matrix when creating the model: D_mzi =")
-    print(f"phases({np.shape(model.get_transformation_matrix())}):{model.get_transformation_matrix()}")
-    # exit(0)
+    # onn.y = np.hstack((onn.y, np.zeros((onn.y.shape[0],onn.features - onn.classes))))
+    # onn.yt = np.hstack((onn.yt, np.zeros((onn.yt.shape[0],onn.features - onn.classes))))
+    # make the label length N by padding additional zero (to test use all ports for binary classification)
 
+    print(f"{data} dataset prepared:")
+    print(f"X: {np.shape(onn.X)}, range={onn.X.max(), onn.X.min()}")
+    print(f"Y: {np.shape(onn.y)}, range={onn.y.max(), onn.y.min()}")
+    print(f"Xt: {np.shape(onn.Xt)}, range={onn.Xt.max(), onn.Xt.min()}")
+    print(f"Yt: {np.shape(onn.yt)}, range={onn.yt.max(), onn.yt.min()}")
+    print(f"example(first 5) X:\n{onn.X[0:5]}")
+    print(f"example(first 5) y:\n{onn.y[0:5]}")
+
+    # exit(0)
+    model = create_model(onn.features, onn.classes)
+    # print("Phases when creating the model: D_mzi =")
+    # print(f"phases({np.shape(model.get_all_phases())}):{model.get_all_phases()}")
+    # print("\nTransformation matrix when creating the model: D_mzi =")
+    # print(f"phases({np.shape(model.get_transformation_matrix())}):{model.get_transformation_matrix()}")
+
+    see_each_mzi(model)   
+    # exit(0)
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
     training_loss = [0] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
-            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_{data}' # Name the folder to be created
+            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_{onn.topo}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 
@@ -331,7 +477,7 @@ def main():
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
                 model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0.0)
                 
-                onn, model = train.train_single_onn(onn, model, loss_function='mse') # 'cce' for complex models, 'mse' for simple single layer ONNs
+                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for categorical, 'mse' for Gaussian
 
                 if test_number>0:
                     print("\nPhase of current best model")
@@ -354,7 +500,7 @@ def main():
                     print("\nThis is the best model")
                     print(best_model.get_all_phases())
                     print(f'\nBest Accuracy: {max_acc:.2f}%. Using this model for simulations.')
-                    save_onn(best_onn, best_model)
+                    save_onn(best_onn, best_model) # uncomment to simulate and produce PT & LPU graphs
                     best_onn.saveForwardPropagation(best_model)
                     current_phases = best_model.get_all_phases()
                     best_model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0.00, loss_diff=0.0)
@@ -369,3 +515,5 @@ def main():
 
 if __name__ == '__main__':
      main()
+
+# %%

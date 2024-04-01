@@ -113,6 +113,9 @@ class AddMaskDiamond(NetworkLayer):
         C[:X.shape[0]//2-1,:] = B[:B.shape[0]//2,:] # if using middle ports (clear remaining top ports)
         C[floor(X.shape[0]*1.5)-1:2*X.shape[0]-2,:] = B[B.shape[0]//2:,:] # if using middle ports (clear remaining bottom ports)
         C[X.shape[0]//2-1:floor(X.shape[0]*1.5)-1,:] = X # if using middle ports
+        # print(f"input to forward pass: X matrix shape{X.shape}")
+        # print(f"ouput of forward pass: C matrix shape{C.shape}")
+        # exit()
 
         return C
 
@@ -155,6 +158,30 @@ class DropMask(NetworkLayer):
         return X[self.ports]
 
     def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        '''
+        e.g. for 10 features, binary labels [0, 1] and [1, 0], batch size = 4
+        delta.shape = (2, 4)
+        n_features = 2
+        n_samples = 4
+        delta_back.shape = (10, 4)
+
+        example run
+        (10x10 [Clement | nlaf | Reck | PD] using MNIST at onn.rng = 1, epoch 0 batch 0)
+        delta = d_Loss (when this dropMask layer is the final layer in ONN)
+              = [[ 0.622 -0.234 -0.496 -0.476]
+                [-0.622  0.234  0.496  0.476]]
+        returned delta_back = 
+                [[ 0.622+0.j -0.234+0.j -0.496+0.j -0.476+0.j]
+                [-0.622+0.j  0.234+0.j  0.496+0.j  0.476+0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]
+                [ 0.   +0.j  0.   +0.j  0.   +0.j  0.   +0.j]]
+        '''
         n_features, n_samples = delta.shape
         delta_back = np.zeros((self.input_size, n_samples), dtype=NP_COMPLEX)
         for i in range(n_features):
@@ -320,8 +347,8 @@ class DiamondLayer(OpticalMeshNetworkLayer):
         self.mzi_limits_lower = list(range(self.S - self.N, -1, -1)) + list(range(1, self.N - 1))
         self.mzi_limits_upper = list(range(self.N - 1, self.S)) + list(range(self.S - 2, self.N - 2, -1))
 
-        self.mzi_limits_lower = self.mzi_limits_lower[4:14] # for truncated diamond
-        self.mzi_limits_upper = self.mzi_limits_upper[4:14] # for truncated diamond
+        self.mzi_limits_lower = self.mzi_limits_lower[7:23] # for truncated diamond: [3:11], [4:14] and [7:22] for 8x8, 10x10 and 16x16
+        self.mzi_limits_upper = self.mzi_limits_upper[7:23] # for truncated diamond
         print(f"mzi_limits_lower: {self.mzi_limits_lower}")
         print(f"mzi_limits_upper: {self.mzi_limits_upper}")
 
@@ -633,3 +660,139 @@ class ClementsLayer(OpticalMeshNetworkLayer):
                 raise ValueError("Field_store will not work in this case, please set to False")
         else:
             return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
+class CustomLayer(OpticalMeshNetworkLayer):
+    '''
+    Custom Non-standard topology for investigating MZI pruning
+    Currently ONLY support EVEN number of input waveguides (Is there a reason to use odd number of waveguides?)
+    require a mesh_profile 2D list to specify the structure.
+    e.g. clement_4x4_profile = [[0, 1, 2, 3],
+                                [   1, 2   ],
+                                [0, 1, 2, 3],
+                                [   1, 2   ]]
+    e.g. reck_4x4_profile = [[0, 1      ],
+                             [   1, 2   ],
+                             [0, 1, 2, 3],
+                             [   1, 2   ],
+                             [0, 1      ]]
+    Author: bokunzhao (bokun.zhao@mail.mcgill.ca)
+    '''
+
+    def __init__(self, N: int, p_mesh_profile: list, M=None, include_phase_shifter_layer=False, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
+        '''
+        Initialize the Custom Layer
+        :param N: number of input and output waveguides
+        :param p_mesh_profile: 2D list specifying where the MZIs are.
+        :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
+        the mesh (required to implement arbitrary unitary)
+        :param initializer: optional initializer method (WIP)
+        '''
+        self.mesh_profile = p_mesh_profile
+        # mzi_num: list indicating how many mzis are in each MZILayer, e.g. mzi_num = [2, 1, 2, 1] for 4x4 clement
+        mzi_nums = [len(mesh_columns)//2 for mesh_columns in self.mesh_profile]
+        print(f"mzi_nums: \n{mzi_nums}\n")
+        total_mzi = sum(mzi_nums)
+        print(f"total_mzi: {total_mzi}\n")
+        flattened_profile = [mzi for mzi_column in self.mesh_profile for mzi in mzi_column]
+        num_waveguides = max(flattened_profile) - min(flattened_profile) + 1 # If the "widest" column of MZI has k MZIs in it, then no. of waveguides is 2k
+        print(f"num_waveguides: {num_waveguides}\n")
+
+        super().__init__(N, N, initializer=initializer)
+
+        self.phase_uncert = phase_uncert
+        self.loss_dB = loss_dB
+        self.N = N
+
+        if (None, None) in phases:
+            phases = [(None, None) for _ in range(total_mzi)]
+
+        layers = []
+        if include_phase_shifter_layer:
+            layers.append(PhaseShifterLayer(N))
+
+        if M is None:
+            M = N
+
+        phases_mzi_layer = []
+        idx = 0
+        for ii in mzi_nums:
+            phases_layer = []
+            for jj in range(ii):
+                # print(phases[idx])
+                phases_layer.append(phases[idx])
+                idx += 1
+            phases_mzi_layer.append(phases_layer)
+
+        layerCount = 0
+        for phases in phases_mzi_layer:
+            thetas = [phase[0] for phase in phases]
+            phis = [phase[1] for phase in phases]
+            # layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(layerCount, self.N, self.mesh_profile[layerCount], thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert, phase_uncert_phi=phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
+
+        self.mesh = OpticalMesh(N, layers)
+
+    def forward_pass(self, X: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
+        '''
+        Compute the forward pass
+        :param X: input electric fields
+        :param cache_fields: if true, fields are cached
+        :param use_partial_vectors: if true, use partial vector method to speed up transfer matrix computations
+        :return: output fields for next ONN layer
+
+        '''
+        self.input_prev = X
+        if cache_fields:
+            self.mesh.forward_fields = self.mesh.compute_phase_shifter_fields(
+                X, align="right", use_partial_vectors=use_partial_vectors)
+            self.output_prev = np.copy(self.mesh.forward_fields[-1][-1])
+        else:
+            self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+
+        return self.output_prev
+
+    def backward_pass(self, delta: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
+        '''
+        Compute the backward pass
+        :param delta: adjoint "output" electric fields backpropagated from the next ONN layer
+        :param cache_fields: if true, fields are cached
+        :param use_partial_vectors: if true, use partial vector method to speed up transfer matrix computations
+        :return: adjoint "input" fields for previous ONN layer
+        '''
+        if cache_fields:
+            self.mesh.adjoint_fields = self.mesh.compute_adjoint_phase_shifter_fields(
+                delta, align="right", use_partial_vectors=use_partial_vectors)
+            if isinstance(self.mesh.layers[0], PhaseShifterLayer):
+                return np.dot(self.mesh.layers[0].get_transfer_matrix().T, self.mesh.adjoint_fields[-1][-1])
+            else:
+                raise ValueError("Field_store will not work in this case, please set to False")
+        else:
+            return np.dot(self.mesh.get_transfer_matrix().T, delta)
+    
+    # override method from superclass as customLayers don't have "self.mzi_limits_lower/upper" field
+    def set_phases_uncert_loss(self, phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff):
+        """ Sets the phases changes phase uncerts (phi, theta) and changes the loss_dB """
+        mzi_nums = [len(mesh_columns)//2 for mesh_columns in self.mesh_profile]
+        layers = []
+        if (None, None) in phases:
+            phases = [(None, None) for _ in range(sum(mzi_nums))]
+
+        phases_mzi_layer = []
+        idx = 0
+        for ii in mzi_nums:
+            phases_layer = []
+            for jj in range(ii):
+                phases_layer.append(phases[idx])
+                idx += 1
+            phases_mzi_layer.append(phases_layer)
+
+        # create every layer of MZIs with new loss/phase uncerts
+        layerCount = 0 # keep track of which layer we are creating
+        for phases in phases_mzi_layer:
+            thetas = [phase[0] for phase in phases]
+            phis = [phase[1] for phase in phases]
+            # layers.append(MZILayer.from_waveguide_indices(N, list(range(start, end + 1)), thetas=thetas, phis=phis, phase_uncert=self.phase_uncert, loss_dB=loss_dB, loss_diff=loss_diff))
+            layers.append(MZILayer.from_waveguide_indices(layerCount, self.N, self.mesh_profile[layerCount], thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
+            layerCount += 1
+        self.mesh = OpticalMesh(self.N, layers)

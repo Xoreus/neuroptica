@@ -83,9 +83,16 @@ class ComplexNonlinearity(Nonlinearity):
                 return np.real(gamma * self.df_dRe(a, b)) - 1j * np.real(gamma * self.df_dIm(a, b))
 
             elif self.mode == "polar":
-                r, phi = np.abs(Z), np.angle(Z)
-                return np.exp(-1j * phi) * \
-                       (np.real(gamma * self.df_dr(r, phi)) - 1j / r * np.real(gamma * self.df_dphi(r, phi)))
+                with np.errstate(invalid='raise'):
+                    try:
+                        r, phi = np.abs(Z), np.angle(Z)
+                        return np.exp(-1j * phi) * \
+                            (np.real(gamma * self.df_dr(r, phi)) - 1j / r * np.real(gamma * self.df_dphi(r, phi)))
+                    except:
+                        print(f'invalid value!')
+                        print(f'forward prop. values arriving at this layer (Z): \n{Z}')
+                        print(f'Magnitude of Z (r): \n{r}')
+                        return 101 # graident issue code
 
     def df_dZ(self, Z: np.ndarray) -> np.ndarray:
         '''Gives the total complex derivative of the (holomorphic) nonlinearity with respect to the input'''
@@ -426,6 +433,18 @@ class cReLU(ComplexNonlinearity):
 
     def df_dIm(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return 1j * (b > 0)
+    # def dRe_dRe(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    #     return self.df_dRe(a, b)
+    # def dRe_dIm(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    #     return 0
+    # def dIm_dRe(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    #     return 0
+    # def dIm_dIm(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    #     return self.df_dIm(a, b)
+    # def df_dr(self, r: np.ndarray, phi: np.ndarray) -> np.ndarray:
+    #     return (r > 0) * (np.cos(phi)+ 1j * np.sin(phi))
+    # def df_dphi(self, r: np.ndarray, phi: np.ndarray) -> np.ndarray:
+    #     return (phi > 0) * (1j * r * (np.cos(phi)+ 1j * np.sin(phi)))
 
 class zReLU(ComplexNonlinearity):
     '''

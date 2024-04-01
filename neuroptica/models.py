@@ -3,7 +3,8 @@ optical neural network. Currently, only sequential models are supported, but mor
 
 from typing import Dict, List
 import numpy as np
-from neuroptica.layers import NetworkLayer, OpticalMeshNetworkLayer
+from neuroptica.layers import NetworkLayer, OpticalMeshNetworkLayer, Activation
+from neuroptica.nonlinearities import AbsSquared, cReLU
 
 class BaseModel:
     '''Base class for all models'''
@@ -83,6 +84,16 @@ class Sequential(BaseModel):
                 backprop_signal = layer.backward_pass(backprop_signal)
             else:
                 backprop_signal = layer.backward_pass(backprop_signal)
+
+            if isinstance(layer, Activation): # if it's nlaf or PD layer
+                if isinstance(layer.nonlinearity, AbsSquared): # if it's PD layer
+                    if (type(backprop_signal) is int) and (backprop_signal==101): # if PD layer's backprop gradient explodes (divide by r=0 in polar backprop mode)
+                        print(f"PD Layer's backprop issue detected")
+                        assert isinstance(self.layers[1], Activation), f"assertion error: self.layers[1] is not an Activation layer:\n{self.__repr__()}"
+                        assert isinstance(self.layers[1].nonlinearity, cReLU), f"assertion error: self.layers[1] is not cReLU, it's {type(self.layers[1])}"
+                        print(f"The input values of CReLu layer when forwardpropagating this batch is:\n{self.layers[1].input_prev}\n")
+                        print(f"The output values of CReLu layer when forwardpropagating this batch is:\n{self.layers[1].output_prev}")
+                        exit()
 
             gradients[layer.__name__] = backprop_signal
         return gradients
