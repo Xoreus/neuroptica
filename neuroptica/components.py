@@ -98,8 +98,8 @@ class MZI(OpticalComponent):
         self.loss_diff = loss_diff # Stochastic std dev
         self.loss = 10**(-self.loss_dB/10) # Linear Loss
 
-        if theta is None: theta = pi * np.random.rand()
-        if phi is None: phi = pi * np.random.rand()
+        if theta is None: theta = 2.0*pi * np.random.rand()
+        if phi is None: phi = 2.0*pi * np.random.rand()
 
         self.theta = theta
         self.phi = phi
@@ -300,6 +300,7 @@ def _get_mzi_partial_transfer_matrices(theta, phi, backward=False, cumulative=Tr
 
 def apply_loss(mzi, loss):
     return np.array([[loss, 1],[1, loss]]) * mzi
+    return np.array([[loss, loss], [loss, loss]]) * mzi # the "correct" loss model
 
 def get_loss(loss_dB, loss_diff=0, rv='gauss'):
     if rv == 'exp':

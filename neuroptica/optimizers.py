@@ -175,6 +175,12 @@ class InSituAdam(Optimizer):
                 self.t += 1
                 # Propagate the data forward
                 Y_hat = self.model.forward_pass(X, cache_fields=cache_fields, use_partial_vectors=use_partial_vectors)
+                # print(f"The input values of CReLu layer when forwardpropagating this batch is:\n{self.model.layers[1].input_prev}\n")
+                # print(f"The input power to CReLu layer when forwardpropagating this batch is:\n{np.abs(self.model.layers[1].input_prev)**2}\n")
+                # print(f"Total input power to CReLu layer for each sample in this batch are:\n{np.sum(np.abs(self.model.layers[1].input_prev)**2, axis=0)}\n")
+                # print(f"Y_Hat:\n{Y_hat}\n") # same as PD layer's forward output
+                # print(f"Y:\n{Y}\n") # this batch's label
+                # exit()
                 d_loss = self.loss.dL(Y_hat, Y)
                 total_epoch_loss += np.sum(self.loss.L(Y_hat, Y))
 
@@ -262,6 +268,162 @@ class InSituAdam(Optimizer):
             if show_progress:
                 iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
         
+        print(f'Max Validation Accuracy: {max(val_accuracy):.2f}%')
+        trn_accuracy = trn_accuracy[1:]
+        val_accuracy = val_accuracy[1:]
+        return losses, trn_accuracy, val_accuracy, best_phases, best_trf_matrix
+
+'''Xuening's weighted adam optimizer for penalizing false negative'''
+# when beta = 1.2, pos_weight = [1, 1.2]
+class InSituBinaryAdamWeighted(Optimizer):
+    '''
+    On-chip training with in-situ backpropagation using adjoint field method and adam optimizer
+    '''
+    def __init__(self, model: Sequential, loss: Type[Loss], step_size=0.01,
+                 beta1=0.9, beta2=0.99, epsilon=1e-8, pKeep=0.8, pos_weight = [1, 1.2]):
+        super().__init__(model, loss)
+        self.step_size = step_size
+        self.beta1 = beta1
+        self.beta2 = beta2
+        self.epsilon = epsilon
+        self.pKeep = pKeep
+        self.pos_weight = pos_weight
+
+        self.t = 0
+        self.m = {}
+        self.v = {}
+        self.g = {}
+        for layer in model.layers:
+            if isinstance(layer, OpticalMeshNetworkLayer):
+                for component in layer.mesh.all_tunable_components():
+                    self.m[component] = np.zeros(component.dof)
+                    self.v[component] = np.zeros(component.dof)
+                    self.g[component] = np.zeros(component.dof)
+        print('\n')
+
+    def fit(self, data: np.ndarray, labels: np.ndarray, val_data: np.ndarray,
+            val_labels: np.ndarray, epochs=1000, batch_size=32,
+            show_progress=True, cache_fields=False, use_partial_vectors=False):
+        '''
+        Fit the model to the labeled data
+        :param data: features vector, shape: (n_features, n_samples)
+        :param labels: labels vector, shape: (n_label_dim, n_samples)
+        :param epochs:
+        :param batch_size:
+        :param show_progress:
+        :param cache_fields: if set to True, will cache fields at the phase shifters on the forward and backward pass
+        :param use_partial_vectors: if set to True, the MZI partial matrices will be stored as Nx2 vectors
+        :return: losses, accuracy
+        '''
+        losses = []
+        trn_accuracy = [0]
+        val_accuracy = [0]
+
+        best_phases = self.model.get_all_phases()
+        best_trf_matrix = self.model.get_transformation_matrix()
+        n_features, n_samples = data.shape
+        iterator = range(epochs)
+        if show_progress: iterator = pbar(iterator)
+
+        for epoch in iterator:
+
+            total_epoch_loss = 0.0
+            batch = 0
+            for X, Y in self.make_batches(data, labels, batch_size):
+                batch += 1
+                self.t += 1
+                # Propagate the data forward
+                Y_hat = self.model.forward_pass(X, cache_fields=cache_fields, use_partial_vectors=use_partial_vectors)
+                Y_weighted = np.stack((Y[0,:] * self.pos_weight[0], Y[1, :] * self.pos_weight[1]))
+                d_loss = self.loss.dL(Y_hat, Y, Y_weighted, weight = self.pos_weight[-1])
+
+                #print(self.loss.L(Y_hat, Y), self.loss.L(Y_hat, Y).shape, Y_hat, Y.shape)
+                total_epoch_loss += np.sum(self.loss.L(Y_hat, Y_weighted))
+
+                # Compute the backpropagated signals for the model
+                deltas = self.model.backward_pass(d_loss, cache_fields=cache_fields,
+                                                  use_partial_vectors=use_partial_vectors)
+                delta_prev = d_loss  # backprop signal to send in the final layer
+
+                # Compute the foward and adjoint fields at each phase shifter in all tunable layers
+                for layer in reversed(self.model.layers):
+                    if isinstance(layer, OpticalMeshNetworkLayer):
+                        gradients = layer.mesh.compute_gradients(layer.input_prev, delta_prev,
+                                                                 cache_fields=cache_fields,
+                                                                 use_partial_vectors=use_partial_vectors)
+                        for cmpt in gradients:
+                            self.g[cmpt] = np.mean(gradients[cmpt], axis=-1)
+                            self.m[cmpt] = self.beta1 * self.m[cmpt] + (1 - self.beta1) * self.g[cmpt]
+                            self.v[cmpt] = self.beta2 * self.v[cmpt] + (1 - self.beta2) * self.g[cmpt] ** 2
+                            mhat = self.m[cmpt] / (1 - self.beta1 ** self.t)
+                            vhat = self.v[cmpt] / (1 - self.beta2 ** self.t)
+
+                            grad = -1 * self.step_size * mhat / (np.sqrt(vhat) + self.epsilon)
+
+                            # Adjust settings by gradient amount
+                            if isinstance(cmpt, PhaseShifter):
+                                cmpt.phi += grad[0]
+                                if cmpt.phi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.phi > 2*pi:
+                                    cmpt.phi -= 2*pi
+
+                            elif isinstance(cmpt, MZI):
+                                dtheta, dphi = grad
+
+                                dtheta, dphi = grad
+                                if cmpt.phi + dphi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.phi + dphi > 2*pi:
+                                    cmpt.phi -= 2*pi
+                                if cmpt.theta + dtheta < 0:
+                                    cmpt.theta += 2*pi
+                                if cmpt.theta + dtheta > 2*pi:
+                                    cmpt.theta -= 2*pi
+
+                                cmpt.phi += dphi
+                                cmpt.theta += dtheta
+
+                            elif isinstance(cmpt, MZI_H):
+                                dtheta, dphi = grad
+                                if cmpt.phi - dphi < 0:
+                                    cmpt.phi += 2*pi
+                                if cmpt.phi - dphi > 2*pi:
+                                    cmpt.phi -= 2*pi
+                                if cmpt.theta - dtheta < 0:
+                                    cmpt.theta += 2*pi
+                                if cmpt.theta - dtheta > 2*pi:
+                                    cmpt.theta -= 2*pi
+                                cmpt.phi += dphi
+                                cmpt.theta += dtheta
+
+                    # Set the backprop signal for the subsequent (spatially previous) layer
+                    delta_prev = deltas[layer.__name__]
+
+            # Append loss per epoch
+            total_epoch_loss /= n_samples
+            losses.append(total_epoch_loss)
+
+            # Append training accuracy per epoch
+            Y_hat = self.model.forward_pass(data)
+            pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+            gt = np.array([np.argmax(tru) for tru in labels.T])
+            trn_accuracy.append(np.sum(pred == gt)/data.shape[1]*100)
+
+            # Append validation accuracy per epoch
+            Y_hat = self.model.forward_pass(val_data)
+            pred = np.array([np.argmax(yhat) for yhat in Y_hat.T])
+            gt = np.array([np.argmax(tru) for tru in val_labels.T])
+            val_accuracy.append(np.sum(pred == gt)/val_data.shape[1]*100)
+            # print(val_accuracy[-1])
+
+            if val_accuracy[-1] > max(val_accuracy[:-1]):
+                best_phases = self.model.get_all_phases()
+                best_trf_matrix = self.model.get_transformation_matrix()
+
+            if show_progress:
+                iterator.set_description("ℒ = {:.2f}".format(total_epoch_loss), refresh=True)
+
         print(f'Max Validation Accuracy: {max(val_accuracy):.2f}%')
         trn_accuracy = trn_accuracy[1:]
         val_accuracy = val_accuracy[1:]

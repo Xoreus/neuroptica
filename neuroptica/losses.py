@@ -39,6 +39,8 @@ class CategoricalCrossEntropy(Loss):
     @staticmethod
     def L(X: np.ndarray, T: np.ndarray) -> np.ndarray:
         X_softmax = np.exp(X) / np.sum(np.exp(X), axis=0)
+        # print(f"X_softmax:\n{X_softmax}\nSum:\n{np.sum(X_softmax, axis=0)}")
+        # exit()
         tol = 1e-10
         X_clip = np.clip(X_softmax, tol, 1 - tol)
         return -np.sum(T * np.log(X_clip), axis=0)
@@ -47,3 +49,20 @@ class CategoricalCrossEntropy(Loss):
     def dL(X: np.ndarray, T: np.ndarray) -> np.ndarray:
         X_softmax = np.exp(X) / np.sum(np.exp(X), axis=0)
         return np.conj(X_softmax - T)
+
+'''Xuening's weighted loss function for penalizing false negative (beta > 1)'''
+class CategoricalCrossEntropyWeighted(Loss):
+    '''Represents categorical cross entropy with a softmax layer implicitly applied to the outputs'''
+
+    @staticmethod
+    def L(X: np.ndarray, T: np.ndarray) -> np.ndarray:
+        X_softmax = np.exp(X) / np.sum(np.exp(X), axis=0)
+        tol = 1e-10
+        X_clip = np.clip(X_softmax, tol, 1 - tol)
+        return -np.sum(T * np.log(X_clip), axis=0)
+
+    @staticmethod
+    def dL(X: np.ndarray, Y_org: np.ndarray, T: np.ndarray, weight) -> np.ndarray:
+        X_softmax = np.exp(X) / np.sum(np.exp(X), axis=0)
+        X_weighted = Y_org * X_softmax * (weight - 1) + X_softmax#(Y_org + weight - weight * Y_org)*X_softmax
+        return np.conj(X_weighted - T)

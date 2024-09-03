@@ -466,3 +466,68 @@ class zReLU(ComplexNonlinearity):
 
     def df_dIm(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
         return (a > 0) * (b > 0) * 1j
+
+class LeakycReLU(ComplexNonlinearity):
+    '''
+    Leaky version of the cReLU
+    f(z) = LeakyReLU(Re{z}) + 1j * LeakyReLU(Im{z})
+    author: bokunzhao
+    '''
+
+    def __init__(self, N, leaky_gradient=0.1):
+        super().__init__(N, holomorphic=False, mode="condensed")
+        self.leaky_gradient = leaky_gradient
+
+    def forward_pass(self, X: np.ndarray):
+        X_re = np.real(X)
+        X_im = np.imag(X)
+        # indicator_re = 1. if X_re > 0 else self.leaky_gradient
+        indicator_re = np.where(X_re > 0, 1., self.leaky_gradient)
+        # indicator_im = 1. if X_im > 0 else self.leaky_gradient
+        indicator_im = np.where(X_im > 0, 1., self.leaky_gradient)
+        return indicator_re * X_re + 1j * indicator_im * X_im
+
+    def df_dRe(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        return np.where(a > 0, 1., self.leaky_gradient)
+
+    def df_dIm(self, a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        return 1j * np.where(b > 0, 1., self.leaky_gradient)
+    
+class LeakyReLU(ComplexNonlinearity):
+    '''
+    Realizable version of the LeakyReLU in terms of power (not using input phase information)
+    f(z) = sqrt( LeakyReLU(|z|^2) ) + 0j
+    thres: power threshold to activate output (unit: mW)
+    author: bokunzhao
+    '''
+
+    def __init__(self, N, thres=0.1, leaky_gradient=0.1):
+        super().__init__(N, holomorphic=True, mode="condensed")
+        self.leaky_gradient = leaky_gradient
+        self.thres = thres
+
+    def forward_pass(self, X: np.ndarray):
+        
+        X_abs_sqr = np.abs(X)
+        # indicator = np.where(X_abs_sqr > self.thres, 1., self.leaky_gradient)
+        # return np.sqrt(indicator * X_abs_sqr)+ 0j
+        return (X_abs_sqr >= self.thres) * X + (X_abs_sqr < self.thres) * self.leaky_gradient * X
+
+    def df_dZ(self, Z: np.ndarray) -> np.ndarray:
+        Z_abs_sqr = np.abs(Z)
+        # return np.where(np.abs(Z**2) > self.thres, 1., self.leaky_gradient) * (Z/np.abs(Z))
+        return (Z_abs_sqr >= self.thres) * 1 + (Z_abs_sqr < self.thres) * self.leaky_gradient * 1
+
+class CustomSigmoid(Nonlinearity):
+    '''Sigmoid activation; maps z -> 1 / (1 + np.exp(-z))'''
+
+    def __init__(self, N, k = 1.):
+        super().__init__(N)
+        self.k = k
+
+    def forward_pass(self, X: np.ndarray):
+        return 1 / (1 + np.exp(-self.k*X))
+
+    def backward_pass(self, gamma: np.ndarray, Z: np.ndarray):
+        sigma = 1 / (1 + np.exp(-self.k*Z))
+        return sigma * sigma * self.k* np.exp(-self.k*Z) * gamma

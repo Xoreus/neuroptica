@@ -126,6 +126,10 @@ dmypy.json
 # MNIST Dataset
 *.gz
 
+# CIFAR-10
+cifar-10-batches-py/
+data/
+
 # Vim Swap files
 *.swo
 *.swp

@@ -27,17 +27,22 @@ def test_PT(onn, X, y, model, show_progress=True):
     print('\nPhi + Theta')
     onn.accuracy_PT = calc_acc.get_accuracy(onn, model, X, y, loss_diff=onn.loss_diff, show_progress=show_progress)
     # onn.PT_FoM = np.sum((np.array(onn.accuracy_PT) > onn.zeta*np.max(onn.accuracy_PT))*onn.PT_Area)
-    onn.PT_FoM = np.sum((np.array(onn.accuracy_PT) > 75.)*onn.PT_Area)
-    print(f"-----------------------------------------PT_Accuracy: {np.shape(onn.accuracy_PT)}, FoM = {onn.PT_FoM}\n", onn.accuracy_PT)
+    onn.num_fom_sqares_PT = np.sum(np.array(onn.accuracy_PT) > onn.zeta*100)
+    onn.PT_FoM = onn.num_fom_sqares_PT*onn.PT_Area
+    print(f"PT_Accuracy: {np.shape(onn.accuracy_PT)}, FoM = {onn.PT_FoM:.5f}, area per square = {onn.PT_Area:.6f}")
+    print(f"num of PT FoM sqaures: {onn.num_fom_sqares_PT}\n")
     return onn, model
 
 def test_LPU(onn, X, y, model, show_progress=True):
     onn.same_phase_uncert = True
     print('\nLoss + Phase Uncertainty')
     onn.accuracy_LPU = calc_acc.get_accuracy(onn, model, X, y, loss_diff=onn.loss_diff, show_progress=show_progress)
-    # onn.LPU_FoM = np.sum((np.array(onn.accuracy_LPU) >  onn.zeta*np.max(onn.accuracy_LPU))*onn.LPU_Area)
-    onn.LPU_FoM = np.sum((np.array(onn.accuracy_LPU) > 75.)*onn.LPU_Area)
-    print(f"----------------------------------------LPU_Accuracy: {np.shape(onn.accuracy_LPU)}, FoM = {onn.PT_FoM}\n", onn.accuracy_LPU)
+    # onn.LPU_FoM = np.sum((np.array(onn.accuracy_LPU) > onn.zeta*np.max(onn.accuracy_LPU))*onn.LPU_Area)
+    onn.num_fom_sqares_LPU = np.sum(np.array(onn.accuracy_LPU) > onn.zeta*100)
+    onn.LPU_FoM = onn.num_fom_sqares_LPU*onn.LPU_Area
+    print(f"LPU_Accuracy: {np.shape(onn.accuracy_LPU)}, FoM = {onn.LPU_FoM:.5f}, area per square = {onn.LPU_Area:.6f}")
+    print(f"num of LPU FoM sqaures: {onn.num_fom_sqares_LPU}")
+    print(f"------------------------------------------------------------------------------")
     return onn, model
 
 def test_SLPU(onn, X, y, model, show_progress=True): #Only tests Loss/MZI at 0 dB Phase 

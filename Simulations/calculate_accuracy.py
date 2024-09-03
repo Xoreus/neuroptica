@@ -24,6 +24,7 @@ def get_accuracy_PT(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
             acc_phi = []
             for phase_uncert_phi in ONN.phase_uncert_phi:
                 acc = []
+                np.random.seed(0) # provide same noise path each simulation (Xuening)
                 for _ in range(ONN.ITERATIONS):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
                     # sigma_adjust(model) # should adjustments needed
@@ -52,6 +53,7 @@ def get_accuracy_LPU(ONN, model, Xt, yt, loss_diff=0, show_progress=True):
             ONN.phase_uncert_phi_curr = [phase_uncert_theta]
             for phase_uncert_phi in ONN.phase_uncert_phi_curr:
                 acc = []
+                np.random.seed(0) # provide same noise path each simulation (Xuening)
                 for _ in range(ONN.ITERATIONS):
                     model.set_all_phases_uncerts_losses(ONN.phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff)
                     # sigma_adjust(model) # should adjustments needed

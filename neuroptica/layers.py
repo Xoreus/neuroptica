@@ -102,6 +102,7 @@ class AddMaskDiamond(NetworkLayer):
     def forward_pass(self, X: np.ndarray):
         B = np.zeros_like(X, dtype=NP_COMPLEX)
         B = B[:-2, :]
+        print(f"B shape{B.shape}")
         C = np.empty((X.shape[0]+B.shape[0], X.shape[1]), dtype=NP_COMPLEX)
 
         # C[:X.shape[0]-2,:] = B # if using bottom ports (clear top ports)
@@ -113,8 +114,8 @@ class AddMaskDiamond(NetworkLayer):
         C[:X.shape[0]//2-1,:] = B[:B.shape[0]//2,:] # if using middle ports (clear remaining top ports)
         C[floor(X.shape[0]*1.5)-1:2*X.shape[0]-2,:] = B[B.shape[0]//2:,:] # if using middle ports (clear remaining bottom ports)
         C[X.shape[0]//2-1:floor(X.shape[0]*1.5)-1,:] = X # if using middle ports
-        # print(f"input to forward pass: X matrix shape{X.shape}")
-        # print(f"ouput of forward pass: C matrix shape{C.shape}")
+        print(f"input to forward pass: X matrix shape{X.shape}")
+        print(f"ouput of forward pass: C matrix shape{C.shape}")
         # exit()
 
         return C
@@ -127,6 +128,41 @@ class AddMaskDiamond(NetworkLayer):
         # delta_back = delta[:self.input_size] # if using top ports
         delta_back = delta[self.input_size//2-1:floor(self.input_size*1.5)-1] # if using middle ports
         
+        return delta_back
+
+class PadZeros(NetworkLayer):
+    '''
+    pad 0s equally around the signal (adding extra waveguides with null input)
+    e.g. for a signal dimension of 2 and batch size 4:
+        [[2, 4, 5, 2]
+         [8, 1, 7, 4]]
+    becomes:
+        [[0, 0, 0, 0]
+         [0, 0, 0, 0]
+         [2, 4, 5, 2]
+         [8, 1, 7, 4]
+         [0, 0, 0, 0]
+         [0, 0, 0, 0]]
+    when N = 6
+    '''
+    def __init__(self, N: int):
+        self.ports = list(range(N))
+        super().__init__(N, len(self.ports))
+
+    def forward_pass(self, X: np.ndarray):
+        self.input_prev = X
+        output = np.pad(X, ((self.input_size//2 - 1, self.input_size//2 - 1),(0, 0)))
+        # print(f"input to forward pass:\n{X}")
+        # print(f"ouput of forward pass:\n{output}")
+        # exit()
+        return output
+
+    def backward_pass(self, delta: np.ndarray) -> np.ndarray:
+        self.output_prev = delta
+        delta_back = delta[self.output_size//2-1:self.output_size//2+self.input_prev.shape[0]-1, :]
+        # print(f"input to backward pass:\n{delta}")
+        # print(f"ouput of backward pass:\n{delta_back}")
+        # exit()
         return delta_back
 
 class DropMask(NetworkLayer):
@@ -749,7 +785,8 @@ class CustomLayer(OpticalMeshNetworkLayer):
             self.output_prev = np.copy(self.mesh.forward_fields[-1][-1])
         else:
             self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
-
+        # print(f"post-meshlayer fields:\n{self.output_prev}")
+        # exit()
         return self.output_prev
 
     def backward_pass(self, delta: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
