@@ -23,7 +23,7 @@ from torchvision import datasets, transforms
 # rc('font', weight='bold')
 # rc('text', usetex=True)
 import matplotlib
-matplotlib.use('TkAgg')
+# matplotlib.use('TkAgg')
 matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -93,26 +93,26 @@ def collect_label_binary_duration(dataset, cutoff = 4):
 def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this is for unnormalized MNIST: [1,3,6,7]):
     # random.seed() # comment out this line to get same classes each run
     " Download MNIST dataset "
-    # X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1) # shape: (60000 rows, 784 column), i.e. 60000 28*28 pictures of chars
+    X_train = load_mnist_images('train-images-idx3-ubyte.gz').reshape(60_000, -1) # shape: (60000 rows, 784 column), i.e. 60000 28*28 pictures of chars
     #print(X_train[0])
-    # y_train = load_mnist_labels('train-labels-idx1-ubyte.gz') # y_train's shape: (60000,)
+    y_train = load_mnist_labels('train-labels-idx1-ubyte.gz') # y_train's shape: (60000,)
     #print(y_train[0])
-    # X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
+    X_test = load_mnist_images('t10k-images-idx3-ubyte.gz').reshape(10_000, -1)
     #print(X_test[8])
-    # y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
+    y_test = load_mnist_labels('t10k-labels-idx1-ubyte.gz')
     #print(y_test[8])
 
     # ============= group mnist [0-4], [5-9] into categories (0, 1) and (1, 0)
     # methods author: Xuening Dong
-    X, y = collect_label_binary_duration(load_MNIST_dataset()[0], cutoff=4)
-    X_test, y_test = collect_label_binary_duration(load_MNIST_dataset()[1], cutoff=4)
-    X, Xt, y, yt = train_test_split(X, y, test_size=1/6) # each label one hot encoded vector of length 10, indicating the correct digit this is.
+    # X, y = collect_label_binary_duration(load_MNIST_dataset()[0], cutoff=4)
+    # X_test, y_test = collect_label_binary_duration(load_MNIST_dataset()[1], cutoff=4)
+    # X, Xt, y, yt = train_test_split(X, y, test_size=1/6) # each label one hot encoded vector of length 10, indicating the correct digit this is.
     # Create dimensionality reducer (PCA with N dimensions) and fit it to dataset
-    pca = PCA(n_components=features) # a number was represented by 784 values originally, now only {features} values
-    pca.fit(X)
-    X = pca.transform(X) # shape of X: (60000, {features})
-    Xt = pca.transform(Xt) # shape of X: (60000, {features})
-    X_test = pca.transform(X_test) # shape of X: (60000, {features})
+    # pca = PCA(n_components=features) # a number was represented by 784 values originally, now only {features} values
+    # pca.fit(X)
+    # X = pca.transform(X) # shape of X: (60000, {features})
+    # Xt = pca.transform(Xt) # shape of X: (60000, {features})
+    # X_test = pca.transform(X_test) # shape of X: (60000, {features})
     # print(f"X: {X.shape}")
     # print(f"Xt: {Xt.shape}")
     # print(f"X_test: {X_test.shape}")
@@ -120,7 +120,7 @@ def MNIST_dataset(classes=4, features=4, nsamples=100, digits=[1,3,6,7]): # this
     # print(f"yt: {yt.shape}")
     # print(f"y_test: {y_test.shape}")
     # print(f"dataset range: [{np.min(X):.3f}, {np.max(X):.3f}], [{np.min(Xt):.3f}, {np.max(Xt):.3f}], [{np.min(X_test):.3f}, {np.max(X_test):.3f}]")
-    return np.array(X), np.array(y), np.array(Xt), np.array(yt), np.array(X_test), np.array(y_test)
+    # return np.array(X), np.array(y), np.array(Xt), np.array(yt), np.array(X_test), np.array(y_test)
     # ==========================================================
 
     if classes != 4:
@@ -563,42 +563,79 @@ def load_CIFAR_10_dataset():
 # class "animal": birds, cats, deer, dog
 # class "vehicle": airplanes, cars, ships, trucks
 def modify_CIFAR_10(dataset):
-    data, label = [], []
+    data, label, og_label = [], [], []
 
     animal_label, vehicle_label = [2, 3, 4, 5], [0, 1, 8, 9]
 
     for (d, target) in (dataset):
         if target in animal_label or target in vehicle_label:
+            og_label.append(target)
             data.append(d.numpy())
-
             if target in animal_label:
                 label.append([1, 0])
             else:
                 label.append([0, 1])
 
-    return np.concatenate(data).reshape(len(data), 32*32*3), np.concatenate(label).reshape(len(label), 2)
+    return np.concatenate(data).reshape(len(data), 32*32*3), np.concatenate(label).reshape(len(label), 2), np.array(og_label)
 
 def CIFAR_10(classes=2, features=8, nsamples=100, filename='cifar-10-python.tar.gz'):
     # ======= Frontier: binarized CIFAR-10 (Xuening) ====
-    cifar_train, cifar_test = load_CIFAR_10_dataset()
+    # cifar_train is a tuple of (tensor(32x32x3), (int0-9)), i.e., (image, label)
+    # cifar_train, cifar_test = load_CIFAR_10_dataset()
+    # train_set, train_label, train_og_label = modify_CIFAR_10(cifar_train) # removes frog and horse samples, and relabels them as animal ([1, 0]) or vehicle ([0, 1])
+    # test_set, test_label, test_og_label = modify_CIFAR_10(cifar_test)
+    # print(train_set.shape, train_set.max(), train_set.min())
+    # print(train_label.shape)
+    # print(test_set.shape)
+    # print(test_label.shape)
+    # exit(0)
+    '''Code to visualize samples'''
+    # print(f"train_og_label: {train_og_label[33353:33373]}")
+    # exit(0)
+    # label_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    # train_img = train_set.reshape(len(train_set), 3, 32, 32).transpose(0,2,3,1).astype("float64")
+    # test_img = test_set.reshape(len(test_set), 3, 32, 32).transpose(0,2,3,1).astype("float64")
+    # plt.figure(figsize=(16, 20))
 
-    train_set, train_label = modify_CIFAR_10(cifar_train)
-    test_set, test_label = modify_CIFAR_10(cifar_test)
-    print(train_set.shape)
-    print(train_label.shape)
-    print(test_set.shape)
-    print(test_label.shape)
+    # plt.subplot(231)
+    # plt.imshow(train_img[498])
+    # plt.title(f"{label_names[int(train_og_label[498])]}, {train_label[498]}", fontsize=50)
+
+    # plt.subplot(232)
+    # plt.imshow(train_img[721])
+    # plt.title(f"{label_names[int(train_og_label[721])]}, {train_label[721]}", fontsize=50)
+
+    # plt.subplot(233)
+    # plt.imshow(train_img[33362])
+    # plt.title(f"{label_names[int(train_og_label[33362])]}, {train_label[33362]}", fontsize=50)
+
+    # plt.subplot(234)
+    # plt.imshow(test_img[45])
+    # plt.title(f"{label_names[int(test_og_label[45])]}, {test_label[45]}", fontsize=50)
+
+    # plt.subplot(235)
+    # plt.imshow(test_img[26])
+    # plt.title(f"{label_names[int(test_og_label[26])]}, {test_label[26]}", fontsize=50)
+
+    # plt.subplot(236)
+    # plt.imshow(test_img[4998])
+    # plt.title(f"{label_names[int(test_og_label[4998])]}, {test_label[4998]}", fontsize=50)
+
+    # plt.tight_layout()
+    # # plt.show()
+    # plt.savefig('CIFAR-10_samples.png', dpi=300, bbox_inches='tight')
+    # exit(0)
+    '''-----end of visualization code-----'''
     '''PCA'''
-    X, Xv, y, yv = train_test_split(train_set, train_label, test_size=0.2, stratify=train_label)
-    pca = PCA(n_components=features)
-    pca.fit(X)
-    X = pca.transform(X)
-    Xv = pca.transform(Xv)
-    Xt = pca.transform(test_set)
+    # X, Xv, y, yv = train_test_split(train_set, train_label, test_size=0.2, stratify=train_label)
+    # pca = PCA(n_components=features)
+    # pca.fit(X)
+    # X = pca.transform(X)
+    # Xv = pca.transform(Xv)
+    # Xt = pca.transform(test_set)
     # print(X.shape, Xv.shape, Xt.shape)
-    # print(y.shape, yv.shape, yt.shape)
-    # exit()
-    return X, y, Xv, yv, Xt, test_label
+    # print(y.shape, yv.shape, test_label.shape)
+    # return X, y, Xv, yv, Xt, test_label
     # ===================================================
     if not os.path.exists(filename):
         print("Downloading CIFAR-10...")
@@ -610,20 +647,9 @@ def CIFAR_10(classes=2, features=8, nsamples=100, filename='cifar-10-python.tar.
         shutil.unpack_archive(filename)
     n=5
     data = np.zeros((10000*n, 3072)) # to store 5 files each with 10000*((32*32)*3) images
-    label = np.zeros(10000*n) # to store labels (1-9)
+    label = np.zeros(10000*n, dtype=np.uint8) # to store labels (0-9)
     test_data = np.zeros((10000, 3072))
-    test_label = np.zeros(10000)
-    # label_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-    # train_img = data.reshape(50000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
-    # test_img = test_data.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
-    # plt.figure(figsize=(16,20))
-    # plt.subplot(231, title=f"{label_names[int(label[498])]}"), plt.imshow(train_img[498])
-    # plt.subplot(232, title=f"{label_names[int(label[721])]}"), plt.imshow(train_img[721])
-    # plt.subplot(233, title=f"{label_names[int(label[49999])]}"), plt.imshow(train_img[49999])
-    # plt.subplot(234, title=f"{label_names[int(test_label[45])]}"), plt.imshow(test_img[45])
-    # plt.subplot(235, title=f"{label_names[int(test_label[26])]}"), plt.imshow(test_img[26])
-    # plt.subplot(236, title=f"{label_names[int(test_label[9999])]}"), plt.imshow(test_img[9999])
-    # plt.show()
+    test_label = np.zeros(10000, dtype=np.uint8)
     count = 0
     for file in os.listdir(extracted_folder):
         if "_batch" in file: # training/testing samples
@@ -638,23 +664,34 @@ def CIFAR_10(classes=2, features=8, nsamples=100, filename='cifar-10-python.tar.
                 elif "test" in file: # test samples
                     test_data[:] = dict[b'data']
                     test_label[:] = dict[b'labels']
-    '''class selection'''
-    class_choice = np.logical_or(label==0, label==5) # cat(3), dog(5)
-    class_choice_test = np.logical_or(test_label==0, test_label==5) # cat(3), dog(5)
-    two_class, two_label = data[class_choice], label[class_choice]
-    two_class_test, two_label_test = test_data[class_choice_test], test_label[class_choice_test]
+    # label_names = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+    # train_img = data.reshape(50000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
+    # test_img = test_data.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("uint8")
+    # plt.figure(figsize=(16,20))
+    # plt.subplot(231, title=f"{label_names[int(label[498])]}"), plt.imshow(train_img[498])
+    # plt.subplot(232, title=f"{label_names[int(label[721])]}"), plt.imshow(train_img[721])
+    # plt.subplot(233, title=f"{label_names[int(label[49999])]}"), plt.imshow(train_img[49999])
+    # plt.subplot(234, title=f"{label_names[int(test_label[45])]}"), plt.imshow(test_img[45])
+    # plt.subplot(235, title=f"{label_names[int(test_label[26])]}"), plt.imshow(test_img[26])
+    # plt.subplot(236, title=f"{label_names[int(test_label[9999])]}"), plt.imshow(test_img[9999])
+    # plt.show()
+    '''class selection (if only use two classes)'''
+    # class_choice = np.logical_or(label==0, label==5) # cat(3), dog(5)
+    # class_choice_test = np.logical_or(test_label==0, test_label==5) # cat(3), dog(5)
+    # data, label = data[class_choice], label[class_choice]
+    # test_data, test_label = test_data[class_choice_test], test_label[class_choice_test]
     '''Process labels: categorical -> one-hot'''
-    diag = np.eye(2)
-    two_label = diag[np.where(two_label==np.unique(two_label)[0], 0, 1)]
-    yt = diag[np.where(two_label_test==np.unique(two_label_test)[0], 0, 1)]
+    diag = np.eye(10) # one_hot encodings used to fill in temp_one_hot_label
+    label = diag[label]
+    yt = diag[test_label]
     '''Process data: PCA'''
     # data = (data[:, 0:1024] + data[:, 1024:2048] + data[:, 2048:3072]) / 3 # gray data
-    X, Xv, y, yv = train_test_split(two_class, two_label, test_size=0.2, stratify=two_label)
+    X, Xv, y, yv = train_test_split(data, label, test_size=0.2, stratify=label)
     pca = PCA(n_components=features)
     pca.fit(X)
     X = pca.transform(X)
     Xv = pca.transform(Xv)
-    Xt = pca.transform(two_class_test)
+    Xt = pca.transform(test_data)
     # print(X.shape, Xv.shape, Xt.shape)
     # print(y.shape, yv.shape, yt.shape)
     # exit()

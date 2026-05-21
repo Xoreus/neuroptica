@@ -16,11 +16,18 @@ from plot_scatter_matrix import plot_scatter_matrix
 import ONN_Setups
 import training_onn as train
 import test_trained_onns as test
+from typing import Callable, Dict, Iterable, List, Type
 import create_datasets
 from sklearn import preprocessing
 import sys
 sys.path.append('../')
 import neuroptica as neu
+from neuroptica.component_layers import ComponentLayer
+from neuroptica.component_layers import BeamSplitterLayer
+from neuroptica.component_layers import PhaseShifterLayer
+from matplotlib import pyplot as plt
+import matplotlib
+matplotlib.rcParams.update(matplotlib.rcParamsDefault)
 
 def see_each_mzi(p_model):
     '''
@@ -60,6 +67,32 @@ def see_each_mzi(p_model):
     print(f"phi range: ({min_phi},{max_phi})")
     print("------------------------------------------------------------------------------------------------")
 
+def see_each_component(p_model):
+    '''
+    Helper Function to visualize each component's information.
+    For beam splitters, the printed tuple (m,n) represents the two waveguides it is connected to.
+    For phase shifters, the printed tuple (m, phi) represents the waveguide index and its phase shift value.
+    '''
+    print("\n------------------------------------------------------------------------------------------------")
+    componentMesh = [layer for layer in p_model.layers if isinstance(layer, neu.OpticalMeshNetworkLayer)]
+    print(f"There are {len(componentMesh)} componentMesh(es) in the model.")
+    for i in range(len(componentMesh)):
+        component_layers = componentMesh[i].mesh.layers # list of objects <ComponentLayer>
+        print(f"There are {len(component_layers)} component columns in this topology, (mesh #{i})")
+        for j, eachComponentCol in enumerate(component_layers):
+            if isinstance(eachComponentCol, neu.PhaseShifterLayer):
+                print(f"<PhaseShifterLayer (#{j})>, ", end="\t")
+                for eachPS in eachComponentCol.phase_shifters:
+                    # you can also print other information related to each MZI here, such as the theta/phi phases...
+                    print(f"({eachPS.m}, {eachPS.phi:.3f})", end="")
+            elif isinstance(eachComponentCol, neu.BeamSplitterLayer):
+                print(f"<BeamSplitterLayer (#{j})>", end="\t")
+                for eachBS in eachComponentCol.beam_splitters:
+                    # you can also print other information related to each MZI here, such as the theta/phi phases...
+                    print(f"({eachBS.m}, {eachBS.n})", end="")
+            print("\n", end="")
+    print("------------------------------------------------------------------------------------------------")
+
 def sigma_adjust(p_model):
     '''
     if you want to individually tune certain MZIs' sigma values,
@@ -92,10 +125,10 @@ def init_onn_settings():
     onn.max_accuracy_req = 99.9 # Will stop retrying after accuracy above this is reached
 
     onn.features = 10 # How many features? max for MNIST = 784 
-    onn.classes = 2 # How many classes? max for MNIST = 10
+    onn.classes = 10 # How many classes? max for MNIST = 10
     onn.N = onn.features # number of ports in device
 
-    onn.zeta = 0.75 * 100 # Min diff between max (correct) sample and second sample
+    onn.zeta = 0.60 # Min diff between max (correct) sample and second sample
     onn.beta = 1.0 # factor to penalize false negative: 1.0, 1.2, 1.4, 1.6, 1.8. 2.0
 
     # TO SCALE THE FIELD SUCH THAT POWER IS WITHIN A RANGE OF dB #
@@ -181,9 +214,20 @@ def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
             X_test = (onn.X_test - np.min(onn.X_test))/(np.max(onn.X_test) - np.min(onn.X_test))*onn.range_linear
             # the above three lines are power, convert to amplitude by square root
             # (should be beneficial, as VOA attenuates less power)
-            onn.X = np.sqrt(X)
-            onn.Xt = np.sqrt(Xt)
-            onn.X_test = np.sqrt(X_test)
+            # =====scaling factor ditching the VOA assumption=====
+            # print(f"range of X: [{np.min(X):.3f}, {np.max(X):.3f}]")
+            # max_power_in_training_set = np.max(np.sum(X, axis=1))
+            # scaling_factor = np.sqrt(10/max_power_in_training_set)
+            # scaling_factor = 1. # if want to revert to original VOA-based normalization
+            # print(f"Max power in training set: {max_power_in_training_set:.3f} mW, scaling factor: {scaling_factor:.3f}")
+            # onn.X = np.sqrt(X) * scaling_factor
+            # print(f"Max power in training set after normalization: {np.max(np.sum(onn.X**2, axis=1)):.3f} mW")
+            # onn.Xt = np.sqrt(Xt) * scaling_factor # use the scaling factor from training set to avoid data leakage
+            # print(f"Max power in validation set after normalization: {np.max(np.sum(onn.Xt**2, axis=1)):.3f} mW")
+            # onn.X_test = np.sqrt(X_test) * scaling_factor # use the scaling factor from training set to avoid data leakage
+            # print(f"Max power in test set after normalization: {np.max(np.sum(onn.X_test**2, axis=1)):.3f} mW")
+            # exit(0)
+            #====================================================
 
         # To shift them to useable experimental samples...
         onn.range_dB = 10
@@ -212,7 +256,8 @@ def normalize_dataset(onn, normalization='MinMaxScaling', experimental=False):
         postscale_vector = onn.Xt / prescale_vector_sums[:, np.newaxis] * 10
         onn.Xt = np.sqrt(postscale_vector)
     print(f'Using {normalization} scaling, Dataset range: [{np.min(onn.X):.3f}, {np.max(onn.X):.3f}], [{np.min(onn.Xt):.3f}, {np.max(onn.Xt):.3f}], [{np.min(onn.X_test):.3f}, {np.max(onn.X_test):.3f}]')
-    print(f'Power range: [{10*np.log10(np.min(onn.X)**2):.5f}, {10*np.log10(np.max(onn.X)**2):.5f}] dB, [{10*np.log10(np.min(onn.Xt)**2):.5f}, {10*np.log10(np.max(onn.Xt)**2):.5f}] dB, [{10*np.log10(np.min(onn.X_test)**2):.5f}, {10*np.log10(np.max(onn.X_test)**2):.5f}] dB')
+    print(f'Power range (dB): [{10*np.log10(np.min(onn.X)**2):.5f}, {10*np.log10(np.max(onn.X)**2):.5f}] dB, [{10*np.log10(np.min(onn.Xt)**2):.5f}, {10*np.log10(np.max(onn.Xt)**2):.5f}] dB, [{10*np.log10(np.min(onn.X_test)**2):.5f}, {10*np.log10(np.max(onn.X_test)**2):.5f}] dB')
+    print(f'Power range (mW): [{np.min(onn.X)**2:.5f}, {np.max(onn.X)**2:.5f}] mW, [{np.min(onn.Xt)**2:.5f}, {np.max(onn.Xt)**2:.5f}] mW, [{np.min(onn.X_test)**2:.5f}, {np.max(onn.X_test)**2:.5f}] mW')
     return onn
 
 def normalize_inputs(data, num_inputs, P0=10):
@@ -233,6 +278,174 @@ def normalize_inputs(data, num_inputs, P0=10):
         data_normalized[i][injection_port] = np.sqrt(P0 - np.sum(x))
     return data_normalized
 
+
+def generate_topology_profile(name: str, features: int):
+    """
+    Generate a 2D list representing the placement of MZIs in a single mesh
+    name:: Reck, Clements, miniBokun, Diamond, or Bokun
+    features:: number of input ports
+    """
+    topology_profile = []
+    if name == "Reck": # verified
+        topology_profile.append(list(range(0, features)))
+        for i in range(1, features//2):
+            topology_profile.append(list(range(1, features-2*i+1)))
+            topology_profile.insert(0, list(range(1, features-2*i+1)))
+            topology_profile.append(list(range(0, features-2*i)))
+            topology_profile.insert(0, list(range(0, features-2*i)))
+    if name == "Clements":  # verified
+        for i in range(features//2):
+            topology_profile.append(list(range(0, features)))
+            topology_profile.append(list(range(1, features-1)))
+    if name == "miniBokun":  # verified
+        topology_profile = [list(range(i, features-i)) for i in range(features//2 - 1)]
+        topology_profile.insert(0, list(range(1, features-1)))
+        topology_profile.insert(0, list(range(2, features-2)))
+    if name == "Diamond":
+        pass
+    if name == "Bokun":
+        pass
+    return topology_profile
+
+def generate_advanced_custom_profile() -> List[tuple[Type[ComponentLayer], list[int]]]:
+    '''
+    Generate a custom topology profile using ComponentLayer objects
+    - each tuple is a component column
+    - tuple[0] indicate component type
+    - tuple[1] uses waveguide indices to indicate which waveguides to place the components on
+    clements 4x4 as an placeholder example, edit the list to create your own custom profile.
+    '''
+    clements_4x4_profile = [
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0,    2   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0,    2   ]),
+                                (BeamSplitterLayer, [   1, 2   ]),
+                                (PhaseShifterLayer, [   1      ]),
+                                (BeamSplitterLayer, [   1, 2   ]),
+                                (PhaseShifterLayer, [   1      ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0,    2   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0,    2   ]),
+                                (BeamSplitterLayer, [   1, 2   ]),
+                                (PhaseShifterLayer, [   1      ]),
+                                (BeamSplitterLayer, [   1, 2   ]),
+                                (PhaseShifterLayer, [   1      ])
+                                # (WGCrossingLayer, [   1, 2   ]) # WGC TO BE IMPLEMENTED
+                                # (MZILayer, [   1, 2   ])
+                                # ...
+                            ]
+    clements_10x10_profile = [
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9])
+                                # (WGCrossingLayer, [   1, 2   ]) # WGC TO BE IMPLEMENTED
+                                # (MZILayer, [   1, 2   ])
+                                # ...
+                            ]
+    custom_10x10_profile = [
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                (BeamSplitterLayer, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]),
+                                (PhaseShifterLayer, [0,    2,    4,    6,    8   ]),
+                                
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9]),
+                                (BeamSplitterLayer, [   1, 2, 3, 4, 5, 6, 7, 8   ]),
+                                (PhaseShifterLayer, [   1,    3,    5,    7,    9])
+                                # (WGCrossingLayer, [   1, 2   ]) # WGC TO BE IMPLEMENTED
+                                # (MZILayer, [   1, 2   ])
+                                # ...
+                            ]
+    return clements_10x10_profile
+
 def create_model(features, classes):
     ''' create ONN model based on neuroptica layer '''
     eo_settings = {'alpha': 0.1, 'g':0.5 * np.pi, 'phi_b': -1 * np.pi} # If Electro-Optic Nonlinear Activation is used
@@ -250,276 +463,15 @@ def create_model(features, classes):
 
     nlaf = eo_activation # Pick the Non Linear Activation Function
 
-
-    # If you want multi-layer BOTTOM Diamond Topology
-    # model = neu.Sequential([
-        # neu.AddMaskDiamond(features),
-        # neu.DiamondLayer(features),
-        # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        # neu.Activation(nlaf), # first layer ends here
-        # neu.AddMaskDiamond(features),
-        # neu.DiamondLayer(features),
-        # neu.DropMask(2*features - 2, keep_ports=range(features - 2, 2*features - 2)), # Bottom Diamond Topology
-        # neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        # neu.DropMask(features, keep_ports=range(classes)), # needs a drop mask at the output
-    # ])
-
-    # If you want multi-layer TOP Diamond Topology
-    # model = neu.Sequential([
-    #     # neu.AddMaskDiamond(features),
-    #     # neu.DiamondLayer(features),
-    #     # neu.DropMask(2*features - 2, keep_ports=range(0, features)), # Top Diamond Topology
-    #     # neu.Activation(nlaf), # first layer ends here
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(0, features)), # Top Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
-
-    # If you want multi-layer Bokun Topology
-    # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
-    #     neu.Activation(nlaf), # first layer ends here
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
-
-    # If you want regular Clements (multi-layer) topology
-    # model = neu.Sequential([
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(nlaf),
-    #     neu.ClementsLayer(features),
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes))
-    # ])
-
-    # If you want regular Reck (single-layer) topology
-    # model = neu.Sequential([
-    #     # neu.ReckLayer(features),
-    #     # neu.Activation(nlaf), # photodetector measurement
-    #     neu.ReckLayer(features),
-    #     # neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     # neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-    # ])
-
     # if using custom ONN layers, specify the mesh profile: a 2D matrix indicate MZI locations
     # Representation of profile: 2D lists with waveguide indices as entries
     # each pair of numbers in a row denote the MZI location
     # This representation is the most convenient to parse by MZILayer.from_waveguide_indices() method
-    clement_4x4_profile = [[0, 1, 2, 3],
-                           [   1, 2,  ],
-                           [0, 1, 2, 3],
-                           [   1, 2,  ]]
-    reck_4x4_profile =    [[0, 1      ],
-                           [   1, 2,  ],
-                           [0, 1, 2, 3],
-                           [   1, 2   ],
-                           [0, 1      ]]
-    Bokun_4x4_profile =   [[      2, 3      ],
-                           [   1, 2, 3, 4   ],
-                           [0, 1, 2, 3, 4, 5],
-                           [   1, 2, 3, 4   ],
-                           [      2, 3      ]]
-    reck_10x10_profile =    [[0,1                ],
-                             [  1,2              ],
-                             [0,1,2,3            ],
-                             [  1,2,3,4          ],
-                             [0,1,2,3,4,5        ],
-                             [  1,2,3,4,5,6      ],
-                             [0,1,2,3,4,5,6,7    ],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7    ],
-                             [  1,2,3,4,5,6      ],
-                             [0,1,2,3,4,5        ],
-                             [  1,2,3,4          ],
-                             [0,1,2,3            ],
-                             [  1,2              ],
-                             [0,1                ],]
-    
-    clement_10x10_profile = [[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ]]
-    
-    clement_10x10_withHole = [[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,    7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ]]
-    
-    custom_10x10_profile  = [[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7    ],
-                             [  1,2,3,4,5,6      ],
-                             [0,1,2,3,4,5        ],
-                             [  1,2,3,4          ],
-                             [0,1,2,3            ],
-                             [  1,2              ]]
- 
-    drill6_10x10_profile =  [[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    drill5_10x10_profile =  [[  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    drill4_10x10_profile =  [[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    drill3_10x10_profile =  [[  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    drill2_10x10_profile =  [[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    drill_10x10_profile =   [[  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    triangle_10x10_profile =[[0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    miniBokun_10x10_profile=[[    2,3,4,5,6,7    ],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [0,1,2,3,4,5,6,7,8,9],
-                             [  1,2,3,4,5,6,7,8  ],
-                             [    2,3,4,5,6,7    ],
-                             [      3,4,5,6      ]]
-    topology_to_test = [drill6_10x10_profile,
-                        drill5_10x10_profile,
-                        drill4_10x10_profile,
-                        drill3_10x10_profile,
-                        drill2_10x10_profile,
-                        drill_10x10_profile,
-                        triangle_10x10_profile,
-                        miniBokun_10x10_profile]
-    
-    miniBokun_8x8_profile=[[    2,3,4,5    ],
-                           [  1,2,3,4,5,6  ],
-                           [0,1,2,3,4,5,6,7],
-                           [  1,2,3,4,5,6  ],
-                           [    2,3,4,5    ]]
-    miniBokun_16x16_profile=[[    2,3,4,5,6,7,8,9,10,11,12,13      ],
-                             [  1,2,3,4,5,6,7,8,9,10,11,12,13,14   ],
-                             [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],
-                             [  1,2,3,4,5,6,7,8,9,10,11,12,13,14   ],
-                             [    2,3,4,5,6,7,8,9,10,11,12,13      ],
-                             [      3,4,5,6,7,8,9,10,11,12         ],
-                             [        4,5,6,7,8,9,10,11            ],
-                             [          5,6,7,8,9,10               ],
-                             [            6,7,8,9                  ]]
-    miniBokun_32x32_profile=[list(range(2,30)),
-                             list(range(1,31)),
-                             list(range(0,32)),
-                             list(range(1,31)),
-                             list(range(2,30)),
-                             list(range(3,29)),
-                             list(range(4,28)),
-                             list(range(5,27)),
-                             list(range(6,26)),
-                             list(range(7,25)),
-                             list(range(8,24)),
-                             list(range(9,23)),
-                             list(range(10,22)),
-                             list(range(11,21)),
-                             list(range(12,20)),
-                             list(range(13,19)),
-                             list(range(14,18))]
-    miniBokun_64x64_profile = [list(range(i, features-i)) for i in range(features//2 - 1)]
-    miniBokun_64x64_profile.insert(0, list(range(1, features-1)))
-    miniBokun_64x64_profile.insert(0, list(range(2, features-2)))
-# [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]
-    diamond_10x10_profile  = [[                8,9                        ],
-                              [              7,8,9,10                     ],
-                              [            6,7,8,9,10,11                  ],
-                              [          5,6,7,8,9,10,11,12               ],
-                              [        4,5,6,7,8,9,10,11,12,13            ],
-                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
-                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
-                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
-                              [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
-                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
-                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
-                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
-                              [        4,5,6,7,8,9,10,11,12,13            ],
-                              [          5,6,7,8,9,10,11,12               ],
-                              [            6,7,8,9,10,11                  ],
-                              [              7,8,9,10                     ],
-                              [                8,9                        ]]
-
-    bokun_10x10_profile    = [[        4,5,6,7,8,9,10,11,12,13            ],
-                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
-                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
-                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
-                              [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],
-                              [  1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16   ],
-                              [    2,3,4,5,6,7,8,9,10,11,12,13,14,15      ],
-                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
-                              [        4,5,6,7,8,9,10,11,12,13            ],
-                              [          5,6,7,8,9,10,11,12               ]]
-
-    bokun_pr_10x10_profile = [[        4,5,6,7,8,9,10,11,12,13            ],
-                              [      3,4,5,6,7,8,9,10,11,12,13,14         ],
-                              [    2,3,4,5,6,7,8,9,10,11,12,13            ],
-                              [  1,2,3,4,5,6,7,8,9,10,11,12               ],
-                              [0,1,2,3,4,5,6,7,8,9,10,11                  ],
-                              [  1,2,3,4,5,6,7,8,9,10                     ],
-                              [    2,3,4,5,6,7,8,9                        ],
-                              [      3,4,5,6,7,8                          ],
-                              [        4,5,6,7                            ],
-                              [          5,6                              ]]
-
 
     model = neu.Sequential([
         # neu.AddMaskDiamond(features),
-        neu.CustomLayer(features, topology_to_test[topo_index]),
+        # neu.CustomLayer(features, generate_topology_profile('Clements', features)),
+        neu.AdvancedCustomLayer(features, generate_advanced_custom_profile()),
         # neu.Activation(neu.AbsSquared(features)), # photodetector measurement
         # neu.Activation(nlaf), # non-linear activation layer
         # neu.CustomLayer(features, miniBokun_8x8_profile),
@@ -531,21 +483,10 @@ def create_model(features, classes):
         # neu.CustomLayer(features, miniBokun_8x8_profile),
         # neu.ClementsLayer(features),
         neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-        # neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
-        neu.DropMask(features, keep_ports=[4, 5]) # Drops the unwanted ports
+        neu.DropMask(features, keep_ports=range(classes)) # Drops the unwanted ports
+        # neu.DropMask(features, keep_ports=topo_profile[-1][len(topo_profile[-1])//2-1:len(topo_profile[-1])//2+1]) # Keep middle two ports
     ])
-
-    # model = neu.Sequential([
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
-    #     neu.Activation(nlaf), # first layer ends here
-    #     neu.AddMaskDiamond(features),
-    #     neu.DiamondLayer(features),
-    #     neu.DropMask(2*features - 2, keep_ports=range(features//2-1, floor(features*1.5)-1)), # Middle Diamond Topology
-    #     neu.Activation(neu.AbsSquared(features)), # photodetector measurement
-    #     neu.DropMask(features, keep_ports=range(classes)),
-    # ])
+    # print(f"dropmask keep_ports: {topo_profile[-1][len(topo_profile[-1])//2-1:len(topo_profile[-1])//2+1]}")
 
     return model
 
@@ -609,6 +550,8 @@ def main():
     # print(f"phases({np.shape(model.get_transformation_matrix())}):\n{model.get_transformation_matrix()}")
 
     # see_each_mzi(model)
+    # see_each_component(model)
+    # exit(0)
     # current_phases = model.get_all_phases()
     # current_phases = [[(1.34, 5.72) for _ in layer] for layer in current_phases]
     # model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0.0, loss_diff=0.0)
@@ -631,13 +574,13 @@ def main():
     #======================================================
 
     # Feature Permutation: place important features at the center
-    indices = np.arange(0, onn.features, dtype=np.int32)
-    new_order = np.concatenate((indices[onn.features-2::-2],indices[1::2]), axis=0)
-    print(f"new_order_index: {new_order}")
+    # indices = np.arange(0, onn.features, dtype=np.int32)
+    # new_order = np.concatenate((indices[onn.features-2::-2],indices[1::2]), axis=0)
+    # print(f"new_order_index: {new_order}")
     # new_order = [14, 12, 10, 8, 6, 4, 2, 0, 1, 3, 5, 7, 9, 11, 13, 15]
-    onn.X = onn.X[:, new_order]
-    onn.Xt = onn.Xt[:, new_order]
-    onn.X_test = onn.X_test[:, new_order]
+    # onn.X = onn.X[:, new_order]
+    # onn.Xt = onn.Xt[:, new_order]
+    # onn.X_test = onn.X_test[:, new_order]
 
     # make the label length N by padding additional zero (to test use all ports for binary classification)
     # onn.y = np.hstack((np.zeros((onn.y.shape[0],(onn.features-onn.classes)//2)),
@@ -679,20 +622,34 @@ def main():
     print(f"validation label ratio:\n{np.sum(onn.yt, axis=0)}")
     print(f"testing label ratio:\n{np.sum(onn.y_test, axis=0)}")
 
+    # visualize actual amount of power used to encode each data sample (Unit: mW)
+    # "onn.X" is the pre-processed training set of our binarized CIFAR-10, assuming a 10x2 ONN.
+    # It has shape (32000, 10), each entry is the field amplitude (i.e. the "A" part in "A*exp(j*0)", unit: sqrt(mW))
+    # power_used = np.sum(onn.X**2, axis=1)
+    # # plt.hist(power_used, bins=50, edgecolor='black',facecolor='blue')
+    # # plt.xlabel("power [mW]")
+    # # plt.ylabel("# of samples")
+    # # plt.title(f"Power used to encode each data sample in {data} dataset, total {power_used.shape[0]} samples")
+    # # plt.show()
+    
+    # # plt.legend(loc = 'best')
     # exit(0)
+
+
     model = create_model(onn.features, onn.classes)
     # see_each_mzi(model)
+    see_each_component(model)
     # print("Phases when creating the model:")
     # print(f"phases({np.shape(model.get_all_phases())}):{model.get_all_phases()}")
     # print("\nTransformation matrix when creating the model: D_mzi =")
     # print(f"phases({np.shape(model.get_transformation_matrix())}):{model.get_transformation_matrix()}")
-    # exit(0)
+    exit(0)
     loss_diff = [0] # If loss_diff is used in insertion loss/MZI
     training_loss = [0] # loss used during training
 
     for lossDiff in loss_diff:
         for trainLoss in training_loss:
-            onn.FOLDER = f'Analysis/iris_augment/{onn.features}x{onn.classes}_{onn.topo}' # Name the folder to be created
+            onn.FOLDER = f'Analysis/reverse_MZI/{onn.features}x{onn.classes}_{onn.topo}' # Name the folder to be created
             onn.createFOLDER() # Creates folder to save this ONN training and simulation info
             onn.saveSimDataset() # save the simulation datasets
 
@@ -705,10 +662,14 @@ def main():
                 
                 # Reset the phases to create new model
                 current_phases = model.get_all_phases()
+                # print(f"current phases: {current_phases}")
                 current_phases = [[(None, None) for _ in layer] for layer in current_phases]
+                # print(f"phases to be set: {current_phases}")
                 model.set_all_phases_uncerts_losses(current_phases, phase_uncert_theta=0.0, phase_uncert_phi=0.0, loss_dB=0, loss_diff=0.0)
+                # print(f"current phases after reset: {model.get_all_phases()}")
+                # exit(0)
                 
-                onn, model = train.train_single_onn(onn, model, loss_function='ccew') # 'cce' for categorical, 'mse' for Gaussian, 'ccew' for cce with FN reduction (beta parameter)
+                onn, model = train.train_single_onn(onn, model, loss_function='cce') # 'cce' for categorical, 'mse' for Gaussian, 'ccew' for cce with FN reduction (beta parameter)
 
                 if test_number>0:
                     print("\nPhase of current best model")

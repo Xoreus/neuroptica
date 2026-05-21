@@ -6,7 +6,7 @@ from typing import Tuple, Type
 import numpy as np
 from numpy import pi
 
-from neuroptica.components import MZI, PhaseShifter
+from neuroptica.components import MZI, PhaseShifter, BeamSplitter
 from neuroptica.layers import OpticalMeshNetworkLayer
 from neuroptica.losses import Loss
 from neuroptica.models import Sequential
@@ -227,6 +227,9 @@ class InSituAdam(Optimizer):
 
                                 cmpt.phi += dphi
                                 cmpt.theta += dtheta
+
+                            elif isinstance(cmpt, BeamSplitter):
+                                pass # no need to do anything since beam splitter has no tunable params
 
                             elif isinstance(cmpt, MZI_H):
                                 dtheta, dphi = grad

@@ -12,8 +12,8 @@ from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.datasets import make_blobs
 import random
-import matplotlib as mpl
-mpl.use('Agg')
+# import matplotlib as mpl
+# # mpl.use('Agg')
 from matplotlib import rc
 rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']})
 import matplotlib

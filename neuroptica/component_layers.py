@@ -9,7 +9,7 @@ from xmlrpc.client import boolean
 import numpy as np
 from numba import jit, prange
 
-from neuroptica.components import MZI, OpticalComponent, PhaseShifter, _get_mzi_partial_transfer_matrices
+from neuroptica.components import MZI, BeamSplitter, OpticalComponent, PhaseShifter, _get_mzi_partial_transfer_matrices, BeamSplitter
 from neuroptica.settings import NP_COMPLEX
 
 def mzi_uncertainties(p_waveguide_indices, p_ref_value_theta, p_ref_value_phi, p_i):
@@ -305,6 +305,42 @@ class PhaseShifterLayer(ComponentLayer):
             T[m][m] = phase_shifter.get_transfer_matrix()[0, 0]
         return T
 
+class BeamSplitterLayer(ComponentLayer):
+    '''
+    Represents a column of beam splitters, requires a 1D list profile to specify BS locations
+    author: Bokun Zhao (bokun.zhao@maill.mcgill.ca)
+    date: 2025.Oct.09
+    '''
+
+    def __init__(self, N: int, beam_splitters: List[BeamSplitter] = None):
+        '''
+        :param N: number of waveguides the column is embedded in
+        :param beam_splitters: list of beam splitters in the column (can be less than N)
+        '''
+        super().__init__(N, beam_splitters)
+        if beam_splitters is None:
+            raise ValueError("BeamSplitterLayer needs positional info from a list of <BeamSplitter> to initialize!")
+        self.beam_splitters = beam_splitters
+
+    def __iter__(self) -> Iterable[BeamSplitter]:
+        yield from self.beam_splitters
+
+    def all_tunable_params(self):
+        for beam_splitters in self.beam_splitters:
+            yield (-1, -1)  # (no tunable params in beamsplitter, but keep the method for compatibility)
+
+    def get_transfer_matrix(self, add_uncertainties=False) -> np.ndarray:
+        T = np.eye(self.N, dtype=NP_COMPLEX)
+        for beam_splitter in self.beam_splitters:
+            m = beam_splitter.m
+            n = beam_splitter.n
+            # T[m:m+2, n:n+2] = beam_splitter.get_transfer_matrix()
+            T[m, m] = beam_splitter.get_transfer_matrix()[0,0]
+            T[m, n] = beam_splitter.get_transfer_matrix()[0,1]
+            T[n, m] = beam_splitter.get_transfer_matrix()[1,0]
+            T[n, n] = beam_splitter.get_transfer_matrix()[1,1]
+        return T
+
 class OpticalMesh:
     '''Represents an optical "mesh" consisting of several layers of optical components, e.g. a rectangular MZI mesh'''
 
@@ -400,7 +436,7 @@ class OpticalMesh:
                         raise ValueError('align must be "left" or "right"!')
                     X_current = np.dot(phi_T, X_current)
 
-            elif isinstance(layer, PhaseShifterLayer):
+            elif isinstance(layer, PhaseShifterLayer) or isinstance(layer, BeamSplitterLayer):
                 if align == "right":
                     fields.append([np.dot(layer.get_transfer_matrix(), X_current)])
                 elif align == "left":
@@ -463,7 +499,7 @@ class OpticalMesh:
                         raise ValueError('align must be "left" or "right"!')
                     delta_current = np.dot(bs1_T_inv, delta_current)
 
-            elif isinstance(layer, PhaseShifterLayer):
+            elif isinstance(layer, PhaseShifterLayer) or isinstance(layer, BeamSplitterLayer):
                 if align == "right":
                     adjoint_fields.append([np.copy(delta_current)])
                 elif align == "left":
@@ -570,6 +606,10 @@ class OpticalMesh:
                 dL_dphi = -1 * np.imag(A_phi * A_phi_adj)
                 for phase_shifter in layer.phase_shifters:
                     gradients[phase_shifter] = np.array([dL_dphi[phase_shifter.m]])
+
+            elif isinstance(layer, BeamSplitterLayer):
+                for beam_splitter in layer.beam_splitters:
+                    gradients[beam_splitter] = np.array([0]) # no tunable params in beamsplitter
 
             elif isinstance(layer, MZILayer):
                 A_theta, A_phi = layer_fields

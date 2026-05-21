@@ -8,9 +8,11 @@ Edit: 2022.10.13 by Bokun Zhao (bokun.zhao@mail.mcgill.ca)
 '''
 
 from math import floor
+from typing import List, Type
+from fastapi import params
 import numpy as np
-
-from neuroptica.component_layers import MZILayer, OpticalMesh, PhaseShifterLayer
+from neuroptica.components import BeamSplitter, PhaseShifter
+from neuroptica.component_layers import ComponentLayer, MZILayer, OpticalMesh, PhaseShifterLayer, BeamSplitterLayer
 from neuroptica.nonlinearities import Nonlinearity
 from neuroptica.settings import NP_COMPLEX
 
@@ -833,3 +835,139 @@ class CustomLayer(OpticalMeshNetworkLayer):
             layers.append(MZILayer.from_waveguide_indices(layerCount, self.N, self.mesh_profile[layerCount], thetas=thetas, phis=phis, phase_uncert_theta=phase_uncert_theta, phase_uncert_phi=phase_uncert_phi, loss_dB=loss_dB, loss_diff=loss_diff))
             layerCount += 1
         self.mesh = OpticalMesh(self.N, layers)
+
+class AdvancedCustomLayer(OpticalMeshNetworkLayer):
+    '''
+    TODO:
+    Custom Non-standard topology that use sub-MZI components (PS, BS, even WG crossings) as fine-grained building blocks.
+    Currently ONLY support EVEN number of input waveguides (To simulate odd number of waveguides, simply use one less waveguide)
+    require a mesh_profile: "List[tuple[Type[ComponentLayer], list[int]]]" to specify the structure.
+    clements_4x4_profile = [
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0, 2]),
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0, 2]),
+                                (BeamSplitterLayer, [1, 2]),
+                                (PhaseShifterLayer, [1]),
+                                (BeamSplitterLayer, [1, 2]),
+                                (PhaseShifterLayer, [1]),
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0, 2]),
+                                (BeamSplitterLayer, [0, 1, 2, 3]),
+                                (PhaseShifterLayer, [0, 2]),
+                                (BeamSplitterLayer, [1, 2]),
+                                (PhaseShifterLayer, [1]),
+                                (BeamSplitterLayer, [1, 2]),
+                                (PhaseShifterLayer, [1])
+                                # (WGCrossingLayer, [   1, 2   ])
+                                # (MZILayer, [   1, 2   ])
+                                # ...
+                            ]
+    e.g. reck_4x4_profile = [[0, 1      ],
+                             [   1, 2   ],
+                             [0, 1, 2, 3],
+                             [   1, 2   ],
+                             [0, 1      ]]
+    Author: bokunzhao (bokun.zhao@mail.mcgill.ca)
+    Date: 2025 Oct. 09
+    '''
+
+    def __init__(self, N: int, p_mesh_profile: List[tuple[Type[ComponentLayer], list[int]]], M=None, initializer=None, phases=[(None, None)], loss_dB=0, loss_diff=0, phase_uncert=0.0):
+        '''
+        Initialize the Custom Layer
+        :param N: number of input and output waveguides
+        :param p_mesh_profile: 2D list specifying where the MZIs are.
+        :param include_phase_shifter_layer: if true, include a layer of single-mode phase shifters at the beginning of
+        the mesh (required to implement arbitrary unitary)
+        :param initializer: optional initializer method (WIP)
+        '''
+        super().__init__(N, N, initializer=initializer)
+        
+        self.mesh_profile = p_mesh_profile
+        layers = []
+        PS_count = 0
+        BS_count = 0
+        for i, eachTuple in enumerate(self.mesh_profile):
+            if eachTuple[0] == PhaseShifterLayer:
+                list_of_PS = [PhaseShifter(index, phi=None) for index in eachTuple[1]]
+                layers.append(PhaseShifterLayer(N, list_of_PS))
+                PS_count += len(list_of_PS)
+            elif eachTuple[0] == BeamSplitterLayer:
+                list_of_BS = [BeamSplitter(index1, index2) for index1, index2 in zip(eachTuple[1][::2], eachTuple[1][1::2])]
+                layers.append(BeamSplitterLayer(N, list_of_BS))
+                BS_count += len(list_of_BS)
+            else:
+                raise ValueError(f"ComponentLayer at layer {i} is a <{eachTuple[0]}>, which is not supported.")
+        print(f"<AdvancedCustomLayer> number of phase shifters: {PS_count}")
+        print(f"<AdvancedCustomLayer> number of beam splitters: {BS_count}")
+
+
+        self.phase_uncert = phase_uncert
+        self.loss_dB = loss_dB
+        self.N = N
+
+        if (None, None) in phases:
+            phases = [(None, None) for _ in range(PS_count)]
+
+        if M is None:
+            M = N
+
+        self.mesh = OpticalMesh(N, layers)
+
+    def forward_pass(self, X: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
+        '''
+        Compute the forward pass
+        :param X: input electric fields
+        :param cache_fields: if true, fields are cached
+        :param use_partial_vectors: if true, use partial vector method to speed up transfer matrix computations
+        :return: output fields for next ONN layer
+
+        '''
+        self.input_prev = X
+        if cache_fields:
+            self.mesh.forward_fields = self.mesh.compute_phase_shifter_fields(
+                X, align="right", use_partial_vectors=use_partial_vectors)
+            self.output_prev = np.copy(self.mesh.forward_fields[-1][-1])
+        else:
+            self.output_prev = np.dot(self.mesh.get_transfer_matrix(), X)
+        # print(f"post-meshlayer fields:\n{self.output_prev}")
+        # exit()
+        return self.output_prev
+
+    def backward_pass(self, delta: np.ndarray, cache_fields=False, use_partial_vectors=False) -> np.ndarray:
+        '''
+        Compute the backward pass
+        :param delta: adjoint "output" electric fields backpropagated from the next ONN layer
+        :param cache_fields: if true, fields are cached
+        :param use_partial_vectors: if true, use partial vector method to speed up transfer matrix computations
+        :return: adjoint "input" fields for previous ONN layer
+        '''
+        if cache_fields:
+            self.mesh.adjoint_fields = self.mesh.compute_adjoint_phase_shifter_fields(
+                delta, align="right", use_partial_vectors=use_partial_vectors)
+            if isinstance(self.mesh.layers[0], PhaseShifterLayer):
+                return np.dot(self.mesh.layers[0].get_transfer_matrix().T, self.mesh.adjoint_fields[-1][-1])
+            else:
+                raise ValueError("Field_store will not work in this case, please set to False")
+        else:
+            return np.dot(self.mesh.get_transfer_matrix().T, delta)
+
+    # override method from superclass as AdvancedCustomLayers don't have "self.mzi_limits_lower/upper" field
+    def set_phases_uncert_loss(self, phases, phase_uncert_theta, phase_uncert_phi, loss_dB, loss_diff):
+        """
+        Same method header as CustomLayer.set_phases_uncert_loss() but phase_uncert_theta is unused.
+        No MZIs in AdvancedCustomLayer, only individual phase shifters and beam splitters,
+        use the phase_uncert_phi to specify uncertainties for all individual phase shifters
+        """
+        if (None, None) in phases:
+            phases = [(0, np.random.rand()*2*np.pi) for _ in range(len(phases))]
+        cmptCount = 0
+        for eachCmptLayer in self.mesh.layers:
+            if isinstance(eachCmptLayer, PhaseShifterLayer):
+                for eachPS in eachCmptLayer.phase_shifters:
+                    eachPS.phi = phases[cmptCount][1]
+                    eachPS.phase_uncert = phase_uncert_phi
+                    cmptCount += 1
+            elif isinstance(eachCmptLayer, BeamSplitterLayer):
+                cmptCount += len(eachCmptLayer.beam_splitters) # BeamSplitters have no phases to set
+                # TODO: loss in BeamSplitter

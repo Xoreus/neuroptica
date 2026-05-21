@@ -39,7 +39,7 @@ class OpticalComponent:
 
 _B = 1 / np.sqrt(2) * np.array([[1 + 0j, 0 + 1j], [0 + 1j, 1 + 0j]], dtype=NP_COMPLEX, order="C")
 
-class Beamsplitter(OpticalComponent):
+class BeamSplitter(OpticalComponent):
     '''Simulation of a perfect 50:50 beamsplitter'''
 
     def __init__(self, m: int, n: int):
@@ -60,7 +60,7 @@ class Beamsplitter(OpticalComponent):
 class PhaseShifter(OpticalComponent):
     '''Single-mode phase shifter'''
 
-    def __init__(self, m: int, phi: float = None):
+    def __init__(self, m: int, phi: float = None, phase_uncert: float = 0.0):
         '''
         :param m: waveguide index
         :param phi: optional phase shift value; assigned randomly between [0, 2pi) if unspecified
@@ -69,12 +69,14 @@ class PhaseShifter(OpticalComponent):
         self.m = m
         if phi is None: phi = 2 * pi * np.random.rand()
         self.phi = phi
+        self.phase_uncert = phase_uncert
 
     def __repr__(self):
         return '<PhaseShifter, port = {}, phi = {}>'.format(self.m, self.phi)
 
     def get_transfer_matrix(self) -> np.ndarray:
-        return np.array([[np.exp(1j * self.phi)]], dtype=NP_COMPLEX)
+        imperfect_phi = self.phi + np.random.normal(0, self.phase_uncert)
+        return np.array([[np.exp(1j * imperfect_phi)]], dtype=NP_COMPLEX)
 
 class MZI(OpticalComponent):
     '''Simulation of a programmable phase-shifting Mach-Zehnder interferometer'''
@@ -119,11 +121,25 @@ class MZI(OpticalComponent):
         else:
             phi, theta = self.phi, self.theta
 
-        mzi_r = 0.5 * np.array([
-            [np.exp(1j * phi) * (np.exp(1j * theta) - 1),
-            1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
-            [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
-            ], dtype=NP_COMPLEX)
+        '''ORIGINAL transfer matrix (mzi_r): phi-at-end'''
+        # mzi_r = 0.5 * np.array([
+        #     [np.exp(1j * phi) * (np.exp(1j * theta) - 1),
+        #     1j * np.exp(1j * phi) * (1 + np.exp(1j * theta))],
+        #     [1j * (np.exp(1j * theta) + 1), 1 - np.exp(1j * theta)]
+        #     ], dtype=NP_COMPLEX)
+                # first coupler (splitter)
+        '''REVERSED transfer matrix (mzi_r): phi-in-front: ground up from individual components'''
+        rho_1 = rho_2 = 0.5 # ideal 50:50 beamsplitters
+        self.coupler_1 = np.array([[np.sqrt(rho_1), 1j*np.sqrt(1-rho_1)],
+                                   [1j*np.sqrt(1-rho_1), np.sqrt(rho_1)]])
+        self.shifter_1 = np.array([[np.exp(1j*theta), 0],
+                                   [0, 1]]) # phase shifter θ
+        self.coupler_2 = np.array([[np.sqrt(rho_2), 1j*np.sqrt(1-rho_2)],
+                                   [1j*np.sqrt(1-rho_2), np.sqrt(rho_2)]]) # second coupler (combiner)
+        self.shifter_2 = np.array([[np.exp(1j*phi), 0],
+                                   [0, 1]]) # phase shifter φ
+        mzi_r = self.shifter_2@self.coupler_2@self.shifter_1@self.coupler_1 # phi-at-back (old)
+        # mzi_r = self.coupler_1@self.shifter_1@self.coupler_2@self.shifter_2 # phi-in-front (new)
         self.loss_dB_cur = get_loss(self.loss_dB, loss_diff=self.loss_diff) # dB Loss
         self.loss = 10**(-self.loss_dB_cur/10) # Linear Loss
         mzi_r = apply_loss(mzi_r, self.loss)

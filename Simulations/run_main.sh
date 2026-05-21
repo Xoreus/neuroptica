@@ -3,7 +3,7 @@
 : 'This is a silly shell script that runs main.py multiple times with different seeds'
 
 # topo="Frontier_BETA_2.0_N=8_miniBokun"
-topo="Prune_miniBokun"
+topo="baselineCase_external_PS"
 
 echo "zsh version ${ZSH_VERSION}..."
 # for loop {start..stop..step}
